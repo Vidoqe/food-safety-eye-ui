@@ -1,3 +1,4 @@
+import { IngredientAnalysisService } from '@/services/ingredientAnalysis';
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -41,13 +42,46 @@ const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult 
     setError('');
     
     try {
-      // Use 食安眼 (Food Safety Eye) analyzeProduct method
-      const analysis = await GPTImageAnalysisService.analyzeProduct(
-        undefined,
-        ingredients,
-        undefined,
-        language === 'zh' ? 'zh' : 'en'
-      );
+  // Use local analyzer (no JWT/API)
+  const plan = user?.plan ?? 'free';
+  const analysis = await IngredientAnalysisService.analyzeIngredients(ingredients, plan);
+
+  const mapVerdictToSafety = (v: 'healthy' | 'moderate' | 'harmful') => {
+    switch (v) {
+      case 'healthy':  return '🟢 Safe';
+      case 'moderate': return '🟡 Moderate';
+      case 'harmful':  return '🔴 Avoid';
+      default:         return 'Unknown';
+    }
+  };
+
+  const result: AnalysisResult = {
+    id: Date.now().toString(),
+    ingredients: analysis.ingredients,
+    verdict: analysis.verdict,
+    tips: analysis.tips ?? [],
+    timestamp: new Date(),
+    productType: 'Manual Input Analysis',
+    isEdible: true,
+    extractedIngredients: analysis.ingredients,
+    keyDetectedSubstances: analysis.regulatedAdditives,
+    isNaturalProduct: analysis.isNaturalProduct,
+    regulatedAdditives: analysis.regulatedAdditives,
+    junkFoodScore: analysis.junkFoodScore ?? 1,
+    quickSummary: analysis.quickSummary ?? '',
+    overallSafety: mapVerdictToSafety(analysis.verdict),
+    summary: analysis.quickSummary ?? '',
+    productName: '',
+    barcode: '',
+    taiwanWarnings: [],   // optional: keep empty for text mode
+  };
+
+  onResult?.(result);
+  setError('');
+} catch (err) {
+  console.error(err);
+  setError('Analysis failed. Please try again.');
+}
 
       const result: AnalysisResult = {
         id: Date.now().toString(),
