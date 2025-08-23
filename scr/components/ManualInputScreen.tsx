@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '../components/ui/button';
+import { Card } from '../components/ui/card';
+import { Textarea } from '../components/ui/textarea';
 
-import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
-import { useUser } from '@/contexts/UserContext';
+import { useAppContext } from '../contexts/AppContext';
+import type { AnalysisResult } from '../contexts/AppContext';
+import { useUser } from '../contexts/UserContext';
 
 // Local text analyzer (no JWT/API required)
-import IngredientAnalysisService from '@/services/ingredientAnalysis';
+import IngredientAnalysisService from '../services/ingredientAnalysis';
 
 interface ManualInputScreenProps {
   onBack?: () => void;
