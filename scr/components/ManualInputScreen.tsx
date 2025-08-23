@@ -7,7 +7,7 @@ import { useAppContext } from '@/contexts/AppContext';
 import type { AnalysisResult } from '@/contexts/UserContext';
 
 // ⬇️ Local text analyzer (no JWT needed)
-{ import IngredientAnalysisService } from '@/services/ingredientAnalysis';
+import { IngredientAnalysisService } from '@/services/ingredientAnalysis';
 
 // ---------- helpers ----------
 const mapVerdictToSafety = (
