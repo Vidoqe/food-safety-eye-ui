@@ -8,7 +8,7 @@ import type { AnalysisResult } from '../contexts/AppContext';
 import { useUser } from '../contexts/UserContext';
 
 // Local text analyzer (no JWT/API required)
-import IngredientAnalysisService from '../services/ingredientAnalysis';
+import { IngredientAnalysisService } from '../services/ingredientAnalysis';
 
 interface ManualInputScreenProps {
   onBack?: () => void;
