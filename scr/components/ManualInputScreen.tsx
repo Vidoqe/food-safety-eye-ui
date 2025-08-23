@@ -1,212 +1,129 @@
-import { IngredientAnalysisService } from '@/services/ingredientAnalysis';
 import React, { useState } from 'react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Type } from 'lucide-react';
+
 import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
 import { useUser } from '@/contexts/UserContext';
-import { useTranslation } from '@/utils/translations';
-import { GPTImageAnalysisService } from '@/services/gptImageAnalysis';
-import { ScanLimitDialog } from '@/components/ScanLimitDialog';
+
+import IngredientAnalysisService from '@/services/ingredientAnalysis';
 
 interface ManualInputScreenProps {
-  onBack: () => void;
-  onResult: (result: AnalysisResult, error?: string) => void;
+  onBack?: () => void;
+  onResult: (result: AnalysisResult) => void;
 }
 
 const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult }) => {
   const { language } = useAppContext();
-  const { user, canScan, incrementScanCount } = useUser();
-  const t = useTranslation(language);
+  const { user } = useUser();
+
   const [ingredients, setIngredients] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showLimitDialog, setShowLimitDialog] = useState(false);
   const [error, setError] = useState('');
-
-  const handleAnalyze = async () => {
-    if (!ingredients.trim()) return;
-    
-    if (!canScan) {
-      setShowLimitDialog(true);
-      return;
-    }
-
-    const scanSuccess = await incrementScanCount();
-    if (!scanSuccess) {
-      setShowLimitDialog(true);
-      return;
-    }
-
-    setIsAnalyzing(true);
-    setError('');
-    
-    try {
-  // Use local analyzer (no JWT/API)
-  const plan = user?.plan ?? 'free';
-  const analysis = await IngredientAnalysisService.analyzeIngredients(ingredients, plan);
 
   const mapVerdictToSafety = (v: 'healthy' | 'moderate' | 'harmful') => {
     switch (v) {
-      case 'healthy':  return '🟢 Safe';
-      case 'moderate': return '🟡 Moderate';
-      case 'harmful':  return '🔴 Avoid';
-      default:         return 'Unknown';
+      case 'healthy':
+        return '🟢 Safe';
+      case 'moderate':
+        return '🟡 Moderate';
+      case 'harmful':
+        return '🔴 Avoid';
+      default:
+        return '⚪ Unknown';
     }
   };
 
-  const result: AnalysisResult = {
-    id: Date.now().toString(),
-    ingredients: analysis.ingredients,
-    verdict: analysis.verdict,
-    tips: analysis.tips ?? [],
-    timestamp: new Date(),
-    productType: 'Manual Input Analysis',
-    isEdible: true,
-    extractedIngredients: analysis.ingredients,
-    keyDetectedSubstances: analysis.regulatedAdditives,
-    isNaturalProduct: analysis.isNaturalProduct,
-    regulatedAdditives: analysis.regulatedAdditives,
-    junkFoodScore: analysis.junkFoodScore ?? 1,
-    quickSummary: analysis.quickSummary ?? '',
-    overallSafety: mapVerdictToSafety(analysis.verdict),
-    summary: analysis.quickSummary ?? '',
-    productName: '',
-    barcode: '',
-    taiwanWarnings: [],   // optional: keep empty for text mode
-  };
+  const handleAnalyze = async () => {
+    if (!ingredients.trim()) return;
 
-  onResult?.(result);
-  setError('');
-} catch (err) {
-  console.error(err);
-  setError('Analysis failed. Please try again.');
-}
+    setIsAnalyzing(true);
+    setError('');
+
+    try {
+      // Use local analyzer (NO JWT/API calls)
+      const plan = user?.plan ?? 'free';
+      const analysis = await IngredientAnalysisService.analyzeIngredients(ingredients, plan);
 
       const result: AnalysisResult = {
         id: Date.now().toString(),
         ingredients: analysis.ingredients,
         verdict: analysis.verdict,
-        tips: analysis.notes || [],
+        tips: analysis.notes ?? [],
         timestamp: new Date(),
         productType: 'Manual Input Analysis',
         isEdible: true,
+
+        // details
         extractedIngredients: analysis.extractedIngredients,
         keyDetectedSubstances: analysis.regulatedAdditives,
         isNaturalProduct: analysis.isNaturalProduct,
         regulatedAdditives: analysis.regulatedAdditives,
-        junkFoodScore: analysis.junkFoodScore || 5,
+        junkFoodScore: analysis.junkFoodScore ?? 5,
         quickSummary: analysis.summary,
-        overallSafety: analysis.overallSafety,
+        overallSafety: mapVerdictToSafety(analysis.verdict),
         summary: analysis.summary,
+
+        // optional / extended fields
         productName: analysis.productName,
         barcode: analysis.barcode,
-        taiwanWarnings: analysis.taiwanWarnings,
+        taiwanWarnings: analysis.taiwanWarnings ?? [],
         scansLeft: analysis.scansLeft,
         creditsExpiry: analysis.creditsExpiry,
         overall_risk: analysis.overall_risk,
         child_safe: analysis.child_safe,
-        notes: analysis.notes
+        notes: analysis.notes,
       };
-      
-      setIsAnalyzing(false);
-      onResult(result);
-    } catch (error: any) {
-      console.error('Analysis error:', error);
-      setIsAnalyzing(false);
-      
-      // Create a dummy result for error display
-      const errorResult: AnalysisResult = {
-        id: Date.now().toString(),
-        ingredients: [],
-        verdict: 'moderate',
-        tips: [],
-        timestamp: new Date(),
-        productType: 'Error',
-        isEdible: false,
-        extractedIngredients: [],
-        keyDetectedSubstances: [],
-        isNaturalProduct: false,
-        regulatedAdditives: [],
-        junkFoodScore: 0,
-        quickSummary: 'Error'
-      };
-      
-      onResult(errorResult, '掃描失敗，請再試一次。');
-    }
-  };
 
-  const getBadgeFromRisk = (riskLevel: string): string => {
-    switch (riskLevel) {
-      case 'harmful': return '🔴';
-      case 'moderate': return '🟡';
-      case 'healthy': return '🟢';
-      default: return '🟡';
+      onResult(result);
+    } catch (err) {
+      console.error('Analysis error:', err);
+      setError('Analysis failed. Please try again.');
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-      <div className="max-w-md mx-auto pt-8">
-        <div className="flex items-center mb-6">
-          <Button variant="ghost" onClick={onBack} className="mr-4">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-xl font-bold text-green-800">
-            {language === 'zh' ? '手動輸入成分' : 'Manual Input'}
-          </h1>
-        </div>
-
-        <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-          <div className="space-y-4">
-            <div className="text-center mb-4">
-              <Type className="w-12 h-12 text-green-500 mx-auto mb-2" />
-              <p className="text-gray-600 text-sm">
-                {language === 'zh' 
-                  ? '請輸入產品成分，用逗號分隔' 
-                  : 'Enter product ingredients, separated by commas'}
-              </p>
-            </div>
-
-            <Textarea
-              value={ingredients}
-              onChange={(e) => setIngredients(e.target.value)}
-              placeholder={language === 'zh' 
-                ? '例如：阿斯巴甜, 咖啡因, 牛磺酸, 檸檬酸' 
-                : 'e.g., Aspartame, Caffeine, Taurine, Citric Acid'}
-              className="min-h-32 resize-none"
-              disabled={isAnalyzing}
-            />
-
-            {error && (
-              <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
-                {error}
-              </div>
-            )}
-
-            <Button
-              onClick={handleAnalyze}
-              disabled={isAnalyzing || !ingredients.trim()}
-              className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-semibold"
-            >
-              {isAnalyzing ? (
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              ) : (
-                <Type className="w-5 h-5 mr-2" />
-              )}
-              {isAnalyzing 
-                ? (language === 'zh' ? '分析中...' : 'Analyzing...')
-                : (language === 'zh' ? '開始分析' : 'Start Analysis')
-              }
-            </Button>
-          </div>
-        </Card>
+    <div className="max-w-2xl mx-auto w-full px-4 py-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Button variant="ghost" onClick={onBack}>
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          {language === 'zh' ? '返回' : 'Back'}
+        </Button>
+        <h2 className="text-xl font-semibold">
+          {language === 'zh' ? '手動輸入' : 'Manual Input'}
+        </h2>
       </div>
-      
-      <ScanLimitDialog 
-        open={showLimitDialog}
-        onClose={() => setShowLimitDialog(false)}
-      />
+
+      <Card className="p-4">
+        <label className="block text-sm font-medium mb-2">
+          {language === 'zh'
+            ? '請輸入產品成分（以逗號分隔）'
+            : 'Enter product ingredients, separated by commas'}
+        </label>
+
+        <Textarea
+          rows={6}
+          placeholder={
+            language === 'zh'
+              ? '例如：水、砂糖、苯甲酸鈉、食用色素 Red 40'
+              : 'Ingredients: water, sugar, sodium benzoate, Red 40'
+          }
+          value={ingredients}
+          onChange={(e) => setIngredients(e.target.value)}
+          className="mb-4"
+        />
+
+        {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
+
+        <Button onClick={handleAnalyze} disabled={isAnalyzing || !ingredients.trim()}>
+          {isAnalyzing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+          {language === 'zh' ? '開始分析' : 'Start Analysis'}
+        </Button>
+      </Card>
     </div>
   );
 };
