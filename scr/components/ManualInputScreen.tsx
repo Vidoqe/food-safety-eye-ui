@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -8,7 +6,28 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
 import { useUser } from '@/contexts/UserContext';
 
-import { IngredientAnalysisService } from '@/services/ingredientAnalysis';
+// ⬇️ Local text analyzer (no JWT needed)
+import IngredientAnalysisService from '@/services/ingredientAnalysis';
+
+// ---------- helpers ----------
+const mapVerdictToSafety = (
+  v: 'healthy' | 'moderate' | 'harmful',
+  lang: 'en' | 'zh'
+) => {
+  const en = {
+    healthy: '🟢 Safe',
+    moderate: '🟡 Moderate',
+    harmful: '🔴 Avoid',
+  } as const;
+
+  const zh = {
+    healthy: '🟢 安全',
+    moderate: '🟡 中等',
+    harmful: '🔴 避免',
+  } as const;
+
+  return (lang === 'zh' ? zh : en)[v];
+};
 
 interface ManualInputScreenProps {
   onBack?: () => void;
@@ -16,112 +35,128 @@ interface ManualInputScreenProps {
 }
 
 const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult }) => {
-  const { language } = useAppContext();
-  const { user } = useUser();
-
+  const { language } = useAppContext();               // 'en' | 'zh'
+  const { user } = useUser();                         // may contain plan
   const [ingredients, setIngredients] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState('');
 
-  const mapVerdictToSafety = (v: 'healthy' | 'moderate' | 'harmful') => {
-    switch (v) {
-      case 'healthy':
-        return '🟢 Safe';
-      case 'moderate':
-        return '🟡 Moderate';
-      case 'harmful':
-        return '🔴 Avoid';
-      default:
-        return '⚪ Unknown';
-    }
-  };
-
   const handleAnalyze = async () => {
-    if (!ingredients.trim()) return;
+    if (!ingredients.trim()) {
+      setError(language === 'zh' ? '請輸入成分' : 'Please enter ingredients.');
+      return;
+    }
 
     setIsAnalyzing(true);
     setError('');
 
     try {
-      // Use local analyzer (NO JWT/API calls)
-      const plan = user?.plan ?? 'free';
+      // Use local analyzer (no JWT/API)
+      const plan: 'free' | 'premium' | 'gold' = (user?.plan as any) || 'free';
       const analysis = await IngredientAnalysisService.analyzeIngredients(ingredients, plan);
 
+      // Map to the UI's AnalysisResult shape
       const result: AnalysisResult = {
         id: Date.now().toString(),
-        ingredients: analysis.ingredients,
-        verdict: analysis.verdict,
-        tips: analysis.notes ?? [],
+        ingredients: analysis.ingredients,                 // Ingredient[]
+        verdict: analysis.verdict,                         // 'healthy' | 'moderate' | 'harmful'
+        tips: analysis.tips ?? [],
         timestamp: new Date(),
         productType: 'Manual Input Analysis',
         isEdible: true,
 
-        // details
-        extractedIngredients: analysis.extractedIngredients,
+        extractedIngredients: analysis.ingredients,
         keyDetectedSubstances: analysis.regulatedAdditives,
         isNaturalProduct: analysis.isNaturalProduct,
         regulatedAdditives: analysis.regulatedAdditives,
         junkFoodScore: analysis.junkFoodScore ?? 5,
-        quickSummary: analysis.summary,
-        overallSafety: mapVerdictToSafety(analysis.verdict),
-        summary: analysis.summary,
+        quickSummary: analysis.quickSummary ?? '',
+        overallSafety: mapVerdictToSafety(analysis.verdict, language),
+        summary: analysis.quickSummary ?? '',
+        productName: '',
+        barcode: '',
+        taiwanWarnings: [],
 
-        // optional / extended fields
-        productName: analysis.productName,
-        barcode: analysis.barcode,
-        taiwanWarnings: analysis.taiwanWarnings ?? [],
-        scansLeft: analysis.scansLeft,
-        creditsExpiry: analysis.creditsExpiry,
-        overall_risk: analysis.overall_risk,
-        child_safe: analysis.child_safe,
-        notes: analysis.notes,
+        // fields that exist in image-flow; keep defaults for UI compatibility
+        scansLeft: undefined as any,
+        creditsExpiry: undefined as any,
+        overall_risk: analysis.verdict as any,
+        child_safe: undefined as any,
+        notes: analysis.tips ?? [],
       };
 
+      setIsAnalyzing(false);
       onResult(result);
     } catch (err) {
       console.error('Analysis error:', err);
-      setError('Analysis failed. Please try again.');
-    } finally {
       setIsAnalyzing(false);
+
+      // Fallback dummy result so UI still renders
+      const errorResult: AnalysisResult = {
+        id: Date.now().toString(),
+        ingredients: [],
+        verdict: 'moderate',
+        tips: [],
+        timestamp: new Date(),
+        productType: 'Error',
+        isEdible: false,
+        extractedIngredients: [],
+        keyDetectedSubstances: [],
+        isNaturalProduct: false,
+        regulatedAdditives: [],
+        junkFoodScore: 5,
+        quickSummary: '',
+        overallSafety: mapVerdictToSafety('moderate', language),
+        summary: language === 'zh' ? '分析失敗。' : 'Analysis failed.',
+        productName: '',
+        barcode: '',
+        taiwanWarnings: [],
+        scansLeft: undefined as any,
+        creditsExpiry: undefined as any,
+        overall_risk: 'moderate' as any,
+        child_safe: undefined as any,
+        notes: [],
+      };
+
+      onResult(errorResult);
+      setError(language === 'zh' ? '分析失敗，請稍後再試。' : 'Analysis failed. Please try again.');
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto w-full px-4 py-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          {language === 'zh' ? '返回' : 'Back'}
-        </Button>
+    <div className="max-w-xl mx-auto p-4">
+      <Button variant="ghost" onClick={onBack} className="mb-3">
+        ← {language === 'zh' ? '返回' : 'Back'}
+      </Button>
+
+      <Card className="p-4 space-y-3">
         <h2 className="text-xl font-semibold">
           {language === 'zh' ? '手動輸入' : 'Manual Input'}
         </h2>
-      </div>
 
-      <Card className="p-4">
-        <label className="block text-sm font-medium mb-2">
+        <p className="text-sm text-muted-foreground">
           {language === 'zh'
-            ? '請輸入產品成分（以逗號分隔）'
-            : 'Enter product ingredients, separated by commas'}
-        </label>
+            ? '以逗號分隔輸入成分，例如：水、糖、苯甲酸鈉'
+            : 'Enter ingredients separated by commas, e.g. water, sugar, sodium benzoate'}
+        </p>
 
         <Textarea
           rows={6}
-          placeholder={
-            language === 'zh'
-              ? '例如：水、砂糖、苯甲酸鈉、食用色素 Red 40'
-              : 'Ingredients: water, sugar, sodium benzoate, Red 40'
-          }
           value={ingredients}
           onChange={(e) => setIngredients(e.target.value)}
-          className="mb-4"
+          placeholder={
+            language === 'zh'
+              ? '例如：水、糖、苯甲酸鈉'
+              : 'e.g., water, sugar, sodium benzoate'
+          }
         />
 
-        {error && <p className="text-sm text-red-600 mb-2">{error}</p>}
+        {error && <div className="text-red-600 text-sm">{error}</div>}
 
-        <Button onClick={handleAnalyze} disabled={isAnalyzing || !ingredients.trim()}>
-          {isAnalyzing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          {language === 'zh' ? '開始分析' : 'Start Analysis'}
+        <Button onClick={handleAnalyze} disabled={isAnalyzing} className="w-full">
+          {isAnalyzing
+            ? language === 'zh' ? '分析中…' : 'Analyzing…'
+            : language === 'zh' ? '開始分析' : 'Start Analysis'}
         </Button>
       </Card>
     </div>
