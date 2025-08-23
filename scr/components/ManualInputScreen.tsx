@@ -8,7 +8,6 @@ import { useUser } from '@/contexts/UserContext';
 
 // Local text analyzer (no JWT needed)
 import IngredientAnalysisService from '@/services/ingredientAnalysis';
-
 // -------- helpers --------
 const RISK_LABELS = {
   en: { healthy: 'Low', moderate: 'Moderate', harmful: 'High', unknown: 'Unknown' },
