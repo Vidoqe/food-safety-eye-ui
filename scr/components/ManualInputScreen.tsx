@@ -6,32 +6,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
 import { useUser } from '@/contexts/UserContext';
 
-// Local text analyzer (no JWT needed)
+// Local text analyzer (no JWT/API required)
 import IngredientAnalysisService from '@/services/ingredientAnalysis';
-// -------- helpers --------
-const RISK_LABELS = {
-  en: { healthy: 'Low', moderate: 'Moderate', harmful: 'High', unknown: 'Unknown' },
-  zh: { healthy: '低',   moderate: '中等',     harmful: '高',   unknown: '未知' },
-};
-
-const OVERALL_SAFETY = {
-  en: { healthy: 'Low Risk', moderate: 'Medium Risk', harmful: 'High Risk' },
-  zh: { healthy: '低風險',     moderate: '中風險',        harmful: '高風險' },
-};
-
-const YES_NO = {
-  en: { yes: 'Yes', no: 'No' },
-  zh: { yes: '是',  no: '否' },
-};
-
-const mapVerdictToBadge = (v: 'healthy' | 'moderate' | 'harmful') => {
-  switch (v) {
-    case 'healthy': return '🟢';
-    case 'moderate': return '🟡';
-    case 'harmful': return '🔴';
-    default: return '⚪';
-  }
-};
 
 interface ManualInputScreenProps {
   onBack?: () => void;
@@ -39,90 +15,75 @@ interface ManualInputScreenProps {
 }
 
 const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult }) => {
-  const { language } = useAppContext();               // 'en' | 'zh'
+  const { language } = useAppContext();
   const { user } = useUser();
 
-  const [ingredients, setIngredients] = useState('');
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [error, setError] = useState('');
+  const [ingredients, setIngredients] = useState<string>('');
+  const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+
+  // Map internal verdict to the UI "overallSafety" label
+  const mapVerdictToSafety = (v: 'healthy' | 'moderate' | 'harmful'): string => {
+    switch (v) {
+      case 'healthy':
+        return language === 'zh' ? '安全' : 'Safe';
+      case 'moderate':
+        return language === 'zh' ? '中等' : 'Moderate';
+      case 'harmful':
+        return language === 'zh' ? '避免' : 'Avoid';
+      default:
+        return language === 'zh' ? '未知' : 'Unknown';
+    }
+  };
 
   const handleAnalyze = async () => {
-    setError('');
     if (!ingredients.trim()) {
-      setError(language === 'zh' ? '請先輸入成分。' : 'Please enter ingredients first.');
+      setError(language === 'zh' ? '請輸入成分清單' : 'Please enter ingredients.');
       return;
     }
 
     setIsAnalyzing(true);
-    try {
-      // Use local analyzer (no JWT/API)
-      const plan: 'free' | 'premium' | 'gold' = user?.plan ?? 'free';
-      const analysis = await IngredientAnalysisService.analyzeIngredients(ingredients, plan);
+    setError('');
 
-      // Build language-specific labels here, so UI shows a single language.
-      const riskLabels = RISK_LABELS[language];
-      const overallLabels = OVERALL_SAFETY[language];
+    try {
+      const plan: 'free' | 'premium' | 'gold' = (user?.plan as any) ?? 'free';
+
+      // Use local analyzer (no JWT/API calls)
+      const analysis = await IngredientAnalysisService.analyzeIngredients(ingredients, plan);
 
       const result: AnalysisResult = {
         id: Date.now().toString(),
         ingredients: analysis.ingredients,
-        verdict: analysis.verdict,                              // 'healthy' | 'moderate' | 'harmful'
+        verdict: analysis.verdict,
         tips: analysis.tips ?? [],
         timestamp: new Date(),
         productType: 'Manual Input Analysis',
         isEdible: true,
-
         extractedIngredients: analysis.extractedIngredients,
         keyDetectedSubstances: analysis.regulatedAdditives,
         isNaturalProduct: analysis.isNaturalProduct,
         regulatedAdditives: analysis.regulatedAdditives,
-
-        // Quantified score (keep your existing calc, fallback to 5)
         junkFoodScore: analysis.junkFoodScore ?? 5,
-
-        // Single-language quick summary + overall safety
-        quickSummary:
-          language === 'zh'
-            ? (analysis.summaryZh ?? analysis.summary ?? '')
-            : (analysis.summaryEn ?? analysis.summary ?? ''),
-
-        overallSafety:
-          overallLabels[
-            (analysis.verdict as 'healthy' | 'moderate' | 'harmful') ?? 'moderate'
-          ],
-
-        summary:
-          language === 'zh'
-            ? (analysis.summaryZh ?? analysis.summary ?? '')
-            : (analysis.summaryEn ?? analysis.summary ?? ''),
-
-        productName: analysis.productName ?? '',
-        barcode: analysis.barcode ?? '',
-
-        taiwanWarnings: analysis.taiwanWarnings ?? [],
-
-        // Optional counters (keep if present; ignore if missing)
+        quickSummary: analysis.summary,
+        overallSafety: mapVerdictToSafety(analysis.verdict),
+        summary: analysis.summary,
+        productName: analysis.productName,
+        barcode: analysis.barcode,
+        taiwanWarnings: analysis.taiwanWarnings,
         scansLeft: analysis.scansLeft,
         creditsExpiry: analysis.creditsExpiry,
-
-        // Preserve any extended fields your results page might use:
-        overall_risk: riskLabels[analysis.verdict as 'healthy' | 'moderate' | 'harmful'] ?? riskLabels.moderate,
-        child_safe:
-          analysis.child_safe === true
-            ? YES_NO[language].yes
-            : analysis.child_safe === false
-              ? YES_NO[language].no
-              : YES_NO[language].no,
-
-        notes: analysis.notes ?? [],
+        overall_risk: analysis.overall_risk,
+        child_safe: analysis.child_safe,
+        notes: analysis.notes,
       };
 
       setIsAnalyzing(false);
-      onResult?.(result);
+      onResult(result);
     } catch (err) {
       console.error('Analysis error:', err);
       setIsAnalyzing(false);
 
+      // Fallback dummy result so UI still renders
       const errorResult: AnalysisResult = {
         id: Date.now().toString(),
         ingredients: [],
@@ -137,54 +98,49 @@ const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult 
         regulatedAdditives: [],
         junkFoodScore: 5,
         quickSummary: language === 'zh' ? '分析失敗' : 'Analysis failed',
-        overallSafety: language === 'zh' ? '中風險' : 'Medium Risk',
+        overallSafety: language === 'zh' ? '未知' : 'Unknown',
         summary: language === 'zh' ? '分析失敗' : 'Analysis failed',
         productName: '',
         barcode: '',
         taiwanWarnings: [],
-        overall_risk: language === 'zh' ? '中等' : 'Moderate',
-        child_safe: YES_NO[language].no,
+        scansLeft: 0,
+        creditsExpiry: '',
+        overall_risk: '',
+        child_safe: false,
         notes: [],
       };
 
-      onResult?.(errorResult);
+      onResult(errorResult);
+      setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
     }
   };
 
   return (
     <div className="mx-auto max-w-2xl p-4">
-      <div className="flex items-center gap-2 mb-4">
-        {onBack && (
-          <Button variant="ghost" onClick={onBack} disabled={isAnalyzing}>
-            ← {language === 'zh' ? '返回' : 'Back'}
-          </Button>
-        )}
-        <h2 className="text-xl font-semibold">
+      <Card className="p-4">
+        <div className="mb-2 text-xl font-semibold">
           {language === 'zh' ? '手動輸入' : 'Manual Input'}
-        </h2>
-      </div>
-
-      <Card className="p-4 space-y-4">
-        <label className="text-sm font-medium">
-          {language === 'zh'
-            ? '請輸入產品成分（以逗號分隔）'
-            : 'Enter product ingredients (comma-separated)'}
-        </label>
+        </div>
 
         <Textarea
-          value={ingredients}
-          onChange={(e) => setIngredients(e.target.value)}
           placeholder={
             language === 'zh'
-              ? '範例：water, sugar, sodium benzoate, aspartame'
-              : 'Example: water, sugar, sodium benzoate, aspartame'
+              ? '請以逗號分隔輸入成分，例如：water, sugar, sodium benzoate'
+              : 'Enter ingredients separated by commas, e.g., water, sugar, sodium benzoate'
           }
-          className="min-h-[140px]"
+          value={ingredients}
+          onChange={(e) => setIngredients(e.target.value)}
+          rows={6}
         />
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <div className="mt-2 text-sm text-red-600">{error}</div>}
 
-        <div className="flex justify-end">
+        <div className="mt-4 flex items-center gap-3">
+          {onBack && (
+            <Button variant="outline" onClick={onBack} disabled={isAnalyzing}>
+              {language === 'zh' ? '返回' : 'Back'}
+            </Button>
+          )}
           <Button onClick={handleAnalyze} disabled={isAnalyzing}>
             {isAnalyzing
               ? language === 'zh' ? '分析中…' : 'Analyzing…'
