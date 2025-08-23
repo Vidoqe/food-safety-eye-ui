@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
 import { useUser } from '@/contexts/UserContext';
 
-import IngredientAnalysisService from '@/services/ingredientAnalysis';
+import { IngredientAnalysisService } from '@/services/ingredientAnalysis';
 
 interface ManualInputScreenProps {
   onBack?: () => void;
