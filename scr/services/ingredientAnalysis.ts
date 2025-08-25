@@ -2,11 +2,9 @@
 
 // Local, offline ingredient analyzer (no JWT / no external API)
 
-// type-only import so Rollup/esbuild don’t expect a runtime value
-import type { Ingredient } from '../contexts/AppContext';
-import { GPTImageAnalysisService } from './gptImageAnalysis';
-import type { GPTAnalysisResult } from './gptImageAnalysis';
-
+// type-only import so the bundler doesn't expect a runtime value
+import { type Ingredient } from '../contexts/AppContext';
+import { GPTImageAnalysisService, type GPTAnalysisResult } from './gptImageAnalysis';
 // Taiwan-regulated / notable additives database (quick demo set)
 const TAIWAN_REGULATED_ADDITIVES: Record<
   string,
