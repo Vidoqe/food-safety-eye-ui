@@ -4,8 +4,7 @@
 
 // type-only import so the bundler doesn't expect a runtime value
 import type { Ingredient } from '../contexts/AppContext';
-import { GPTImageAnalysisService,
-type GPTAnalysisResult } from './gptImageAnalysis';
+import { GPTImageAnalysisService, type GPTAnalysisResult } from './gptImageAnalysis';
 
 // ----------------- Types -----------------
 type AdditiveInfo = {
