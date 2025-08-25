@@ -1,54 +1,67 @@
-// scr/services/ingredientAnalysis.ts
+// scr/services/gptImageAnalysis.ts
 
-// Local, offline ingredient analyzer (no JWT / no external API)
+// Import any dependencies/types
+import { Ingredient } from '../contexts/AppContext';
 
-// type-only import so the bundler doesn't expect a runtime value
-import type { Ingredient } from '../contexts/AppContext';
-import { GPTImageAnalysisService, type GPTAnalysisResult } from './gptImageAnalysis';
+// Result type returned from GPT analysis
+export interface GPTAnalysisResult {
+  extractedIngredients: string[];
+  ingredients: Ingredient[];
+  verdict: 'healthy' | 'moderate' | 'harmful';
+  isNaturalProduct: boolean;
+  regulatedAdditives: string[];
+  tips?: string[];
+  junkFoodScore?: number;
+  quickSummary?: string;
+  overallSafety?: 'safe' | 'moderate' | 'harmful';
+  summary?: string;
+  error?: string;
+  productName?: string;
+  barcode?: string;
+  taiwanWarnings?: string[];
+  scansLeft?: number;
+  creditsExpiry?: string;
+  overall_risk?: string;
+}
 
-// ----------------- Types -----------------
-type AdditiveInfo = {
-  english: string;
-  risk: 'harmful' | 'moderate' | 'low';
-  badge: string;
-  childSafe: boolean;
-  symbol: string;
-};
-
-// ----------------- Taiwan-regulated / notable additives -----------------
-const TAIWAN_REGULATED_ADDITIVES: { [key: string]: AdditiveInfo } = {
-  阿斯巴甜: { english: 'Aspartame', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
-  aspartame: { english: 'Aspartame', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
-  葛蘭素: { english: 'Tartrazine', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  tartrazine: { english: 'Tartrazine', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  亞硝酸鈉: { english: 'Sodium Nitrite', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  'sodium nitrite': { english: 'Sodium Nitrite', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  苯甲酸鈉: { english: 'Sodium Benzoate', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  'sodium benzoate': { english: 'Sodium Benzoate', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  羅丹明B: { english: 'Rhodamine B', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  'rhodamine b': { english: 'Rhodamine B', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  糖精鈉: { english: 'Cyclamate', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  cyclamate: { english: 'Cyclamate', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  防腐劑: { english: 'Preservatives', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
-  preservatives: { english: 'Preservatives', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
-  人工色素: { english: 'Artificial Colors', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
-  'artificial colors': { english: 'Artificial Colors', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
-  咖啡因: { english: 'Caffeine', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
-  caffeine: { english: 'Caffeine', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
-};
-
-// ----------------- Analyzer Service -----------------
-export class IngredientAnalysisService {
-  static async analyzeIngredients(
-    ingredients: string,
+// Analyzer service
+class GPTImageAnalysisService {
+  // Example function to analyze a product image
+  static async analyzeProductImage(
+    imageBase64: string,
     subscriptionPlan: 'free' | 'premium' | 'gold' = 'free'
   ): Promise<GPTAnalysisResult> {
-    return await GPTImageAnalysisService.analyzeProductImage(ingredients, subscriptionPlan);
-  }
+    try {
+      // TODO: Replace this with your Supabase Edge function call
+      const response = await fetch('/api/analyze-product-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: imageBase64,
+          subscription: subscriptionPlan,
+        }),
+      });
 
-  static checkAgainstTaiwanDB(ingredient: string): AdditiveInfo | null {
-    const key = ingredient.trim().toLowerCase();
-    return TAIWAN_REGULATED_ADDITIVES[key] || null;
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
+
+      const data: GPTAnalysisResult = await response.json();
+      return data;
+    } catch (error: any) {
+      return {
+        extractedIngredients: [],
+        ingredients: [],
+        verdict: 'moderate',
+        isNaturalProduct: false,
+        regulatedAdditives: [],
+        error: error.message || 'Unknown error',
+      };
+    }
   }
 }
+
+// Export default and type
+export default GPTImageAnalysisService;
+export type { GPTAnalysisResult };
 
