@@ -12,8 +12,6 @@ const TAIWAN_REGULATED_ADDITIVES: Record<
   string,
   { english: string; risk: 'harmful' | 'moderate' | 'low'; badge: string; childSafe: boolean; symbol: string }
 > = {
-  { english: string; risk: 'harmful' | 'moderate' | 'low'; badge: '🔴' | '🟡' | '🟢'; childSafe: boolean; symbol: string; chinese?: string }
-> = {
   // sweeteners / colors commonly discussed
   '阿斯巴甜': { english: 'Aspartame',    risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
   'aspartame': { english: 'Aspartame',   risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
