@@ -9,7 +9,7 @@ import { useAppContext, type AnalysisResult } from '../contexts/AppContext';
 import { useUser } from '../contexts/UserContext';
 
 // Local, rule-based analyzer (no API/JWT)
-import IngredientAnalysisService from '../services/ingredientAnalysis';
+import IngredientAnalysisService from '../services/ingredientAnalysis.ts';
 
 // GPT analyzer (image + text). We’ll use it for manual text too.
 import GPTImageAnalysisService, { type GPTAnalysisResult } from '../services/gptImageAnalysis';
