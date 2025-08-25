@@ -4,7 +4,8 @@
 
 // type-only import so the bundler doesn't expect a runtime value
 import { type Ingredient } from '../contexts/AppContext';
-import { GPTImageAnalysisService, type GPTAnalysisResult } from './gptImageAnalysis';
+import { GPTImageAnalysisService } from './gptImageAnalysis';
+import type { GPTAnalysisResult } from './gptImageAnalysis';
 // Taiwan-regulated / notable additives database (quick demo set)
 const TAIWAN_REGULATED_ADDITIVES: Record<
   string,
