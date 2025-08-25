@@ -1,5 +1,6 @@
-import { Ingredient } from '@/contexts/AppContext';
-import { GPTImageAnalysisService, GPTAnalysisResult } from './gptImageAnalysis';
+// use type-only import so Rollup/esbuild don’t expect a runtime value
+import type { Ingredient } from '../contexts/AppContext.ts';
+import { GPTImageAnalysisService, type GPTAnalysisResult } from './gptImageAnalysis.ts';
 
 // Taiwan-regulated additives database with symbols
 const TAIWAN_REGULATED_ADDITIVES = {
