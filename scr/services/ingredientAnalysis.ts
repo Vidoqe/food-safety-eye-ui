@@ -1,33 +1,24 @@
-// use type-only import so Rollup/esbuild don’t expect a runtime value
+// use type-only import so Rollup/esbuild doesn’t expect a runtime value
 import type { Ingredient } from '../contexts/AppContext.ts';
 import { GPTImageAnalysisService, type GPTAnalysisResult } from './gptImageAnalysis.ts';
 
 // Taiwan-regulated additives database with symbols
 const TAIWAN_REGULATED_ADDITIVES = {
-  '阿斯巴甜': { english: 'Aspartame', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  'aspartame': { english: 'Aspartame', chinese: '阿斯巴甜', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  '亞硝黃': { english: 'Tartrazine', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '🧪' },
-  'tartrazine': { english: 'Tartrazine', chinese: '亞硝黃', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '🧪' },
-  '亞硝酸鈉': { english: 'Sodium Nitrite', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '🧨' },
-  'sodium nitrite': { english: 'Sodium Nitrite', chinese: '亞硝酸鈉', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '🧨' },
+  阿斯巴甜: { english: 'Aspartame', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
+  aspartame: { english: 'Aspartame', chinese: '阿斯巴甜', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
+  '黃色四號': { english: 'Tartrazine', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '🌈' },
+  tartrazine: { english: 'Tartrazine', chinese: '黃色四號', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '🌈' },
+  '亞硝酸鈉': { english: 'Sodium Nitrite', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
+  'sodium nitrite': { english: 'Sodium Nitrite', chinese: '亞硝酸鈉', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
   '苯甲酸鈉': { english: 'Sodium Benzoate', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
   'sodium benzoate': { english: 'Sodium Benzoate', chinese: '苯甲酸鈉', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  '若丹明B': { english: 'Rhodamine B', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '☠️' },
-  'rhodamine b': { english: 'Rhodamine B', chinese: '若丹明B', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '☠️' },
-  '環己基磺酸鹽': { english: 'Cyclamate', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  'cyclamate': { english: 'Cyclamate', chinese: '環己基磺酸鹽', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  '防腐劑': { english: 'Preservatives', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '🧪' },
-  'preservatives': { english: 'Preservatives', chinese: '防腐劑', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '🧪' },
-  '人工色素': { english: 'Artificial Colors', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '🎨' },
-  'artificial colors': { english: 'Artificial Colors', chinese: '人工色素', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '🎨' },
-  '咖啡因': { english: 'Caffeine', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '☕' },
-  'caffeine': { english: 'Caffeine', chinese: '咖啡因', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '☕' }
+  '紅色40號': { english: 'Rhodamine B', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
+  rhodamineb: { english: 'Rhodamine B', chinese: '紅色40號', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
+  '環己基氨基磺酸鈉': { english: 'Cyclamate', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
+  cyclamate: { english: 'Cyclamate', chinese: '環己基氨基磺酸鈉', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
+  '防腐劑': { english: 'Preservatives', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
+  preservatives: { english: 'Preservatives', chinese: '防腐劑', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
 };
-
-export class IngredientAnalysisService {
-  // New method for GPT-4o image analysis
-  static async analyzeProductImage(
-    imageBase64: string, 
     subscriptionPlan: 'free' | 'premium' | 'gold' = 'free'
   ): Promise<GPTAnalysisResult> {
     return await GPTImageAnalysisService.analyzeProductImage(imageBase64, subscriptionPlan);
