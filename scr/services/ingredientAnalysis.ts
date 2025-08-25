@@ -1,15 +1,17 @@
 // scr/services/ingredientAnalysis.ts
-// ------------------------------------------------------------
+
 // Local, offline ingredient analyzer (no JWT / no external API)
-// ------------------------------------------------------------
 
 // type-only import so Rollup/esbuild don’t expect a runtime value
 import type { Ingredient } from '../contexts/AppContext';
-import { GPTImageAnalysisService, type GPTAnalysisResult } from './gptImageAnalysis';
+import { GPTImageAnalysisService } from './gptImageAnalysis';
+import type { GPTAnalysisResult } from './gptImageAnalysis';
 
 // Taiwan-regulated / notable additives database (quick demo set)
 const TAIWAN_REGULATED_ADDITIVES: Record<
   string,
+  { english: string; risk: 'harmful' | 'moderate' | 'low'; badge: string; childSafe: boolean; symbol: string }
+> = {
   { english: string; risk: 'harmful' | 'moderate' | 'low'; badge: '🔴' | '🟡' | '🟢'; childSafe: boolean; symbol: string; chinese?: string }
 > = {
   // sweeteners / colors commonly discussed
