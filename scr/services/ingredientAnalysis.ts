@@ -1,31 +1,70 @@
-// use type-only import so Rollup/esbuild doesn’t expect a runtime value
-import type { Ingredient } from '../contexts/AppContext.ts';
-import { GPTImageAnalysisService, type GPTAnalysisResult } from './gptImageAnalysis.ts';
+// scr/services/ingredientAnalysis.ts
+// ------------------------------------------------------------
+// Local, offline ingredient analyzer (no JWT / no external API)
+// ------------------------------------------------------------
 
-// Taiwan-regulated additives database with symbols
-const TAIWAN_REGULATED_ADDITIVES = {
-  阿斯巴甜: { english: 'Aspartame', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  aspartame: { english: 'Aspartame', chinese: '阿斯巴甜', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  '黃色四號': { english: 'Tartrazine', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '🌈' },
-  tartrazine: { english: 'Tartrazine', chinese: '黃色四號', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '🌈' },
-  '亞硝酸鈉': { english: 'Sodium Nitrite', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  'sodium nitrite': { english: 'Sodium Nitrite', chinese: '亞硝酸鈉', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  '苯甲酸鈉': { english: 'Sodium Benzoate', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  'sodium benzoate': { english: 'Sodium Benzoate', chinese: '苯甲酸鈉', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  '紅色40號': { english: 'Rhodamine B', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  rhodamineb: { english: 'Rhodamine B', chinese: '紅色40號', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  '環己基氨基磺酸鈉': { english: 'Cyclamate', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  cyclamate: { english: 'Cyclamate', chinese: '環己基氨基磺酸鈉', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
-  '防腐劑': { english: 'Preservatives', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
-  preservatives: { english: 'Preservatives', chinese: '防腐劑', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
+// type-only import so Rollup/esbuild don’t expect a runtime value
+import type { Ingredient } from '../contexts/AppContext';
+import { GPTImageAnalysisService, type GPTAnalysisResult } from './gptImageAnalysis';
+
+// Taiwan-regulated / notable additives database (quick demo set)
+const TAIWAN_REGULATED_ADDITIVES: Record<
+  string,
+  { english: string; risk: 'harmful' | 'moderate' | 'low'; badge: '🔴' | '🟡' | '🟢'; childSafe: boolean; symbol: string; chinese?: string }
+> = {
+  // sweeteners / colors commonly discussed
+  '阿斯巴甜': { english: 'Aspartame',    risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
+  'aspartame': { english: 'Aspartame',   risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
+  '塔塔拉嗪': { english: 'Tartrazine',   risk: 'harmful',  badge: '🔴', childSafe: false, symbol: '⚠️' },
+  'tartrazine': { english: 'Tartrazine', risk: 'harmful',  badge: '🔴', childSafe: false, symbol: '⚠️' },
+
+  // preservatives
+  '亞硝酸鈉': { english: 'Sodium Nitrite',   risk: 'harmful',  badge: '🔴', childSafe: false, symbol: '⚠️' },
+  'sodium nitrite': { english: 'Sodium Nitrite', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '⚠️' },
+  '苯甲酸鈉': { english: 'Sodium Benzoate',  risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
+  'sodium benzoate': { english: 'Sodium Benzoate', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
+
+  // dyes
+  '若丹明B': { english: 'Rhodamine B', risk: 'harmful',  badge: '🔴', childSafe: false, symbol: '✖️' },
+  'rhodamine b': { english: 'Rhodamine B', risk: 'harmful', badge: '🔴', childSafe: false, symbol: '✖️' },
+
+  // sweetener
+  '環己基代硫脲': { english: 'Cyclamate', risk: 'harmful',  badge: '🔴', childSafe: false, symbol: '⚠️' },
+  'cyclamate': { english: 'Cyclamate',    risk: 'harmful',  badge: '🔴', childSafe: false, symbol: '⚠️' },
+
+  // buckets
+  '防腐劑': { english: 'Preservatives',  risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
+  'preservatives': { english: 'Preservatives', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
+  '人工色素': { english: 'Artificial Colors', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '🎨' },
+  'artificial colors': { english: 'Artificial Colors', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '🎨' },
+
+  // caffeine (info)
+  '咖啡因': { english: 'Caffeine', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
+  'caffeine': { english: 'Caffeine', risk: 'moderate', badge: '🟡', childSafe: false, symbol: '⚠️' },
 };
+
+// ------------------------------------------------------------
+// Service
+// ------------------------------------------------------------
+export class IngredientAnalysisService {
+  /**
+   * Image → GPT analysis pass-through (still available when you need it)
+   */
+  static async analyzeProductImage(
+    imageBase64: string,
     subscriptionPlan: 'free' | 'premium' | 'gold' = 'free'
   ): Promise<GPTAnalysisResult> {
     return await GPTImageAnalysisService.analyzeProductImage(imageBase64, subscriptionPlan);
   }
 
-  // Legacy method for text-based analysis (kept for backward compatibility)
-  static async analyzeIngredients(ingredientText: string, subscriptionPlan: 'free' | 'premium' | 'gold' = 'free'): Promise<{
+  /**
+   * Legacy/local text-based analyzer (no JWT / no external API)
+   * Accepts a raw ingredient string (English/Chinese mix is fine).
+   */
+  static async analyzeIngredients(
+    ingredientText: string,
+    subscriptionPlan: 'free' | 'premium' | 'gold' = 'free'
+  ): Promise<{
     ingredients: Ingredient[];
     verdict: 'healthy' | 'moderate' | 'harmful';
     isNaturalProduct: boolean;
@@ -35,189 +74,183 @@ const TAIWAN_REGULATED_ADDITIVES = {
     junkFoodScore?: number;
     quickSummary?: string;
   }> {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    // small debounce so the UI can show the spinner smoothly
+    await new Promise((r) => setTimeout(r, 300));
+
     try {
       const isPremium = subscriptionPlan === 'premium' || subscriptionPlan === 'gold';
-      const isNoAdditives = ingredientText.includes('無添加物') || ingredientText.includes('no additives');
-      
-      const extractedIngredients = this.extractIngredients(ingredientText);
-      const analyzedIngredients = this.analyzeExtractedIngredients(extractedIngredients, isPremium);
-      const regulatedAdditives = isPremium ? this.findRegulatedAdditives(extractedIngredients) : [];
-      const verdict = this.calculateOverallRisk(analyzedIngredients);
-      const isNaturalProduct = isNoAdditives || this.isNaturalProduct(analyzedIngredients, regulatedAdditives);
-      
+
+      const isNoAdditives =
+        /\b(no\s*additives|無添加)\b/i.test(ingredientText ?? '');
+
+      const extracted = this.extractIngredients(ingredientText);
+      const analyzed  = this.analyzeExtractedIngredients(extracted, isPremium);
+      const regulated = this.findRegulatedAdditives(extracted);
+
+      const verdict = this.calculateOverallRisk(analyzed);
+      const isNatural = isNoAdditives || this.isNaturalProduct(analyzed, regulated);
+
       const result: any = {
-        ingredients: analyzedIngredients,
+        ingredients: analyzed,
         verdict,
-        isNaturalProduct,
-        regulatedAdditives
+        isNaturalProduct: isNatural,
+        regulatedAdditives: regulated,
       };
-      
+
       if (isPremium) {
-        result.tips = this.generateHealthTips(analyzedIngredients, regulatedAdditives);
-        result.junkFoodScore = this.calculateJunkFoodScore(analyzedIngredients, regulatedAdditives);
-        result.quickSummary = this.generateQuickSummary(analyzedIngredients, regulatedAdditives);
+        result.tips = this.generateHealthTips(analyzed, regulated);
+        result.junkFoodScore = this.calculateJunkFoodScore(analyzed, regulated);
+        result.quickSummary = this.generateQuickSummary(analyzed, regulated);
       }
-      
+
       return result;
-    } catch (error) {
+    } catch (_e) {
+      // safe fallback
       return {
         ingredients: [],
         verdict: 'moderate',
         isNaturalProduct: false,
         regulatedAdditives: [],
-        errorMessage: 'Analysis failed / 分析失敗'
+        errorMessage: 'Analysis failed / 分析失敗',
       };
     }
   }
-  
-  private static calculateJunkFoodScore(ingredients: Ingredient[], regulatedAdditives: string[]): number {
+
+  // ---------------- helpers ----------------
+
+  private static calculateJunkFoodScore(ingredients: Ingredient[], regulated: string[]): number {
     let score = 1;
-    
-    const harmfulCount = ingredients.filter(ing => ing.status === 'harmful').length;
-    score += harmfulCount * 3;
-    
-    const moderateCount = ingredients.filter(ing => ing.status === 'moderate').length;
-    score += moderateCount * 2;
-    
-    score += regulatedAdditives.length * 2;
-    
+    const harmful = ingredients.filter((i) => i.status === 'harmful').length;
+    const moderate = ingredients.filter((i) => i.status === 'moderate').length;
+
+    score += harmful * 3;
+    score += moderate * 2;
+    score += regulated.length * 2;
+
     return Math.min(score, 10);
   }
-  
-  private static generateQuickSummary(ingredients: Ingredient[], regulatedAdditives: string[]): string {
-    if (regulatedAdditives.length === 0 && ingredients.every(ing => ing.status === 'healthy')) {
+
+  private static generateQuickSummary(ingredients: Ingredient[], regulated: string[]): string {
+    if (regulated.length === 0 && ingredients.every((i) => i.status === 'healthy')) {
       return '🟢 Clean product – no flagged ingredients';
     }
-    
-    const hasHarmful = ingredients.some(ing => ing.status === 'harmful') || regulatedAdditives.length > 0;
-    if (hasHarmful) {
-      return '🔴 Avoid – contains harmful or banned additives';
+    const hasHarmful = ingredients.some((i) => i.status === 'harmful');
+    if (hasHarmful || regulated.length > 0) {
+      return '🔴 Avoid – contains harmful or regulated additives';
     }
-    
     return '🟡 Some additives – check child safety';
   }
-  
+
   private static extractIngredients(text: string): string[] {
-    const cleanText = text.replace(/無添加物|no additives/gi, '').trim();
-    
-    if (cleanText.includes('米糠（含胚芽）') || cleanText.includes('米糠(含胚芽)')) {
-      return ['米糠', '胚芽'];
-    }
-    
-    const ingredients = cleanText
+    const clean = (text ?? '')
+      .replace(/無添加|no additives/gi, '')
+      .replace(/[；;]/g, ',')
+      .trim();
+
+    // special case: 米糠(含胚芽)
+    if (/米糠（?含胚芽）?/u.test(clean)) return ['米糠', '胚芽'];
+
+    return clean
       .toLowerCase()
-      .split(/[,，、;；\n\r()（）]+/)
-      .map(ingredient => ingredient.trim())
-      .filter(ingredient => ingredient.length > 0 && !ingredient.includes('含'));
-    
-    return ingredients;
+      .split(/[,，\n\r()]+/g)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0 && !/^含$/.test(s));
   }
-  
-  private static analyzeExtractedIngredients(ingredients: string[], isPremium: boolean): Ingredient[] {
-    return ingredients.map(ingredient => {
+
+  private static analyzeExtractedIngredients(list: string[], isPremium: boolean): Ingredient[] {
+    return list.map((raw) => {
+      // check regulated table
       for (const [key, info] of Object.entries(TAIWAN_REGULATED_ADDITIVES)) {
-        if (ingredient.includes(key)) {
-          const displayName = isPremium && info.symbol ? 
-            `${info.symbol} ${info.chinese ? info.chinese : key} / ${info.english}` :
-            (info.chinese ? `${info.chinese} (${info.english})` : `${key} (${info.english})`);
-          
-          const result: Ingredient = {
-            name: displayName,
+        if (raw.includes(key)) {
+          const name = info.chinese
+            ? `${info.chinese} (${info.english})`
+            : `${key} (${info.english})`;
+          const out: Ingredient = {
+            name,
             status: info.risk as 'healthy' | 'moderate' | 'harmful',
-            chinese: info.chinese || key,
+            chinese: info.chinese ?? key,
             reason: this.getRiskLabel(info.risk),
-            isFlagged: true
+            isFlagged: true,
           };
-          if (isPremium) result.childRisk = !info.childSafe;
-          return result;
+          if (isPremium) out.childRisk = !info.childSafe;
+          return out;
         }
       }
-      
-      // Safe ingredients
-      const safeIngredients = {
+
+      // Safe/simple items (demo)
+      const SAFE: Record<string, { english: string; risk: 'low' | 'moderate' | 'harmful' }> = {
         '米糠': { english: 'Rice Bran', risk: 'low' },
         '胚芽': { english: 'Germ', risk: 'low' },
-        '水': { english: 'Water', risk: 'low' },
-        '糖': { english: 'Sugar', risk: 'moderate' }
+        '水':   { english: 'Water', risk: 'low' },
+        'sugar': { english: 'Sugar', risk: 'moderate' },
       };
-      
-      for (const [key, info] of Object.entries(safeIngredients)) {
-        if (ingredient.includes(key)) {
-          const result: Ingredient = {
+      for (const [key, info] of Object.entries(SAFE)) {
+        if (raw.includes(key)) {
+          const out: Ingredient = {
             name: `${key} (${info.english})`,
             status: info.risk === 'low' ? 'healthy' : 'moderate',
             chinese: key,
-            reason: this.getRiskLabel(info.risk)
+            reason: this.getRiskLabel(info.risk),
           };
-          if (isPremium) result.childRisk = false;
-          return result;
+          if (isPremium) out.childRisk = false;
+          return out;
         }
       }
-      
-      const result: Ingredient = {
+
+      // Unknown
+      const unknown: Ingredient = {
         name: 'Unknown Ingredient / 成分未知',
         status: 'moderate',
         chinese: '成分未知',
-        reason: 'Unknown / 未知'
+        reason: 'Unknown / 未知',
       };
-      if (isPremium) result.childRisk = true;
-      return result;
+      if (isPremium) unknown.childRisk = true;
+      return unknown;
     });
   }
-  
-  private static findRegulatedAdditives(ingredients: string[]): string[] {
-    const regulated: string[] = [];
-    
-    for (const ingredient of ingredients) {
+
+  private static findRegulatedAdditives(list: string[]): string[] {
+    const out: string[] = [];
+    for (const raw of list) {
       for (const [key, info] of Object.entries(TAIWAN_REGULATED_ADDITIVES)) {
-        if (ingredient.includes(key)) {
-          const displayName = info.chinese ? 
-            `${info.chinese} (${info.english})` : 
-            `${key} (${info.english})`;
-          regulated.push(displayName);
+        if (raw.includes(key)) {
+          const display = info.chinese ? `${info.chinese} (${info.english})` : `${key} (${info.english})`;
+          out.push(display);
         }
       }
     }
-    
-    return regulated;
+    return out;
   }
-  
+
   private static calculateOverallRisk(ingredients: Ingredient[]): 'healthy' | 'moderate' | 'harmful' {
-    const hasHarmful = ingredients.some(ing => ing.status === 'harmful');
-    const hasModerate = ingredients.some(ing => ing.status === 'moderate');
-    
-    if (hasHarmful) return 'harmful';
-    if (hasModerate) return 'moderate';
+    if (ingredients.some((i) => i.status === 'harmful')) return 'harmful';
+    if (ingredients.some((i) => i.status === 'moderate')) return 'moderate';
     return 'healthy';
   }
-  
-  private static isNaturalProduct(ingredients: Ingredient[], regulatedAdditives: string[]): boolean {
-    return regulatedAdditives.length === 0 && 
-           ingredients.every(ing => ing.status === 'healthy');
+
+  private static isNaturalProduct(ingredients: Ingredient[], regulated: string[]): boolean {
+    return regulated.length === 0 && ingredients.every((i) => i.status === 'healthy');
   }
-  
+
   private static getRiskLabel(risk: string): string {
     switch (risk) {
-      case 'harmful': return 'Harmful / 有害';
+      case 'harmful':  return 'Harmful / 有害';
       case 'moderate': return 'Moderate / 中等';
-      case 'low': return 'Low / 低';
-      default: return 'Unknown / 未知';
+      case 'low':      return 'Low / 低';
+      default:         return 'Unknown / 未知';
     }
   }
-  
-  private static generateHealthTips(ingredients: Ingredient[], regulatedAdditives: string[]): string[] {
+
+  private static generateHealthTips(ingredients: Ingredient[], regulated: string[]): string[] {
     const tips: string[] = [];
-    
-    if (regulatedAdditives.length === 0) {
-      tips.push('💡適量食用');
-      tips.push('💡保持均衡飲食，尤其是兒童');
+    if (regulated.length === 0) {
+      tips.push('🥗 均衡飲食 / Balanced diet');
+      tips.push('🍼 保持均衡飲食，尤其是兒童 / Extra care for kids');
     } else {
-      tips.push('💡若含阿斯巴甜或亞硝黃，避免兒童攝取');
-      tips.push('💡建議選擇天然成分產品');
+      tips.push('🚫 若含有可疑或受管制添加物，避免或減量攝取 / Limit regulated additives');
+      tips.push('🌿 建議選擇天然成分產品 / Prefer simpler ingredient lists');
     }
-    
     return tips;
   }
 }
+
