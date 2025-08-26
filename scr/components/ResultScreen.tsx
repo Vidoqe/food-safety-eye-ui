@@ -1,105 +1,160 @@
+// scr/screens/ResultScreen.tsx
 import React from 'react';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
-import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
-import { useUser } from '@/contexts/UserContext';
-import { useTranslation } from '@/utils/translations';
-import HealthReportDisplay from './HealthReportDisplay';
+import IngredientRiskTable from '@/components/IngredientRiskTable';
+import { useAppContext } from '@/contexts/AppContext';
 
-interface ResultScreenProps {
-  result: AnalysisResult;
-  onBack: () => void;
-  onHome: () => void;
-  onJunkFoodInfo: () => void;
-  error?: string;
+/** Types should match your IngredientAnalysisService output */
+type Risk = 'healthy' | 'low' | 'moderate' | 'harmful';
+
+interface IngredientRow {
+  name: string;
+  name_en: string;
+  name_zh: string;
+  status: Risk;
+  badge: string;
+  childSafe: boolean;
+  reason?: string;
+  matchedKey?: string;
+  taiwanRegulation?: string;
+  chinese?: string; // for backward-compat in your table
 }
 
-const ResultScreen: React.FC<ResultScreenProps> = ({ result, onBack, onHome, onJunkFoodInfo, error }) => {
-  const { language } = useAppContext();
-  const { user } = useUser();
-  const t = useTranslation(language);
-  const isPremium = user?.subscriptionPlan === 'premium' || user?.subscriptionPlan === 'gold';
+interface AnalysisResult {
+  verdict: Risk | 'moderate'; // keep union tolerant
+  ingredients: IngredientRow[];
+  tips?: string[];
+  summary?: string;
+}
 
-  // If there's an error or no result, show error message without returning to dashboard
-  if (error || !result) {
+/** Fallback badge map (used if a row or verdict has no badge) */
+const BADGE_FALLBACK: Record<Risk, string> = {
+  harmful: '🔴',
+  moderate: '🟡',
+  low: '🟢',
+  healthy: '🟢',
+};
+
+function verdictText(v: Risk, lang: 'en' | 'zh') {
+  if (lang === 'zh') {
+    switch (v) {
+      case 'harmful': return '高風險（建議避免）';
+      case 'moderate': return '中等風險（建議限制）';
+      case 'healthy':
+      case 'low': return '低風險（普遍安全）';
+      default: return '中等風險';
+    }
+  }
+  switch (v) {
+    case 'harmful': return 'High Risk (avoid if possible)';
+    case 'moderate': return 'Moderate Risk (limit intake)';
+    case 'healthy':
+    case 'low': return 'Low Risk (generally safe)';
+    default: return 'Moderate Risk';
+  }
+}
+
+function sectionTitle(key: 'overview' | 'summary' | 'tips' | 'details', lang: 'en' | 'zh') {
+  const map = {
+    en: {
+      overview: 'Overall Result',
+      summary: 'Summary',
+      tips: 'Tips',
+      details: 'Ingredient Details',
+    },
+    zh: {
+      overview: '整體結果',
+      summary: '摘要',
+      tips: '建議',
+      details: '成分詳情',
+    },
+  };
+  return map[lang][key];
+}
+
+interface Props {
+  result: AnalysisResult | null;
+  onBack?: () => void;
+}
+
+const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
+  const { language } = useAppContext(); // 'en' | 'zh'
+
+  if (!result) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-        <div className="max-w-md mx-auto pt-8">
-          <div className="flex items-center mb-6">
-            <Button variant="ghost" onClick={onBack} className="mr-4">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-xl font-bold text-green-800">
-              {language === 'zh' ? '掃描結果' : 'Scan Results'}
-            </h1>
-          </div>
-          
-          <div className="p-6 shadow-lg border-2 border-red-500 bg-red-50 mb-4 rounded-lg">
-            <div className="text-center text-red-600 font-medium">
-              ❌ No result – please try another image.
-            </div>
-          </div>
-          
-          <Button
+      <div className="p-4 max-w-3xl mx-auto">
+        <p className="text-gray-600">
+          {language === 'zh' ? '尚未產生結果。' : 'No result yet.'}
+        </p>
+        {onBack && (
+          <button
             onClick={onBack}
-            className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-semibold"
+            className="mt-4 rounded bg-gray-200 px-4 py-2 hover:bg-gray-300"
           >
-            {language === 'zh' ? '重新掃描' : 'Try Again'}
-          </Button>
-        </div>
+            {language === 'zh' ? '返回' : 'Back'}
+          </button>
+        )}
       </div>
     );
   }
 
-  // Transform result data for HealthReportDisplay
-  const transformedIngredients = (result.ingredients || []).map(ingredient => ({
-    name: ingredient.name,
-    riskLevel: ingredient.riskLevel === 'healthy' ? 'safe' : ingredient.riskLevel as 'safe' | 'moderate' | 'harmful',
-    risk_level: ingredient.riskLevel === 'healthy' ? 'safe' : ingredient.riskLevel as 'safe' | 'moderate' | 'harmful',
-    childRisk: ingredient.childRisk || false,
-    child_risk: ingredient.childRisk || false,
-    badge: ingredient.badge,
-    chinese: ingredient.chinese
-  }));
+  // Normalize verdict type + badge
+  const verdict: Risk =
+    result.verdict === 'low' || result.verdict === 'healthy'
+      ? 'healthy'
+      : result.verdict === 'harmful'
+      ? 'harmful'
+      : 'moderate';
 
-  const overallRisk = result.verdict === 'healthy' ? 'safe' : result.verdict as 'safe' | 'moderate' | 'harmful';
-  const overall_risk = result.overall_risk || overallRisk;
-  const child_safe = result.child_safe;
-  const notes = result.notes || result.taiwanWarnings || [];
+  const verdictBadge = BADGE_FALLBACK[verdict] ?? '⚪';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
-      <div className="max-w-md mx-auto pt-8">
-        <div className="flex items-center mb-6 px-4">
-          <Button variant="ghost" onClick={onBack} className="mr-4">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <h1 className="text-xl font-bold text-green-800">
-            {language === 'zh' ? '掃描結果' : 'Scan Results'}
-          </h1>
-        </div>
-
-        {/* Health Report Display */}
-        <div className="bg-white rounded-lg shadow-lg mx-4 mb-6">
-          <HealthReportDisplay 
-            ingredients={transformedIngredients}
-            overallRisk={overallRisk}
-            overall_risk={overall_risk}
-            childSafe={result.child_safe}
-            child_safe={child_safe}
-            notes={notes}
-            taiwanWarnings={result.taiwanWarnings}
-          />
-        </div>
-
-        <div className="space-y-3 px-4">
-          <Button
+    <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
+      {/* Top bar */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold">{sectionTitle('overview', language)}</h2>
+        {onBack && (
+          <button
             onClick={onBack}
-            className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-semibold"
+            className="rounded bg-gray-100 px-3 py-2 text-sm hover:bg-gray-200"
           >
-            {language === 'zh' ? '重新掃描' : 'Scan Again'}
-          </Button>
+            {language === 'zh' ? '返回' : 'Back'}
+          </button>
+        )}
+      </div>
+
+      {/* Verdict card */}
+      <div className="rounded-2xl border p-4 md:p-5 bg-white shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="text-2xl">{verdictBadge}</div>
+          <div>
+            <div className="text-lg font-medium">
+              {verdictText(verdict, language)}
+            </div>
+            {!!result.summary && (
+              <div className="text-gray-600 mt-1">
+                {result.summary}
+              </div>
+            )}
+          </div>
         </div>
+      </div>
+
+      {/* Tips */}
+      {!!result.tips?.length && (
+        <div className="rounded-2xl border p-4 md:p-5 bg-white shadow-sm">
+          <h3 className="text-lg font-semibold mb-2">{sectionTitle('tips', language)}</h3>
+          <ul className="list-disc ml-5 space-y-1">
+            {result.tips.map((t, i) => (
+              <li key={i} className="text-gray-700">{t}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Ingredient Table */}
+      <div className="rounded-2xl border p-2 md:p-4 bg-white shadow-sm">
+        <h3 className="text-lg font-semibold mb-3">{sectionTitle('details', language)}</h3>
+        <IngredientRiskTable ingredients={result.ingredients || []} />
       </div>
     </div>
   );
