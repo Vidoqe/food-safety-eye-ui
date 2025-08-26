@@ -1,16 +1,22 @@
 // scr/services/ingredientAnalysis.ts
-// put near the top of the file
-const riskToBadge = (r: string) =>
-  r === 'harmful' ? '🔴' : r === 'moderate' ? '🟡' : '🟢';
+
+// Risk → Badge mapping
 export type Risk = 'healthy' | 'low' | 'moderate' | 'harmful';
+
+const RISK_BADGE: Record<Risk, string> = {
+  harmful: '🔴',
+  moderate: '🟡',
+  low: '🟢',
+  healthy: '🟢',
+};
 
 export interface IngredientRow {
   // Back-compat: UI can keep using `name`
-  name: string;       // alias of name_en
-  name_en: string;
+  name: string;
+  name_en: string; // alias of name
   name_zh: string;
   status: Risk;
-  badge: string;      // 🔴 🟡 🟢
+  badge: string; // 🔴🟡🟢
   childSafe: boolean;
   reason?: string;
   matchedKey?: string; // which dictionary key matched (for debug)
@@ -23,14 +29,6 @@ export interface AnalysisResult {
   summary?: string;
 }
 
-/** Risk → badge fallback */
-const RISK_BADGE: Record<Risk, string> = {
-  harmful: '🔴',
-  moderate: '🟡',
-  low: '🟢',
-  healthy: '🟢',
-};
-
 /** Canonical additive dictionary (extend freely) */
 const ADDITIVES: Record<
   string,
@@ -41,10 +39,10 @@ const ADDITIVES: Record<
     childSafe?: boolean;
     reason?: string;
     badge?: string;
-    aliases?: string[]; // alternate spellings/keywords
+    aliases?: string[];
   }
 > = {
-  'aspartame': {
+  aspartame: {
     status: 'moderate',
     name_en: 'Aspartame',
     name_zh: '阿斯巴甜',
@@ -71,16 +69,16 @@ const ADDITIVES: Record<
     badge: '🟡',
     aliases: ['e211', 'benzoate'],
   },
-  'tartrazine': {
+  tartrazine: {
     status: 'harmful',
     name_en: 'Tartrazine (Yellow 5)',
-    name_zh: '柠檬黃 (黃色5號)',
+    name_zh: '塔特拉嗪 (黃色5號)',
     childSafe: false,
     reason: 'Artificial color; may cause sensitivity in some children.',
     badge: '🔴',
     aliases: ['e102', 'yellow 5'],
   },
-  'caffeine': {
+  caffeine: {
     status: 'moderate',
     name_en: 'Caffeine',
     name_zh: '咖啡因',
@@ -88,7 +86,7 @@ const ADDITIVES: Record<
     reason: 'Stimulant; not recommended for children.',
     badge: '🟡',
   },
-  'preservatives': {
+  preservatives: {
     status: 'moderate',
     name_en: 'Preservatives',
     name_zh: '防腐劑',
@@ -96,8 +94,7 @@ const ADDITIVES: Record<
     reason: 'Generic preservative category; check specific additive.',
     badge: '🟡',
   },
-  // Safe/common
-  'water': {
+  water: {
     status: 'healthy',
     name_en: 'Water',
     name_zh: '水',
@@ -105,7 +102,7 @@ const ADDITIVES: Record<
     reason: 'No known risk.',
     badge: '🟢',
   },
-  'sugar': {
+  sugar: {
     status: 'low',
     name_en: 'Sugar',
     name_zh: '糖',
@@ -130,27 +127,24 @@ function findDictionaryMatch(norm: string): { key: string; item: (typeof ADDITIV
 
   // search aliases
   for (const [key, item] of Object.entries(ADDITIVES)) {
-    if (item.aliases?.some(a => a === norm)) {
+    if (item.aliases?.some((a) => a === norm)) {
       return { key, item };
     }
   }
+
   // loose contains (e.g. "sodium nitrite" in "sodium nitrite/cure mix")
   for (const [key, item] of Object.entries(ADDITIVES)) {
     if (norm.includes(key)) return { key, item };
-    if (item.aliases?.some(a => norm.includes(a))) return { key, item };
+    if (item.aliases?.some((a) => norm.includes(a))) return { key, item };
   }
 
   return null;
 }
 
-function riskToBadge(risk: Risk): string {
-  return RISK_BADGE[risk] ?? '🟡';
-}
-
 /** Compute overall verdict from individual rows */
 function overallVerdict(rows: IngredientRow[]): AnalysisResult['verdict'] {
-  if (rows.some(r => r.status === 'harmful')) return 'harmful';
-  if (rows.some(r => r.status === 'moderate')) return 'moderate';
+  if (rows.some((r) => r.status === 'harmful')) return 'harmful';
+  if (rows.some((r) => r.status === 'moderate')) return 'moderate';
   return 'healthy';
 }
 
@@ -164,8 +158,8 @@ export class IngredientAnalysisService {
     _subscriptionPlan: 'free' | 'premium' | 'gold' = 'free'
   ): Promise<AnalysisResult> {
     const tokens = (ingredients || '')
-      .split(/[,;\n]+/g)
-      .map(t => t.trim())
+      .split(/,|\n|;/)
+      .map((t) => t.trim())
       .filter(Boolean);
 
     const rows: IngredientRow[] = tokens.map((raw) => {
@@ -175,13 +169,14 @@ export class IngredientAnalysisService {
       if (match) {
         const { key, item } = match;
         const status = item.status;
-        const badge = item.badge ?? riskToBadge(status);
-        const childSafe = typeof item.childSafe === 'boolean'
-          ? item.childSafe
-          : status === 'healthy' || status === 'low';
+        const badge = item.badge ?? (RISK_BADGE[status] ?? '⚪');
+        const childSafe =
+          typeof item.childSafe === 'boolean'
+            ? item.childSafe
+            : status === 'healthy' || status === 'low';
 
         return {
-          name: item.name_en,          // back-compat for UI
+          name: item.name_en,
           name_en: item.name_en,
           name_zh: item.name_zh,
           status,
@@ -195,11 +190,11 @@ export class IngredientAnalysisService {
       // Unknown ingredient: neutral/moderate with safe defaults
       const status: Risk = 'moderate';
       return {
-        name: raw,            // show the original token in UI
+        name: raw,
         name_en: raw,
         name_zh: '',
         status,
-        badge: riskToBadge(status),
+        badge: RISK_BADGE[status] ?? '⚪',
         childSafe: false,
         reason: 'Unrecognized ingredient. Consider checking manually.',
       };
@@ -208,9 +203,9 @@ export class IngredientAnalysisService {
     const verdict = overallVerdict(rows);
     const tips: string[] = [];
 
-    if (rows.some(r => r.status === 'harmful')) {
+    if (rows.some((r) => r.status === 'harmful')) {
       tips.push('Contains high-risk additives. Consider avoiding, especially for children.');
-    } else if (rows.some(r => r.status === 'moderate')) {
+    } else if (rows.some((r) => r.status === 'moderate')) {
       tips.push('Contains moderate-risk additives. Limit intake.');
     } else {
       tips.push('No notable risky additives found.');
