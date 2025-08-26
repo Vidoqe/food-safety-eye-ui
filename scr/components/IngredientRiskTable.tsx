@@ -111,7 +111,7 @@ const IngredientRiskTable: React.FC<IngredientRiskTableProps> = ({ ingredients }
                 </TableCell>
 
                 <TableCell className="text-center text-lg">
-                  {/* Always show a badge: use provided badge or fallback by status */}
+                  {/* Always show a badge */}
                   {ingredient.badge || BADGE_FALLBACK[ingredient.status] || '⚪'}
                 </TableCell>
 
