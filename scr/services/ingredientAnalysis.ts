@@ -1,5 +1,7 @@
 // scr/services/ingredientAnalysis.ts
-
+// put near the top of the file
+const riskToBadge = (r: string) =>
+  r === 'harmful' ? '🔴' : r === 'moderate' ? '🟡' : '🟢';
 export type Risk = 'healthy' | 'low' | 'moderate' | 'harmful';
 
 export interface IngredientRow {
