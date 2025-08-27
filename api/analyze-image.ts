@@ -1,7 +1,5 @@
-// /api/analyze-image.ts  (ESM)
+// /api/analyze-image.ts
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-
-// NOTE: your project folder is named "scr", not "src".
 import IngredientAnalysisService from '../scr/services/ingredientAnalysis';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -17,7 +15,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       overrideBarcode?: string;
     };
 
-    // For now we support text-first; image/barcode can be added later
     if (!overrideText && !imageBase64) {
       return res.status(400).json({
         ok: false,
@@ -25,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Use our local deterministic analyzer
+    // Call your analyzer
     const result = await IngredientAnalysisService.analyzeIngredients(
       overrideText ?? '',
       'free'
