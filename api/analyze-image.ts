@@ -1,14 +1,10 @@
 // /api/analyze-image.ts
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-import IngredientAnalysisService from '../scr/services/ingredientAnalysis';
-
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   try {
     if (req.method !== 'POST') {
       return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
     }
 
-    // We accept either overrideText (raw ingredients) or imageBase64 (future)
     const { overrideText, imageBase64 } = (req.body ?? {}) as {
       overrideText?: string;
       imageBase64?: string;
@@ -20,15 +16,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         .json({ ok: false, error: 'Provide overrideText or imageBase64' });
     }
 
-    // For now, we analyze text (your analyzer already supports strings)
+    // IMPORTANT: dynamic import avoids CJS/ESM mismatches during bundling
+    const mod = await import('../scr/services/ingredientAnalysis');
+    const Service =
+      (mod as any).default ?? (mod as any).IngredientAnalysisService;
+
     const text = overrideText ?? '';
-    const result = await IngredientAnalysisService.analyzeIngredients(text, 'free');
+    const result = await Service.analyzeIngredients(text, 'free');
 
     return res.status(200).json({ ok: true, result });
   } catch (err: any) {
-    return res.status(500).json({
-      ok: false,
-      error: err?.message || 'Internal Server Error',
-    });
+    return res
+      .status(500)
+      .json({ ok: false, error: err?.message || 'Internal Server Error' });
   }
 }
