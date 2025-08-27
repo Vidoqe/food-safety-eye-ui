@@ -5,32 +5,30 @@ import IngredientAnalysisService from '../scr/services/ingredientAnalysis';
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     if (req.method !== 'POST') {
-      res.setHeader('Allow', 'POST');
       return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
     }
 
-    const { overrideText, imageBase64, overrideBarcode } = (req.body ?? {}) as {
+    // We accept either overrideText (raw ingredients) or imageBase64 (future)
+    const { overrideText, imageBase64 } = (req.body ?? {}) as {
       overrideText?: string;
       imageBase64?: string;
-      overrideBarcode?: string;
     };
 
     if (!overrideText && !imageBase64) {
-      return res.status(400).json({
-        ok: false,
-        error: 'Provide overrideText or imageBase64',
-      });
+      return res
+        .status(400)
+        .json({ ok: false, error: 'Provide overrideText or imageBase64' });
     }
 
-    // Use the local analyzer (no OpenAI needed)
-    const result = await IngredientAnalysisService.analyzeIngredients(
-      overrideText ?? '',
-      'free'
-    );
+    // For now, we analyze text (your analyzer already supports strings)
+    const text = overrideText ?? '';
+    const result = await IngredientAnalysisService.analyzeIngredients(text, 'free');
 
     return res.status(200).json({ ok: true, result });
   } catch (err: any) {
-    console.error('analyze-image error:', err);
-    return res.status(500).json({ ok: false, error: err?.message ?? 'Server error' });
+    return res.status(500).json({
+      ok: false,
+      error: err?.message || 'Internal Server Error',
+    });
   }
 }
