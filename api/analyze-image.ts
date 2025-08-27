@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Call your analyzer
+    // Use the local analyzer (no OpenAI needed)
     const result = await IngredientAnalysisService.analyzeIngredients(
       overrideText ?? '',
       'free'
