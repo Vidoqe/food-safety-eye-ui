@@ -1,5 +1,4 @@
 {
-  // ---- Minimal examples; extend with the full official list ----
   "sodium nitrite": {
     "name_en": "Sodium Nitrite",
     "name_zh": "亞硝酸鈉",
@@ -9,9 +8,51 @@
     "childSafe": false,
     "legal": {
       "restriction": "Restricted",
-      "notes": "Taiwan FDA: nitrite in cured meats with specific max levels; avoid frequent intake"
+      "notes": "Allowed only within max limits in cured meats; avoid frequent intake."
     },
     "aliases": ["nitrite", "e250", "sodium nitrite"]
+  },
+
+  "sodium nitrate": {
+    "name_en": "Sodium Nitrate",
+    "name_zh": "硝酸鈉",
+    "e_code": "E251",
+    "category": "Preservative",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "Precursor to nitrite; regulated maximum levels in processed meats."
+    },
+    "aliases": ["nitrate", "e251", "sodium nitrate"]
+  },
+
+  "potassium nitrite": {
+    "name_en": "Potassium Nitrite",
+    "name_zh": "亞硝酸鉀",
+    "e_code": "E249",
+    "category": "Preservative",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "Same risk profile as sodium nitrite; regulated limits apply."
+    },
+    "aliases": ["e249", "potassium nitrite"]
+  },
+
+  "potassium nitrate": {
+    "name_en": "Potassium Nitrate",
+    "name_zh": "硝酸鉀",
+    "e_code": "E252",
+    "category": "Preservative",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "Regulated maximum levels; converts to nitrite in products."
+    },
+    "aliases": ["e252", "saltpetre", "saltpeter", "potassium nitrate"]
   },
 
   "tartrazine": {
@@ -23,36 +64,456 @@
     "childSafe": false,
     "legal": {
       "restriction": "Restricted",
-      "notes": "May cause sensitivity in some children; labeling required when used"
+      "notes": "May cause sensitivity in children; labeling/warnings required in many regions."
     },
-    "aliases": ["e102", "yellow 5", "tartrazine"]
+    "aliases": ["yellow 5", "e102", "tartrazine"]
   },
 
-  "caffeine": {
-    "name_en": "Caffeine",
-    "name_zh": "咖啡因",
-    "e_code": null,
-    "category": "Stimulant",
+  "sunset yellow fcf": {
+    "name_en": "Sunset Yellow FCF (Yellow 6)",
+    "name_zh": "日落黃（黃色6號）",
+    "e_code": "E110",
+    "category": "Color",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "Azo dye; hyperactivity concerns; labeling requirements in some markets."
+    },
+    "aliases": ["yellow 6", "e110", "sunset yellow"]
+  },
+
+  "allura red ac": {
+    "name_en": "Allura Red AC (Red 40)",
+    "name_zh": "食用紅色40號",
+    "e_code": "E129",
+    "category": "Color",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "Azo dye; child sensitivity reports; labeling may be required."
+    },
+    "aliases": ["red 40", "e129", "allura red"]
+  },
+
+  "brilliant blue fcf": {
+    "name_en": "Brilliant Blue FCF (Blue 1)",
+    "name_zh": "亮藍（藍色1號）",
+    "e_code": "E133",
+    "category": "Color",
     "status": "moderate",
     "childSafe": false,
     "legal": {
-      "restriction": "Allowed",
-      "notes": "Content/labeling rules vary by product type"
+      "restriction": "Allowed with limits",
+      "notes": "General ADI established; avoid excessive intake in children."
     },
-    "aliases": ["caffeine"]
+    "aliases": ["blue 1", "e133", "brilliant blue"]
   },
 
-  "sugar": {
-    "name_en": "Sugar",
-    "name_zh": "糖",
-    "e_code": null,
-    "category": "Sweetener (natural)",
+  "benzoic acid": {
+    "name_en": "Benzoic Acid",
+    "name_zh": "苯甲酸",
+    "e_code": "E210",
+    "category": "Preservative",
+    "status": "moderate",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "Max levels apply; may cause sensitivity in some people."
+    },
+    "aliases": ["e210", "benzoate"]
+  },
+
+  "sodium benzoate": {
+    "name_en": "Sodium Benzoate",
+    "name_zh": "苯甲酸鈉",
+    "e_code": "E211",
+    "category": "Preservative",
+    "status": "moderate",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "Common preservative; watch for combined use with vitamin C under heat/light."
+    },
+    "aliases": ["e211", "sodium benzoate"]
+  },
+
+  "potassium sorbate": {
+    "name_en": "Potassium Sorbate",
+    "name_zh": "山梨酸鉀",
+    "e_code": "E202",
+    "category": "Preservative",
+    "status": "moderate",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "Widely used preservative; generally well tolerated at ADI."
+    },
+    "aliases": ["e202", "potassium sorbate"]
+  },
+
+  "sorbic acid": {
+    "name_en": "Sorbic Acid",
+    "name_zh": "山梨酸",
+    "e_code": "E200",
+    "category": "Preservative",
+    "status": "moderate",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "Similar to potassium sorbate; ADI applies."
+    },
+    "aliases": ["e200", "sorbic acid"]
+  },
+
+  "sulfur dioxide": {
+    "name_en": "Sulfur Dioxide",
+    "name_zh": "二氧化硫（亞硫酸）",
+    "e_code": "E220",
+    "category": "Preservative/Antioxidant",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "Sulfites must be declared; can trigger asthma and sensitivity."
+    },
+    "aliases": ["sulphur dioxide", "e220", "sulfites", "SO2"]
+  },
+
+  "sodium metabisulfite": {
+    "name_en": "Sodium Metabisulfite",
+    "name_zh": "偏亞硫酸氫鈉（連二亞硫酸鈉）",
+    "e_code": "E223",
+    "category": "Preservative/Antioxidant",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "Sulfite; mandatory labeling above threshold."
+    },
+    "aliases": ["e223", "sodium pyrosulfite", "metabisulphite"]
+  },
+
+  "monosodium glutamate": {
+    "name_en": "Monosodium Glutamate (MSG)",
+    "name_zh": "味精（谷氨酸鈉）",
+    "e_code": "E621",
+    "category": "Flavor Enhancer",
+    "status": "moderate",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed",
+      "notes": "Sensitive individuals may experience symptoms; moderation advised."
+    },
+    "aliases": ["msg", "e621", "sodium glutamate"]
+  },
+
+  "aspartame": {
+    "name_en": "Aspartame",
+    "name_zh": "阿斯巴甜",
+    "e_code": "E951",
+    "category": "Sweetener",
+    "status": "moderate",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "Contains phenylalanine; PKU warning required."
+    },
+    "aliases": ["e951", "aspartame"]
+  },
+
+  "acesulfame k": {
+    "name_en": "Acesulfame K",
+    "name_zh": "醋磺內酯鉀（安賽蜜）",
+    "e_code": "E950",
+    "category": "Sweetener",
+    "status": "moderate",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "Often blended with other sweeteners."
+    },
+    "aliases": ["acesulfame potassium", "e950", "acesulfame-k"]
+  },
+
+  "sucralose": {
+    "name_en": "Sucralose",
+    "name_zh": "三氯蔗糖",
+    "e_code": "E955",
+    "category": "Sweetener",
+    "status": "moderate",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "Heat-stable sweetener; some intolerance reported."
+    },
+    "aliases": ["e955", "sucralose"]
+  },
+
+  "saccharin": {
+    "name_en": "Saccharin",
+    "name_zh": "糖精",
+    "e_code": "E954",
+    "category": "Sweetener",
+    "status": "moderate",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "Bitter aftertaste; avoid for infants."
+    },
+    "aliases": ["e954", "saccharin"]
+  },
+
+  "bha": {
+    "name_en": "BHA (Butylated Hydroxyanisole)",
+    "name_zh": "丁基羥基茴香醚",
+    "e_code": "E320",
+    "category": "Antioxidant",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "Limited maximum levels; potential endocrine and carcinogenicity concerns."
+    },
+    "aliases": ["e320", "b.h.a.", "butylated hydroxyanisole"]
+  },
+
+  "bht": {
+    "name_en": "BHT (Butylated Hydroxytoluene)",
+    "name_zh": "二丁基羥基甲苯",
+    "e_code": "E321",
+    "category": "Antioxidant",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "Limited maximum levels; potential endocrine concerns."
+    },
+    "aliases": ["e321", "b.h.t.", "butylated hydroxytoluene"]
+  },
+
+  "tbhq": {
+    "name_en": "TBHQ (Tertiary-Butylhydroquinone)",
+    "name_zh": "第三丁基對苯二酚",
+    "e_code": "E319",
+    "category": "Antioxidant",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "Max limits apply; reports of adverse effects at high doses."
+    },
+    "aliases": ["e319", "tbhq"]
+  },
+
+  "titanium dioxide": {
+    "name_en": "Titanium Dioxide",
+    "name_zh": "二氧化鈦",
+    "e_code": "E171",
+    "category": "Color",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted/Banned in some regions",
+      "notes": "Safety concerns regarding nanoparticles; use discouraged."
+    },
+    "aliases": ["e171", "titanium dioxide", "TiO2"]
+  },
+
+  "polysorbate 80": {
+    "name_en": "Polysorbate 80",
+    "name_zh": "聚山梨醇酯80",
+    "e_code": "E433",
+    "category": "Emulsifier",
+    "status": "moderate",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "Gut barrier concerns at high levels in animals; moderation advised."
+    },
+    "aliases": ["e433", "tween 80", "polysorbate-80"]
+  },
+
+  "calcium propionate": {
+    "name_en": "Calcium Propionate",
+    "name_zh": "丙酸鈣",
+    "e_code": "E282",
+    "category": "Preservative",
+    "status": "moderate",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "Bread/pastry preservative; some sensitivity reports."
+    },
+    "aliases": ["e282", "calcium propionate"]
+  },
+
+  "sodium propionate": {
+    "name_en": "Sodium Propionate",
+    "name_zh": "丙酸鈉",
+    "e_code": "E281",
+    "category": "Preservative",
+    "status": "moderate",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "Similar to calcium propionate; watch for sensitivity."
+    },
+    "aliases": ["e281", "sodium propionate"]
+  },
+
+  "phosphates": {
+    "name_en": "Phosphates (e.g., Sodium Phosphate)",
+    "name_zh": "磷酸鹽（如磷酸鈉）",
+    "e_code": "E339–E343",
+    "category": "Stabilizer/Sequestrant",
+    "status": "moderate",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "High intake may affect mineral balance; limit in kidney disease."
+    },
+    "aliases": ["sodium phosphate", "E339", "E340", "E341", "E342", "E343"]
+  },
+
+  "carrageenan": {
+    "name_en": "Carrageenan",
+    "name_zh": "鹿角菜膠",
+    "e_code": "E407",
+    "category": "Thickener/Stabilizer",
+    "status": "moderate",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Allowed with limits",
+      "notes": "GI irritation reported in sensitive individuals; moderation advised."
+    },
+    "aliases": ["e407", "carrageenan"]
+  },
+
+  "xanthan gum": {
+    "name_en": "Xanthan Gum",
+    "name_zh": "黃原膠",
+    "e_code": "E415",
+    "category": "Thickener",
     "status": "low",
     "childSafe": true,
     "legal": {
       "restriction": "Allowed",
-      "notes": "Excess intake not recommended"
+      "notes": "Generally well tolerated; may cause gas/bloating in excess."
     },
-    "aliases": ["sugar", "sucrose"]
+    "aliases": ["e415", "xanthan"]
+  },
+
+  "guar gum": {
+    "name_en": "Guar Gum",
+    "name_zh": "瓜爾豆膠",
+    "e_code": "E412",
+    "category": "Thickener",
+    "status": "low",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed",
+      "notes": "Dietary fiber; large amounts may cause GI discomfort."
+    },
+    "aliases": ["e412", "guar"]
+  },
+
+  "pectin": {
+    "name_en": "Pectin",
+    "name_zh": "果膠",
+    "e_code": "E440",
+    "category": "Gelling Agent",
+    "status": "healthy",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed",
+      "notes": "Naturally occurring fiber from fruit; generally safe."
+    },
+    "aliases": ["e440", "pectin"]
+  },
+
+  "citric acid": {
+    "name_en": "Citric Acid",
+    "name_zh": "檸檬酸",
+    "e_code": "E330",
+    "category": "Acidulant",
+    "status": "low",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed",
+      "notes": "Common acidity regulator; safe in normal amounts."
+    },
+    "aliases": ["e330", "citric acid"]
+  },
+
+  "ascorbic acid": {
+    "name_en": "Ascorbic Acid (Vitamin C)",
+    "name_zh": "抗壞血酸（維生素C）",
+    "e_code": "E300",
+    "category": "Antioxidant",
+    "status": "healthy",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed",
+      "notes": "Antioxidant; often used to prevent nitrosamine formation."
+    },
+    "aliases": ["e300", "vitamin c", "ascorbic acid"]
+  },
+
+  "mixed tocopherols": {
+    "name_en": "Mixed Tocopherols (Vitamin E)",
+    "name_zh": "綜合生育酚（維生素E）",
+    "e_code": "E306",
+    "category": "Antioxidant",
+    "status": "healthy",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed",
+      "notes": "Natural antioxidant for fats/oils."
+    },
+    "aliases": ["e306", "tocopherols", "vitamin e"]
+  },
+
+  "lecithin": {
+    "name_en": "Lecithin",
+    "name_zh": "卵磷脂",
+    "e_code": "E322",
+    "category": "Emulsifier",
+    "status": "low",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed",
+      "notes": "Commonly from soy/sunflower; check allergens if sensitive."
+    },
+    "aliases": ["e322", "soy lecithin", "sunflower lecithin"]
+  },
+
+  "gelatin": {
+    "name_en": "Gelatin",
+    "name_zh": "明膠",
+    "e_code": null,
+    "category": "Gelling Agent",
+    "status": "low",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed",
+      "notes": "Animal-derived; check dietary restrictions."
+    },
+    "aliases": ["gelatin", "gelatine"]
+  },
+
+  "potassium bromate": {
+    "name_en": "Potassium Bromate",
+    "name_zh": "溴酸鉀",
+    "e_code": "E924a",
+    "category": "Flour Improver",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Banned/Severely Restricted in many regions",
+      "notes": "Linked to carcinogenicity; avoid."
+    },
+    "aliases": ["e924a", "potassium bromate"]
   }
 }
