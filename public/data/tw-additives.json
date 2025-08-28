@@ -1,0 +1,58 @@
+{
+  // ---- Minimal examples; extend with the full official list ----
+  "sodium nitrite": {
+    "name_en": "Sodium Nitrite",
+    "name_zh": "亞硝酸鈉",
+    "e_code": "E250",
+    "category": "Preservative",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "Taiwan FDA: nitrite in cured meats with specific max levels; avoid frequent intake"
+    },
+    "aliases": ["nitrite", "e250", "sodium nitrite"]
+  },
+
+  "tartrazine": {
+    "name_en": "Tartrazine (Yellow 5)",
+    "name_zh": "檸檬黃（黃色5號）",
+    "e_code": "E102",
+    "category": "Color",
+    "status": "harmful",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Restricted",
+      "notes": "May cause sensitivity in some children; labeling required when used"
+    },
+    "aliases": ["e102", "yellow 5", "tartrazine"]
+  },
+
+  "caffeine": {
+    "name_en": "Caffeine",
+    "name_zh": "咖啡因",
+    "e_code": null,
+    "category": "Stimulant",
+    "status": "moderate",
+    "childSafe": false,
+    "legal": {
+      "restriction": "Allowed",
+      "notes": "Content/labeling rules vary by product type"
+    },
+    "aliases": ["caffeine"]
+  },
+
+  "sugar": {
+    "name_en": "Sugar",
+    "name_zh": "糖",
+    "e_code": null,
+    "category": "Sweetener (natural)",
+    "status": "low",
+    "childSafe": true,
+    "legal": {
+      "restriction": "Allowed",
+      "notes": "Excess intake not recommended"
+    },
+    "aliases": ["sugar", "sucrose"]
+  }
+}
