@@ -1,0 +1,38 @@
+{
+  "sodium nitrite": {
+    "status": "harmful",
+    "childSafe": false,
+    "aliases": ["nitrite", "e250", "sodium nitrite"],
+    "notes": "Cured meats additive; nitrosamine risk."
+  },
+  "tartrazine": {
+    "status": "harmful",
+    "childSafe": false,
+    "aliases": ["e102", "yellow 5", "tartrazine"],
+    "notes": "Artificial color; sensitivity in some children."
+  },
+  "sodium benzoate": {
+    "status": "moderate",
+    "childSafe": false,
+    "aliases": ["e211", "benzoate", "sodium benzoate"],
+    "notes": "Preservative; generally safe within limits."
+  },
+  "caffeine": {
+    "status": "moderate",
+    "childSafe": false,
+    "aliases": ["caffeine"],
+    "notes": "Stimulant; not recommended for children."
+  },
+  "water": {
+    "status": "healthy",
+    "childSafe": true,
+    "aliases": ["water", "H2O"],
+    "notes": "No known risk."
+  },
+  "sugar": {
+    "status": "low",
+    "childSafe": true,
+    "aliases": ["sugar", "sucrose"],
+    "notes": "High intake not recommended."
+  }
+}
