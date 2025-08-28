@@ -1,19 +1,24 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import path from "path";
+// vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
 
-// https://vitejs.dev/config/
-export default defineConfig(({ mode }) => ({
-  server: {
-    host: "::",
-    port: 8080,
-  },
-  plugins: [
-    react()
-  ].filter(Boolean),
+// IMPORTANT: default export must exist for Vite to load the config.
+export default defineConfig({
+  plugins: [react()],
+  // Optional: make path resolution robust on Vercel
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./scr"),
+      '@': '/src',
     },
   },
-}));
+  build: {
+    target: 'esnext',
+    sourcemap: false,
+    outDir: 'dist',
+    emptyOutDir: true,
+  },
+  server: {
+    port: 5173,
+    strictPort: true,
+  },
+})
