@@ -3,9 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "engines": {
-    "node": ">=18.18.0"
-  },
+  "engines": { "node": ">=18.18.0" },
+
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -15,6 +14,7 @@
     "build:additives": "ts-node scripts/build-tw-additives.ts",
     "vercel-build": "npm run build:additives && vite build"
   },
+
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
@@ -51,6 +51,7 @@
     "react-dom": "^18.2.0",
     "zod": "^3.23.8"
   },
+
   "devDependencies": {
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -67,5 +68,11 @@
     "csv-parse": "^5.5.6",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.0"
+  },
+
+  "overrides": {
+    "@typescript-eslint/eslint-plugin": "6.21.0",
+    "@typescript-eslint/parser": "6.21.0",
+    "typescript-eslint": "6.21.0"
   }
 }
