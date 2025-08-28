@@ -1,104 +1,27 @@
 // /api/analyze-image.ts
-export const config = { runtime: 'edge' }; // Run as ESM-friendly Edge function
+// Edge-ready image/label analyzer using a cached, public JSON dataset
+// Works with POST body: { "overrideText": "Sodium Nitrite, Tartrazine, Caffeine" }
 
-type Risk = 'healthy' | 'low' | 'moderate' | 'harmful';
+export const config = { runtime: "edge" };
 
-const RISK_BADGE: Record<Risk, string> = {
-  harmful: '🔴',
-  moderate: '🟠',
-  low: '🟢',
-  healthy: '🟢',
+/* ------------ Types ------------ */
+type Risk = "healthy" | "low" | "moderate" | "harmful";
+
+type Additive = {
+  name_en: string;
+  name_zh: string;
+  e_code: string | null;
+  category?: string | null;
+  status: Risk;
+  childSafe: boolean;
+  legal?: {
+    restriction?: "Allowed" | "Restricted" | "Banned" | string;
+    notes?: string;
+  };
+  aliases?: string[];
 };
 
-const ADDITIVES: Record<
-  string,
-  {
-    status: Risk;
-    name_en: string;
-    name_zh: string;
-    childSafe?: boolean;
-    reason?: string;
-    badge?: string;
-    aliases?: string[];
-  }
-> = {
-  // a few examples—extend freely
-  'sodium nitrite': {
-    status: 'harmful',
-    name_en: 'Sodium Nitrite',
-    name_zh: '亞硝酸鈉',
-    childSafe: false,
-    reason:
-      'Cured meats additive; associated with nitrosamines. Avoid frequent intake.',
-    badge: '🔴',
-    aliases: ['e250', 'nitrite'],
-  },
-  'sodium benzoate': {
-    status: 'moderate',
-    name_en: 'Sodium Benzoate',
-    name_zh: '苯甲酸鈉',
-    childSafe: false,
-    reason:
-      'Preservative; generally safe within limits but best to limit for children.',
-    badge: '🟠',
-    aliases: ['e211', 'benzoate'],
-  },
-  tartrazine: {
-    status: 'harmful',
-    name_en: 'Tartrazine (Yellow 5)',
-    name_zh: '柠檬黃（黃色5號）',
-    childSafe: false,
-    reason: 'Artificial color; may cause sensitivity in some children.',
-    badge: '🔴',
-    aliases: ['e102', 'yellow 5'],
-  },
-  caffeine: {
-    status: 'moderate',
-    name_en: 'Caffeine',
-    name_zh: '咖啡因',
-    childSafe: false,
-    reason: 'Stimulant; not recommended for children.',
-    badge: '🟠',
-  },
-  water: {
-    status: 'healthy',
-    name_en: 'Water',
-    name_zh: '水',
-    childSafe: true,
-    reason: 'No known risk.',
-    badge: '🟢',
-  },
-  sugar: {
-    status: 'low',
-    name_en: 'Sugar',
-    name_zh: '糖',
-    childSafe: true,
-    reason:
-      'High intake is not recommended; moderate use acceptable for most people.',
-    badge: '🟢',
-  },
-};
-
-function normalizeToken(token: string): string {
-  return token
-    .toLowerCase()
-    .replace(/\(([^)]*)\)/g, '')
-    .replace(/[^a-z0-9\s\-]/g, '')
-    .trim();
-}
-
-function findDictionaryMatch(norm: string) {
-  if (ADDITIVES[norm]) return { key: norm, item: ADDITIVES[norm] };
-  for (const [key, item] of Object.entries(ADDITIVES)) {
-    if (norm.includes(key)) return { key, item };
-    if (item.aliases?.some((a) => norm.includes(a))) return { key, item };
-  }
-  return null;
-}
-
-function riskToBadge(risk: Risk): string {
-  return RISK_BADGE[risk] ?? '🟡';
-}
+type AdditiveDict = Record<string, Additive>;
 
 type IngredientRow = {
   name: string;
@@ -112,52 +35,128 @@ type IngredientRow = {
 };
 
 type AnalysisResult = {
-  verdict: 'healthy' | 'moderate' | 'harmful';
+  verdict: "healthy" | "moderate" | "harmful";
   ingredients: IngredientRow[];
   tips: string[];
   summary?: string;
 };
 
-function overallVerdict(rows: IngredientRow[]): AnalysisResult['verdict'] {
-  if (rows.some((r) => r.status === 'harmful')) return 'harmful';
-  if (rows.some((r) => r.status === 'moderate')) return 'moderate';
-  return 'healthy';
+/* ------------ UI Badges ------------ */
+const RISK_BADGE: Record<Risk, string> = {
+  harmful: "🔴",
+  moderate: "🟠",
+  low: "🟢",
+  healthy: "🟢",
+};
+
+/* ------------ Dataset cache (public/data/tw-additives.json) ------------ */
+let ADDITIVES_CACHE: AdditiveDict | null = null;
+let ALIAS_INDEX: Array<{ key: string; alias: string }> | null = null;
+
+async function loadAdditives(origin: string): Promise<void> {
+  if (ADDITIVES_CACHE) return;
+
+  const url = `${origin}/data/tw-additives.json`;
+  const res = await fetch(url, { cache: "force-cache" });
+  if (!res.ok) {
+    throw new Error(`Failed to load additives: ${res.status} ${res.statusText}`);
+  }
+
+  const raw = (await res.json()) as AdditiveDict;
+
+  // normalize keys + build alias/e-code index
+  const normalized: AdditiveDict = {};
+  const aliasPairs: Array<{ key: string; alias: string }> = [];
+
+  for (const [k, v] of Object.entries(raw)) {
+    const baseKey = k.trim().toLowerCase();
+    normalized[baseKey] = v;
+
+    const aliases = new Set<string>([
+      baseKey,
+      ...(v.aliases || []).map((a) => a.trim().toLowerCase()),
+      ...(v.e_code ? [v.e_code.trim().toLowerCase()] : []),
+      v.name_en.trim().toLowerCase(),
+      v.name_zh.trim().toLowerCase(),
+    ]);
+
+    for (const a of aliases) aliasPairs.push({ key: baseKey, alias: a });
+  }
+
+  ADDITIVES_CACHE = normalized;
+  ALIAS_INDEX = aliasPairs;
 }
 
-export default async function handler(req: Request): Promise<Response> {
+/* ------------ Helpers ------------ */
+
+function normalizeToken(token: string): string {
+  return token
+    .toLowerCase()
+    .replace(/\(([^)]*)\)/g, "") // remove (...) content
+    .replace(/[^a-z0-9\s\-]/g, "") // keep a-z 0-9 space dash
+    .trim();
+}
+
+function riskToBadge(risk: Risk): string {
+  return RISK_BADGE[risk] ?? "🟡";
+}
+
+function findDictionaryMatch(norm: string): { key: string; item: Additive } | null {
+  if (!ADDITIVES_CACHE || !ALIAS_INDEX) return null;
+
+  // 1) exact key
+  if (ADDITIVES_CACHE[norm]) return { key: norm, item: ADDITIVES_CACHE[norm] };
+
+  // 2) exact alias/e-code/name
+  const exact = ALIAS_INDEX.find((p) => p.alias === norm);
+  if (exact) return { key: exact.key, item: ADDITIVES_CACHE[exact.key] };
+
+  // 3) loose contains either way
+  for (const p of ALIAS_INDEX) {
+    if (norm.includes(p.alias) || p.alias.includes(norm)) {
+      return { key: p.key, item: ADDITIVES_CACHE[p.key] };
+    }
+  }
+  return null;
+}
+
+function overallVerdict(rows: IngredientRow[]): AnalysisResult["verdict"] {
+  if (rows.some((r) => r.status === "harmful")) return "harmful";
+  if (rows.some((r) => r.status === "moderate")) return "moderate";
+  return "healthy";
+}
+
+/* ------------ Edge API Handler ------------ */
+
+export default async function handler(request: Request): Promise<Response> {
   try {
-    if (req.method !== 'POST') {
-      return new Response(
-        JSON.stringify({ ok: false, error: 'Method Not Allowed' }),
-        { status: 405, headers: { 'content-type': 'application/json' } },
-      );
+    if (request.method !== "POST") {
+      return json({ ok: false, error: "Method Not Allowed" }, 405);
     }
 
-    const body = (await req.json().catch(() => ({}))) as {
-      overrideText?: string;
-      imageBase64?: string;
-      overrideBarcode?: string;
-    };
+    // 1) load dataset (cached for the life of the edge worker)
+    const origin = new URL(request.url).origin;
+    await loadAdditives(origin);
 
-    const overrideText = body?.overrideText?.trim();
-    const imageBase64 = body?.imageBase64?.trim();
+    // 2) parse body
+    const body = await request.json().catch(() => ({} as any));
+    const overrideText: string | undefined = body.overrideText;
+    const imageBase64: string | undefined = body.imageBase64; // reserved for future OCR
 
     if (!overrideText && !imageBase64) {
-      return new Response(
-        JSON.stringify({
-          ok: false,
-          error: 'Provide overrideText or imageBase64',
-        }),
-        { status: 400, headers: { 'content-type': 'application/json' } },
+      return json(
+        { ok: false, error: "Provide overrideText or imageBase64" },
+        400
       );
     }
 
-    // For now we only use overrideText (comma/line separated)
-    const tokens = (overrideText || '')
-      .split(/,|\n/g)
+    // 3) build tokens (label text path)
+    const tokens = (overrideText || "")
+      .split(/,|;|\n/g)
       .map((t) => t.trim())
       .filter(Boolean);
 
+    // 4) analyze
     const rows: IngredientRow[] = tokens.map((raw) => {
       const norm = normalizeToken(raw);
       const match = findDictionaryMatch(norm);
@@ -165,11 +164,13 @@ export default async function handler(req: Request): Promise<Response> {
       if (match) {
         const { key, item } = match;
         const status = item.status;
-        const badge = item.badge ?? riskToBadge(status);
-        const childSafe =
-          typeof item.childSafe === 'boolean'
-            ? item.childSafe
-            : status === 'healthy' || status === 'low';
+        const badge = item.legal?.restriction === "Banned" ? "⛔️" : riskToBadge(status);
+
+        const parts = [
+          item.category || "",
+          item.legal?.restriction ? `Rule: ${item.legal.restriction}` : "",
+          item.legal?.notes || "",
+        ].filter(Boolean);
 
         return {
           name: item.name_en,
@@ -177,37 +178,32 @@ export default async function handler(req: Request): Promise<Response> {
           name_zh: item.name_zh,
           status,
           badge,
-          childSafe,
-          reason: item.reason,
+          childSafe: item.childSafe,
+          reason: parts.join(" · "),
           matchedKey: key,
         };
       }
 
-      // Unknown ingredient: conservative default
-      const status: Risk = 'moderate';
+      // fallback (unknown)
       return {
         name: raw,
         name_en: raw,
-        name_zh: '',
-        status,
-        badge: riskToBadge(status),
+        name_zh: "",
+        status: "moderate",
+        badge: riskToBadge("moderate"),
         childSafe: false,
-        reason:
-          'Unrecognized ingredient. Consider checking manually or reliable sources.',
+        reason: "Unrecognized ingredient; consider checking manually.",
       };
     });
 
     const verdict = overallVerdict(rows);
     const tips: string[] = [];
-
-    if (rows.some((r) => r.status === 'harmful')) {
-      tips.push(
-        'Contains high-risk additives. Consider avoiding, especially for children.',
-      );
-    } else if (rows.some((r) => r.status === 'moderate')) {
-      tips.push('Contains moderate-risk additives. Limit intake.');
+    if (rows.some((r) => r.status === "harmful")) {
+      tips.push("Contains high-risk additives. Consider avoiding, especially for children.");
+    } else if (rows.some((r) => r.status === "moderate")) {
+      tips.push("Contains moderate-risk additives. Limit intake.");
     } else {
-      tips.push('No notable risky additives found.');
+      tips.push("No notable risky additives found.");
     }
 
     const result: AnalysisResult = {
@@ -215,25 +211,26 @@ export default async function handler(req: Request): Promise<Response> {
       ingredients: rows,
       tips,
       summary:
-        verdict === 'harmful'
-          ? 'High-risk additives detected.'
-          : verdict === 'moderate'
-          ? 'Some moderate-risk additives present.'
-          : 'Generally safe.',
+        verdict === "harmful"
+          ? "High-risk additives detected."
+          : verdict === "moderate"
+          ? "Some moderate-risk additives present."
+          : "Generally safe.",
     };
 
-    return new Response(JSON.stringify({ ok: true, result }), {
-      headers: { 'content-type': 'application/json' },
-    });
+    return json({ ok: true, result });
   } catch (err: any) {
-    return new Response(
-      JSON.stringify({
-        ok: false,
-        error: 'Server error',
-        detail: String(err?.message || err),
-      }),
-      { status: 500, headers: { 'content-type': 'application/json' } },
+    return json(
+      { ok: false, error: err?.message || "Internal Server Error" },
+      500
     );
   }
 }
 
+/* ------------ tiny JSON helper ------------ */
+function json(data: unknown, status = 200): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8" },
+  });
+}
