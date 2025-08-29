@@ -13,7 +13,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "build:additives": "ts-node scripts/build-tw-additives.ts",
-    "vercel-build": "npm run build:additives && vite build"
+    "vercel-build": "npm install --legacy-peer-deps && npm run build:additives && vite build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
