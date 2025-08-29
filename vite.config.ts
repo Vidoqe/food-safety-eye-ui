@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": "/scr",          // ← was '/src'
+      "@": "/scr", // 👈 point alias to scr (not src)
     },
   },
   build: {
