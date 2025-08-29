@@ -16,7 +16,7 @@
     "vercel-build": "npm run build:additives && vite build"
   },
   "dependencies": {
-    ...
+    
     "react": "18.2.0",
     "react-dom": "^18.2.0",
     "sonner": "^1.4.41"
