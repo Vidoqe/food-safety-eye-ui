@@ -1,7 +1,7 @@
 {
   "name": "food-safety-eye-ui",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -9,7 +9,11 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build:additives": "ts-node scripts/build-tw-additives.ts"
+    "build:additives": "ts-node scripts/build-tw-additives.ts",
+    "vercel-build": "npm run build:additives && vite build"
+  },
+  "engines": {
+    "node": ">=18.18.0"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -28,10 +32,10 @@
     "@radix-ui/react-popover": "^1.1.1",
     "@radix-ui/react-progress": "^1.1.0",
     "@radix-ui/react-radio-group": "^1.2.0",
-    "@radix-ui/react-scroll-area": "^1.1.0",
+    "@radix-ui/react-scroll-area": "^1.2.0",
     "@radix-ui/react-select": "^2.1.2",
     "@radix-ui/react-separator": "^1.1.0",
-    "@radix-ui/react-slider": "^1.2.0",
+    "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-switch": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
@@ -44,9 +48,9 @@
     "lucide-react": "^0.453.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "zod": "^3.23.8",
-    "@tanstack/react-query":
-    "^5.59.0"
+    "react-router-dom": "^6.26.1",
+    "@tanstack/react-query": "^5.59.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.15",
@@ -57,7 +61,7 @@
     "@vitejs/plugin-react-swc": "^3.7.1",
     "autoprefixer": "^10.4.20",
     "csv-parse": "^5.5.6",
-    "eslint": "^8.57.0",
+    "eslint": "8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.7",
     "postcss": "^8.4.41",
@@ -67,9 +71,6 @@
     "tsx": "^4.19.0",
     "typescript": "^5.4.5",
     "vite": "^5.1.3"
-  },
-  "overrides": {
-    "@typescript-eslint/eslint-plugin": "6.21.0",
-    "@typescript-eslint/parser": "6.21.0"
   }
 }
+
