@@ -1,7 +1,7 @@
 // scripts/build-tw-additives.ts
 // Convert public/data/tw-additives-source.csv (official TFDA list) -> public/data/tw-additives.json
-import fs from "node:fs";
-import path from "node:path";
+import * as fs from "fs";
+import * as path from "path";
 import { parse } from "csv-parse/sync";
 
 type Risk = "healthy" | "low" | "moderate" | "harmful";
