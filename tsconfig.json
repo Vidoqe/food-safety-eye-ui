@@ -6,9 +6,9 @@
   ],
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": {
-      "@/*": ["./scr/*"]    // ← was './src/*'
-    },
+"paths": {
+  "@/*": ["src/*"]
+},
     "noImplicitAny": false,
     "noUnusedParameters": false,
     "skipLibCheck": true,
