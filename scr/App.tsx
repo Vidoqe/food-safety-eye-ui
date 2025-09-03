@@ -14,7 +14,7 @@ import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+export default function App() {
   return (
     <ThemeProvider defaultTheme="light">
       <QueryClientProvider client={queryClient}>
@@ -32,6 +32,4 @@ const App = () => {
       </QueryClientProvider>
     </ThemeProvider>
   );
-};
-
-export default App;
+}
