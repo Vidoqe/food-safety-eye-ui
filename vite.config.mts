@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./scr"), // you are using "scr", not "src"
+      "@": path.resolve(__dirname, "./scr"), // ⚠️ keep "scr" since your project uses scr/
     },
   },
   server: {
