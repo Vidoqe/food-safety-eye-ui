@@ -6,10 +6,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./scr"), // you use "scr", not "src"
+      "@": path.resolve(__dirname, "./scr"), // you are using "scr", not "src"
     },
   },
   server: {
-    port: 3000, // optional, local only
+    port: 3000, // optional for local dev
   },
 });
