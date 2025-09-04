@@ -9,8 +9,18 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { UserProvider } from "@/contexts/UserContext";
 
-import Index from "@/pages/Index";
-import NotFound from "@/pages/NotFound";
+// scr/App.tsx
+import React from "react";
+import { Toaster } from "sonner";
+import * as Tooltip from "@radix-ui/react-tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import { ThemeProvider } from "./components/theme-provider";
+import { UserProvider } from "./components/UserContext";
+
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
