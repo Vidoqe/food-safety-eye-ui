@@ -7,9 +7,10 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./scr"), // maps "@" to your scr folder
+      "@": path.resolve(__dirname, "./scr"), // ✅ your folder is scr
     },
   },
   server: {
-    port: 3000, // optional, for local dev
+    port: 3000, // optional, only for local dev
   },
+});
