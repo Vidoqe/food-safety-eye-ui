@@ -9,8 +9,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { UserProvider } from "@/contexts/UserContext";
 
-import Index from "@/pages/Index";
-import NotFound from "@/pages/NotFound";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -33,3 +33,4 @@ export default function App() {
     </ThemeProvider>
   );
 }
+
