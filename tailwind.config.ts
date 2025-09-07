@@ -4,7 +4,7 @@ import type { Config } from "tailwindcss";
 const config: Config = {
   content: [
     "./index.html",
-    "./scr/**/*.{js,ts,jsx,tsx}" // your folder is 'scr'
+    "./scr/**/*.{js,ts,jsx,tsx}", // <— use 'scr', not 'src'
   ],
   theme: {
     extend: {
@@ -29,8 +29,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [], // <-- empty
+  plugins: [], // <— remove tailwindcss-animate
 };
 
 export default config;
-
