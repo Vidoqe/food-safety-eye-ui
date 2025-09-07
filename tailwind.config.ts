@@ -1,9 +1,10 @@
-import type { Config } from "tailwindcss"
+// tailwind.config.ts
+import type { Config } from "tailwindcss";
 
 const config: Config = {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    "./scr/**/*.{js,ts,jsx,tsx}" // your folder is 'scr'
   ],
   theme: {
     extend: {
@@ -28,9 +29,8 @@ const config: Config = {
       },
     },
   },
-  plugins: [
-    require("tailwindcss-animate"),
-  ],
-}
+  plugins: [], // <-- empty
+};
 
-export default config
+export default config;
+
