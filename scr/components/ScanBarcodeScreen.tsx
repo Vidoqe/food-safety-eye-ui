@@ -2,10 +2,11 @@ import React, { useEffect, useRef, useState } from "react";
 
 type Props = { onNavigate: (screen: string) => void };
 
+// Typing for native BarcodeDetector (present on most Chromium browsers)
 type BarcodeDetectorType = {
   new (opts?: { formats?: string[] }): {
     detect: (source: CanvasImageSource | ImageBitmap | ImageData | Blob) => Promise<
-      { rawValue: string; format: string; cornerPoints?: { x: number; y: number }[] }[]
+      { rawValue: string; format: string }[]
     >;
   };
 };
@@ -20,10 +21,9 @@ export default function ScanBarcodeScreen({ onNavigate }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [code, setCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [lastCode, setLastCode] = useState<string | null>(null);
-  const [detectorReady, setDetectorReady] = useState<boolean>(false);
-  const detectorRef = useRef<InstanceType<BarcodeDetectorType> | null>(null);
+  const [detector, setDetector] = useState<InstanceType<BarcodeDetectorType> | null>(null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -33,20 +33,12 @@ export default function ScanBarcodeScreen({ onNavigate }: Props) {
       try {
         setError(null);
 
-        // Create detector if available
         if (window.BarcodeDetector) {
-          detectorRef.current = new window.BarcodeDetector({
-            formats: [
-              "ean_13",
-              "ean_8",
-              "code_128",
-              "code_39",
-              "upc_e",
-              "upc_a",
-              "qr_code",
-            ],
-          } as any);
-          setDetectorReady(true);
+          setDetector(
+            new window.BarcodeDetector({
+              formats: ["ean_13", "ean_8", "code_128", "code_39", "upc_a", "upc_e", "qr_code"] as any,
+            })
+          );
         }
 
         const s = await navigator.mediaDevices.getUserMedia({
@@ -54,22 +46,20 @@ export default function ScanBarcodeScreen({ onNavigate }: Props) {
           audio: false,
         });
         if (!active) return;
-
         setStream(s);
         if (videoRef.current) {
           videoRef.current.srcObject = s;
           await videoRef.current.play().catch(() => {});
         }
 
-        if (detectorRef.current) {
-          // start detection loop
-          const tick = () => {
-            detectFrame();
+        if (window.BarcodeDetector && detector) {
+          const tick = async () => {
+            await detectOnce();
             rafRef.current = requestAnimationFrame(tick);
           };
           tick();
         }
-      } catch (e) {
+      } catch {
         setError("Camera permission denied or not available.");
       }
     })();
@@ -79,96 +69,83 @@ export default function ScanBarcodeScreen({ onNavigate }: Props) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       if (stream) stream.getTracks().forEach((t) => t.stop());
     };
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [detector]); // set after detector created
 
-  const detectFrame = async () => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas || !detectorRef.current) return;
-    if (video.readyState < 2) return;
-
-    const { videoWidth, videoHeight } = video;
-    canvas.width = videoWidth;
-    canvas.height = videoHeight;
-    const ctx = canvas.getContext("2d");
+  const detectOnce = async () => {
+    if (!detector || !videoRef.current || !canvasRef.current) return;
+    const v = videoRef.current;
+    if (v.readyState < 2) return;
+    const c = canvasRef.current;
+    c.width = v.videoWidth;
+    c.height = v.videoHeight;
+    const ctx = c.getContext("2d");
     if (!ctx) return;
-    ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
-
-    const codes = await detectorRef.current.detect(canvas);
-    if (codes.length > 0) {
-      setLastCode(codes[0].rawValue);
-      // Optional: stop once found
+    ctx.drawImage(v, 0, 0, c.width, c.height);
+    const results = await detector.detect(c);
+    if (results.length) {
+      setCode(results[0].rawValue);
+      // stop camera after success (optional)
       stream?.getTracks().forEach((t) => t.stop());
+      setStream(null);
     }
   };
 
-  const capturePhotoFallback = () => {
-    // simple one-shot photo if no detector (keeps screen useful)
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
-    const { videoWidth, videoHeight } = video;
-    canvas.width = videoWidth;
-    canvas.height = videoHeight;
-    canvas.getContext("2d")?.drawImage(video, 0, 0, videoWidth, videoHeight);
+  const captureFallback = () => {
+    // Simple capture if detector unsupported; still lets user take a photo
+    if (!videoRef.current || !canvasRef.current) return;
+    const v = videoRef.current;
+    const c = canvasRef.current;
+    c.width = v.videoWidth;
+    c.height = v.videoHeight;
+    c.getContext("2d")?.drawImage(v, 0, 0, c.width, c.height);
     setError("Barcode detector not supported on this device. Photo captured.");
     stream?.getTracks().forEach((t) => t.stop());
+    setStream(null);
   };
 
+  const detectorSupported = Boolean(window.BarcodeDetector);
+
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-xl font-bold mb-2 text-center">Scan Barcode</h1>
-      <p className="text-gray-600 mb-4 text-center">
-        Point the camera at the barcode. We’ll read it automatically.
-      </p>
+    <div className="p-6 max-w-xl mx-auto text-center">
+      <h1 className="text-xl font-bold mb-2">Scan Barcode</h1>
+      <p className="text-gray-600 mb-4">Point the camera at the barcode. We’ll read it automatically.</p>
 
       <div className="mb-4">
         {error ? (
           <div className="p-3 rounded bg-red-50 text-red-700 text-sm">{error}</div>
         ) : (
-          <video ref={videoRef} playsInline muted className="w-full rounded-lg border" />
+          <video ref={videoRef} className="w-full rounded-lg border" playsInline muted />
         )}
       </div>
 
-      {lastCode && (
-        <div className="mb-4 text-center">
-          <div className="text-sm text-gray-500">Detected barcode</div>
-          <div className="text-lg font-semibold">{lastCode}</div>
+      {code && (
+        <div className="mb-4">
+          <div className="text-sm text-gray-500">Detected code</div>
+          <div className="text-lg font-semibold">{code}</div>
         </div>
       )}
 
       <div className="flex gap-3 justify-center">
-        {detectorReady ? (
+        {detectorSupported ? (
           <>
-            {!lastCode ? (
-              <button
-                onClick={() => onNavigate("home")}
-                className="px-4 py-2 bg-gray-200 rounded-lg"
-              >
-                Back to Home
+            {!code ? (
+              <button onClick={() => onNavigate("home")} className="px-4 py-2 bg-gray-200 rounded-lg">
+                Back
               </button>
             ) : (
-              <button
-                onClick={() => onNavigate("result")}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-              >
+              <button onClick={() => onNavigate("result")} className="px-4 py-2 bg-blue-600 text-white rounded-lg">
                 Use This Code
               </button>
             )}
           </>
         ) : (
           <>
-            <button
-              onClick={capturePhotoFallback}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg"
-            >
+            <button onClick={captureFallback} className="px-4 py-2 bg-green-600 text-white rounded-lg">
               Capture Photo (Fallback)
             </button>
-            <button
-              onClick={() => onNavigate("home")}
-              className="px-4 py-2 bg-gray-200 rounded-lg"
-            >
-              Back to Home
+            <button onClick={() => onNavigate("home")} className="px-4 py-2 bg-gray-200 rounded-lg">
+              Back
             </button>
           </>
         )}

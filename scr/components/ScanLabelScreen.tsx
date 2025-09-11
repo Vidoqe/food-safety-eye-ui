@@ -6,10 +6,9 @@ export default function ScanLabelScreen({ onNavigate }: Props) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [photoDataUrl, setPhotoDataUrl] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // start camera when the screen mounts
   useEffect(() => {
     let active = true;
 
@@ -24,101 +23,78 @@ export default function ScanLabelScreen({ onNavigate }: Props) {
         setStream(s);
         if (videoRef.current) {
           videoRef.current.srcObject = s;
-          // iOS requires play() to be called after srcObject set
           await videoRef.current.play().catch(() => {});
         }
-      } catch (e) {
+      } catch {
         setError("Camera permission denied or not available.");
       }
     })();
 
-    // stop camera on unmount
     return () => {
       active = false;
       if (stream) stream.getTracks().forEach((t) => t.stop());
     };
-  }, []); // run once
+  }, []); // mount once
 
-  const takePhoto = () => {
+  const capture = () => {
     if (!videoRef.current || !canvasRef.current) return;
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const { videoWidth, videoHeight } = video;
-    canvas.width = videoWidth;
-    canvas.height = videoHeight;
-    const ctx = canvas.getContext("2d");
+    const v = videoRef.current;
+    const c = canvasRef.current;
+    c.width = v.videoWidth;
+    c.height = v.videoHeight;
+    const ctx = c.getContext("2d");
     if (!ctx) return;
-    ctx.drawImage(video, 0, 0, videoWidth, videoHeight);
-    const data = canvas.toDataURL("image/jpeg", 0.92);
-    setPhotoDataUrl(data);
-    // Stop the stream after capture (optional)
+    ctx.drawImage(v, 0, 0, c.width, c.height);
+    const data = c.toDataURL("image/jpeg", 0.92);
+    setPhoto(data);
+    // optional: stop stream after capture
     stream?.getTracks().forEach((t) => t.stop());
     setStream(null);
   };
 
   return (
-    <div className="p-6 max-w-xl mx-auto">
-      <h1 className="text-xl font-bold mb-2 text-center">Scan Product Label</h1>
-      <p className="text-gray-600 mb-4 text-center">
-        Point the camera at the ingredients panel. Tap “Capture” to take a photo.
+    <div className="p-6 max-w-xl mx-auto text-center">
+      <h1 className="text-xl font-bold mb-2">Scan Product Label</h1>
+      <p className="text-gray-600 mb-4">
+        Point the camera at the ingredients panel, then tap Capture.
       </p>
 
-      {/* Live preview */}
-      {!photoDataUrl && (
+      {!photo ? (
         <div className="mb-4">
           {error ? (
             <div className="p-3 rounded bg-red-50 text-red-700 text-sm">{error}</div>
           ) : (
-            <video
-              ref={videoRef}
-              playsInline
-              muted
-              className="w-full rounded-lg border"
-              // iOS Safari sometimes needs controls hidden but present
-              controls={false}
-              autoPlay
-            />
+            <video ref={videoRef} className="w-full rounded-lg border" playsInline muted />
           )}
         </div>
-      )}
-
-      {/* After capture, show the picture */}
-      {photoDataUrl && (
+      ) : (
         <div className="mb-4">
-          <img src={photoDataUrl} alt="Captured label" className="w-full rounded-lg border" />
+          <img src={photo} alt="Captured label" className="w-full rounded-lg border" />
         </div>
       )}
 
       <div className="flex gap-3 justify-center">
-        {!photoDataUrl ? (
-          <button
-            onClick={takePhoto}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg"
-          >
-            Capture
-          </button>
+        {!photo ? (
+          <>
+            <button onClick={capture} className="px-4 py-2 bg-green-600 text-white rounded-lg">
+              Capture
+            </button>
+            <button onClick={() => onNavigate("home")} className="px-4 py-2 bg-gray-200 rounded-lg">
+              Back
+            </button>
+          </>
         ) : (
           <>
-            <button
-              onClick={() => {
-                // If you want to process OCR later, keep photoDataUrl here
-                onNavigate("result");
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-            >
+            <button onClick={() => onNavigate("result")} className="px-4 py-2 bg-blue-600 text-white rounded-lg">
               Analyze
             </button>
-            <button
-              onClick={() => onNavigate("home")}
-              className="px-4 py-2 bg-gray-200 rounded-lg"
-            >
-              Back to Home
+            <button onClick={() => onNavigate("home")} className="px-4 py-2 bg-gray-200 rounded-lg">
+              Back
             </button>
           </>
         )}
       </div>
 
-      {/* hidden canvas used to grab a frame */}
       <canvas ref={canvasRef} className="hidden" />
     </div>
   );
