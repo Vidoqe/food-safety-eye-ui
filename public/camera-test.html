@@ -2,22 +2,52 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Camera Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    video, canvas { width: 90%; max-width: 400px; margin: 10px 0; border: 1px solid #ccc; }
+    button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+  </style>
 </head>
 <body>
-  <h1>Camera Permission Test</h1>
-  <video id="video" width="320" height="240" autoplay></video>
-
+  <h1>Camera Test Page</h1>
+  <p>This page tests if your phone camera permissions work.</p>
+  
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <br />
+  
+  <button id="startBtn">Start Camera</button>
+  <button id="stopBtn">Stop Camera</button>
+  <br />
+  
+  <input type="file" accept="image/*" capture="environment" id="fileInput" />
+  
   <script>
-    async function init() {
+    const video = document.getElementById('video');
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    let stream;
+
+    async function startCamera() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        document.getElementById('video').srcObject = stream;
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
       } catch (err) {
-        alert("Camera access denied: " + err.message);
+        alert("Camera error: " + err.message);
       }
     }
-    init();
+
+    function stopCamera() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        video.srcObject = null;
+      }
+    }
+
+    startBtn.addEventListener('click', startCamera);
+    stopBtn.addEventListener('click', stopCamera);
   </script>
 </body>
 </html>
