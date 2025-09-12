@@ -1,0 +1,6 @@
+{
+  "routes": [
+    { "src": "/camera-test", "dest": "/camera-test.html" },
+    { "src": "/barcode-test", "dest": "/barcode-test.html" }
+  ]
+}
