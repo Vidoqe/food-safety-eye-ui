@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Barcode Debug</title>
+  <style>
+    body { font-family: system-ui, sans-serif; padding: 12px; }
+    video, canvas { width: 100%; max-width: 420px; background:#000; }
+    #log { white-space: pre-wrap; font-size: 12px; background:#f6f6f6; padding:8px; border:1px solid #ddd; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+    button { padding:10px 14px; }
+    .ok { color:green; }
+    .bad { color:#c00; }
+  </style>
+</head>
+<body>
+  <h2>Barcode Debug</h2>
+
+  <div id="support"></div>
+
+  <div class="row">
+    <button id="start">Start camera</button>
+    <button id="stop">Stop</button>
+    <button id="snap">Snapshot</button>
+  </div>
+
+  <video id="video" playsinline autoplay muted></video>
+  <canvas id="canvas" width="1280" height="720" style="display:none"></canvas>
+
+  <h3>Detections</h3>
+  <div id="detections">None yet.</div>
+
+  <h3>Log</h3>
+  <div id="log"></div>
+
+  <script>
+    const log = (m)=>{ document.getElementById('log').textContent += m + "\n"; console.log(m); };
+
+    (async () => {
+      let supportHtml = "";
+      const hasMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+      supportHtml += "getUserMedia: " + (hasMedia ? "<b class='ok'>YES</b>" : "<b class='bad'>NO</b>") + "<br/>";
+
+      const hasBD = "BarcodeDetector" in window;
+      supportHtml += "BarcodeDetector: " + (hasBD ? "<b class='ok'>YES</b>" : "<b class='bad'>NO</b>") + "<br/>";
+      if (hasBD) {
+        try {
+          const fmts = await BarcodeDetector.getSupportedFormats();
+          supportHtml += "Supported formats: " + fmts.join(", ");
+        } catch(e) {
+          supportHtml += "Supported formats: error: " + e;
+        }
+      }
+      document.getElementById('support').innerHTML = supportHtml;
+    })();
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    let stream, detector;
+
+    async function startCam() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+          audio: false
+        });
+        video.srcObject = stream;
+        await video.play();
+        log("Camera started.");
+        if ("BarcodeDetector" in window) {
+          detector = new BarcodeDetector();
+          scanLoop();
+        } else {
+          log("BarcodeDetector not available; showing preview only.");
+        }
+      } catch (e) {
+        log("getUserMedia error: " + e.name + " / " + e.message);
+      }
+    }
+
+    function stopCam() {
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+        log("Camera stopped.");
+      }
+    }
+
+    async function scanLoop() {
+      if (!detector || !video.videoWidth) { requestAnimationFrame(scanLoop); return; }
+      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      try {
+        const barcodes = await detector.detect(canvas);
+        document.getElementById('detections').textContent =
+          barcodes.length ? JSON.stringify(barcodes.map(b=>({format:b.format, rawValue:b.rawValue})), null, 2) : "None";
+      } catch (e) {
+        log("detect() error: " + e);
+      }
+      requestAnimationFrame(scanLoop);
+    }
+
+    document.getElementById('start').onclick = startCam;
+    document.getElementById('stop').onclick  = stopCam;
+    document.getElementById('snap').onclick  = () => {
+      if (!video.videoWidth) return;
+      canvas.style.display = 'block';
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      log("Snapshot captured to canvas.");
+    };
+  </script>
+</body>
+</html>
