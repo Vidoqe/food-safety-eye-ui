@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Camera Test</title>
+  <meta charset="UTF-8">
+  <title>Camera Permission Test</title>
 </head>
 <body>
-  <h1>Camera Permission Test</h1>
-  <video id="video" width="300" height="200" autoplay></video>
+  <h1>Camera Test</h1>
+  <p>If permissions are correct, your camera should appear below:</p>
+  <video id="video" autoplay playsinline width="300" height="200"></video>
+
   <script>
     async function initCamera() {
       try {
@@ -15,7 +16,8 @@
         const video = document.getElementById('video');
         video.srcObject = stream;
       } catch (err) {
-        alert("Camera access denied or not available: " + err);
+        console.error("Camera error:", err);
+        alert("Camera access denied or not available: " + err.message);
       }
     }
     initCamera();
