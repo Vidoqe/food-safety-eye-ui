@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Camera Test</title>
+</head>
+<body>
+  <h1>Camera Permission Test</h1>
+  <video id="video" width="300" height="200" autoplay></video>
+  <script>
+    async function initCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const video = document.getElementById('video');
+        video.srcObject = stream;
+      } catch (err) {
+        alert("Camera access denied or not available: " + err);
+      }
+    }
+    initCamera();
+  </script>
+</body>
+</html>
