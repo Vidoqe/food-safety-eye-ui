@@ -11,4 +11,7 @@ export default defineConfig({
     },
   },
   server: { port: 3000 },
+  build: {
+    copyPublicDir: true,   // ✅ ensures public/ is included in build
+  },
 });
