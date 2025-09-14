@@ -27,11 +27,11 @@ export default function ScanBarcodeScreen() {
     }
 
     try {
-      // @ts-ignore experimental lib typing
+      // @ts-ignore experimental API
       const detector = new BarcodeDetector({
         formats: [
           "qr_code","ean_13","ean_8","code_128","code_39","code_93",
-          "itf","upc_a","upc_e","codabar","data_matrix","pdf417","aztec"
+          "itf","upc_a","upc_e","codabar","data_matrix","pdf417","aztec",
         ],
       });
 
@@ -48,7 +48,8 @@ export default function ScanBarcodeScreen() {
       const ctx = canvas.getContext("2d")!;
       const w = (source as any).width || img.width;
       const h = (source as any).height || img.height;
-      canvas.width = w; canvas.height = h;
+      canvas.width = w;
+      canvas.height = h;
       ctx.drawImage(source as any, 0, 0, w, h);
 
       const results = await detector.detect(canvas);
@@ -57,7 +58,7 @@ export default function ScanBarcodeScreen() {
       setError(e?.message ?? "Barcode detection failed.");
     }
 
-    e.target.value = ""; // allow immediate re-snap
+    e.target.value = ""; // allow snapping again
   };
 
   return (
@@ -67,6 +68,7 @@ export default function ScanBarcodeScreen() {
       </h1>
 
       <div className="rounded-2xl bg-white p-6 shadow-xl">
+        {/* Preview area */}
         <div className="aspect-[4/3] w-full rounded-xl border-2 border-dashed border-gray-300 grid place-items-center overflow-hidden">
           {preview ? (
             <img src={preview} alt="Captured" className="w-full h-full object-contain" />
@@ -77,7 +79,7 @@ export default function ScanBarcodeScreen() {
           )}
         </div>
 
-        {/* LABEL-AS-BUTTON */}
+        {/* Button (label for hidden input) */}
         <label
           htmlFor="barcodeCamera"
           className="mt-6 block w-full text-center rounded-xl bg-green-600 py-3 text-white text-lg font-semibold hover:bg-green-700 active:scale-95 transition cursor-pointer"
@@ -85,16 +87,24 @@ export default function ScanBarcodeScreen() {
           📸 Snap Barcode
         </label>
 
+        {/* Hidden but present input */}
         <input
           id="barcodeCamera"
           ref={inputRef}
           type="file"
-          accept="image/*;capture=camera"
+          accept="image/*"
           capture="environment"
           onChange={onFileChange}
-          style={{ display: "none" }}
+          style={{
+            position: "absolute",
+            left: "-9999px",
+            width: "1px",
+            height: "1px",
+            opacity: 0,
+          }}
         />
 
+        {/* Status + results */}
         <div className="mt-6 text-sm text-gray-500">
           getUserMedia: <b>not needed</b> • BarcodeDetector:{" "}
           <b className={supportsBD ? "text-green-600" : "text-red-600"}>
