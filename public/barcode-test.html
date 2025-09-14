@@ -1,126 +1,185 @@
 <!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Barcode Debug</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      body { font-family: system-ui, sans-serif; padding:16px; }
-      #video { width:100%; max-width:480px; background:#000; }
-      #canvas { display:none; }
-      #log { white-space:pre-wrap; color:#444; font-size:14px; }
-      .ok { color: #0a0; } .bad { color:#c00; }
-      button { padding:10px 14px; margin-right:8px; }
-    </style>
-    <!-- ZXing fallback (only used if BarcodeDetector is unavailable) -->
-    <script src="https://unpkg.com/@zxing/library@0.20.0"></script>
-  </head>
-  <body>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  />
+  <title>Barcode Debug</title>
+  <style>
+    :root { --fg:#111; --muted:#666; --accent:#0a7; --bad:#b00; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 16px; color: var(--fg);}
+    h1 { margin: 0 0 12px; }
+    .chip { font-weight: 700; }
+    .yes { color: var(--accent); }
+    .no { color: var(--bad); }
+    .muted { color: var(--muted); }
+    .row { margin: 8px 0; }
+    button { padding: 10px 14px; margin-right: 10px; }
+    #wrap { max-width: 780px; }
+    #video, #canvas { width: 100%; max-width: 720px; background:#000; border-radius: 6px; }
+    #canvas { display:none; }
+    pre { background:#f6f6f6; padding:10px; border-radius:6px; overflow:auto; }
+    #log { min-height: 28px; }
+  </style>
+</head>
+<body>
+  <div id="wrap">
     <h1>Barcode Debug</h1>
 
-    <p>
-      <strong>getUserMedia:</strong> <span id="gum">?</span><br>
-      <strong>BarcodeDetector API:</strong> <span id="bd">?</span>
-    </p>
+    <div class="row">getUserMedia: <span id="gum" class="chip muted">checking…</span></div>
+    <div class="row">BarcodeDetector: <span id="bd" class="chip muted">checking…</span></div>
+    <div class="row muted" id="formatsRow" style="display:none;">
+      Supported formats: <span id="formats"></span>
+    </div>
 
-    <p>
+    <div class="row">
       <button id="start">Start camera</button>
       <button id="stop" disabled>Stop</button>
-    </p>
+      <button id="snap" disabled>Snapshot</button>
+    </div>
 
     <video id="video" playsinline muted></video>
-    <canvas id="canvas"></canvas>
+    <canvas id="canvas" width="1280" height="720"></canvas>
 
     <h3>Detections</h3>
-    <div id="detections">None yet.</div>
+    <pre id="detections">None yet.</pre>
 
     <h3>Log</h3>
-    <div id="log"></div>
+    <pre id="log"></pre>
+  </div>
 
-    <script>
-      const v = document.getElementById('video');
-      const c = document.getElementById('canvas');
-      const detections = document.getElementById('detections');
-      const log = (m)=>{ document.getElementById('log').textContent = m; };
-      const set = (id, ok)=>{ const el=document.getElementById(id); el.textContent = ok? 'YES' : 'NO'; el.className = ok? 'ok':'bad'; };
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const log = (m) => { $('log').textContent = m + '\n' + $('log').textContent; };
 
-      let stream, anim, detector, usingZXing=false, zxingReader;
+    // Elements
+    const video = $('video');
+    const canvas = $('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-      // feature flags
-      set('gum', !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
-      set('bd', 'BarcodeDetector' in window);
+    // Feature checks
+    const hasGUM = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    $('gum').textContent = hasGUM ? 'YES' : 'NO';
+    $('gum').className = 'chip ' + (hasGUM ? 'yes' : 'no');
 
-      async function startCam(){
+    let detector = null;
+    (async () => {
+      if ('BarcodeDetector' in window) {
         try {
-          log('Requesting camera…');
-          const constraints = { video: { facingMode:{ideal:'environment'} }, audio:false };
-          stream = await navigator.mediaDevices.getUserMedia(constraints);
-          v.srcObject = stream;
-          await v.play();
-          document.getElementById('start').disabled = true;
-          document.getElementById('stop').disabled  = false;
-          log('✅ Camera started');
-
-          if ('BarcodeDetector' in window) {
-            detector = new BarcodeDetector({ formats: ['code_128','ean_13','upc_e','ean_8','qr_code','codabar','itf','data_matrix','pdf417','aztec'] });
-            usingZXing = false;
-            loopNative();
-          } else {
-            usingZXing = true;
-            zxingReader = new ZXing.BrowserMultiFormatReader();
-            loopZXing();
-          }
+          const fmts = await BarcodeDetector.getSupportedFormats?.() || [];
+          $('formats').textContent = fmts.join(', ');
+          $('formatsRow').style.display = 'block';
+          detector = new BarcodeDetector({ formats: fmts.length ? fmts : undefined });
+          $('bd').textContent = 'YES';
+          $('bd').className = 'chip yes';
         } catch (e) {
-          log('❌ getUserMedia error:\n' + e.name + ': ' + e.message);
+          $('bd').textContent = 'NO (' + e.message + ')';
+          $('bd').className = 'chip no';
         }
+      } else {
+        $('bd').textContent = 'NO';
+        $('bd').className = 'chip no';
       }
+      updateButtons();
+    })();
 
-      function stopCam(){
-        cancelAnimationFrame(anim);
-        if (zxingReader) { try { zxingReader.reset(); } catch(_){} }
-        if (stream) stream.getTracks().forEach(t=>t.stop());
-        v.srcObject = null; stream = null;
-        document.getElementById('start').disabled = false;
-        document.getElementById('stop').disabled  = true;
-        log('⏹️ Camera stopped');
+    let stream = null;
+    let rafId = null;
+    let frame = 0;
+
+    function updateButtons() {
+      $('start').disabled = !!stream;
+      $('stop').disabled = !stream;
+      $('snap').disabled = !stream;
+    }
+
+    async function startCam() {
+      if (!hasGUM) { log('getUserMedia not supported.'); return; }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1280 }, height: { ideal: 720 }
+          },
+          audio: false
+        });
+        video.srcObject = stream;
+        await video.play();
+        log('Camera started.');
+        updateButtons();
+        startLoop();
+      } catch (e) {
+        log('Camera error: ' + e.name + ' - ' + e.message);
       }
+    }
 
-      function showDetections(list){
-        if (!list || !list.length){ detections.textContent = 'None yet.'; return; }
-        detections.innerHTML = list.map(d =>
-          `<div><b>${d.format || d.rawValue ? (d.format||'') : ''}</b> ${d.rawValue || d.text}</div>`
-        ).join('');
+    function stopCam() {
+      if (rafId) cancelAnimationFrame(rafId), rafId = null;
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+        stream = null;
+        log('Camera stopped.');
+        updateButtons();
       }
+    }
 
-      async function loopNative(){
-        if (!stream) return;
-        try {
-          // draw current frame to canvas to avoid “not ready” size issues
-          c.width = v.videoWidth || 640;
-          c.height = v.videoHeight || 480;
-          const ctx = c.getContext('2d');
-          ctx.drawImage(v, 0, 0, c.width, c.height);
-          const res = await detector.detect(c);
-          showDetections(res.map(r=>({format:r.format, rawValue:r.rawValue})));
-        } catch(e){ /* swallow decode errors */ }
-        anim = requestAnimationFrame(loopNative);
-      }
-
-      async function loopZXing(){
-        if (!stream) return;
-        try {
-          const result = await zxingReader.decodeOnceFromVideoElement(v);
-          if (result) {
-            showDetections([{ format: result.getBarcodeFormat(), text: result.getText() }]);
-          }
-        } catch(e){
-          // decodeOnce throws on timeouts; keep trying
+    async function decodeFromCanvas() {
+      if (!detector) return { ok:false, reason:'No BarcodeDetector' };
+      try {
+        const codes = await detector.detect(canvas);
+        if (codes && codes.length) {
+          const summary = codes.map(b => ({ format: b.format, rawValue: b.rawValue }));
+          $('detections').textContent = JSON.stringify(summary, null, 2);
+          return { ok:true, count: codes.length };
         }
-        anim = requestAnimationFrame(loopZXing);
+        return { ok:false, reason:'none' };
+      } catch (e) {
+        log('Detect error: ' + e);
+        return { ok:false, reason:e.message };
       }
+    }
 
-      document.getElementById('start').onclick = startCam;
-      document.getElementById('stop').onclick  = stopCam;
-    </script>
-  </body>
+    function startLoop() {
+      const loop = async () => {
+        rafId = requestAnimationFrame(loop);
+        if (!video.videoWidth) return;
+        // draw video frame to canvas
+        const w = canvas.width, h = canvas.height;
+        // Resize canvas to match stream once
+        if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+          canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+        }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        // Throttle decode (every 6th frame)
+        if (detector && (++frame % 6 === 0)) {
+          const res = await decodeFromCanvas();
+          if (res.ok) log('Live decode: ' + res.count + ' barcode(s).');
+        }
+      };
+      loop();
+    }
+
+    $('start').onclick = startCam;
+    $('stop').onclick = stopCam;
+
+    $('snap').onclick = async () => {
+      if (!video.videoWidth) return;
+      // Ensure latest frame is on canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      canvas.style.display = 'block';
+      const res = await decodeFromCanvas();
+      if (res.ok) {
+        log('Snapshot decode success.');
+      } else {
+        log('Snapshot decode: no barcode found.');
+      }
+    };
+
+    // Clean up if user navigates away
+    window.addEventListener('pagehide', stopCam);
+  </script>
+</body>
 </html>
