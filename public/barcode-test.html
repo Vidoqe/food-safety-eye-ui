@@ -1,115 +1,126 @@
 <!doctype html>
 <html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Barcode Debug</title>
-  <style>
-    body { font-family: system-ui, sans-serif; padding: 12px; }
-    video, canvas { width: 100%; max-width: 420px; background:#000; }
-    #log { white-space: pre-wrap; font-size: 12px; background:#f6f6f6; padding:8px; border:1px solid #ddd; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
-    button { padding:10px 14px; }
-    .ok { color:green; }
-    .bad { color:#c00; }
-  </style>
-</head>
-<body>
-  <h2>Barcode Debug</h2>
+  <head>
+    <meta charset="utf-8" />
+    <title>Barcode Debug</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: system-ui, sans-serif; padding:16px; }
+      #video { width:100%; max-width:480px; background:#000; }
+      #canvas { display:none; }
+      #log { white-space:pre-wrap; color:#444; font-size:14px; }
+      .ok { color: #0a0; } .bad { color:#c00; }
+      button { padding:10px 14px; margin-right:8px; }
+    </style>
+    <!-- ZXing fallback (only used if BarcodeDetector is unavailable) -->
+    <script src="https://unpkg.com/@zxing/library@0.20.0"></script>
+  </head>
+  <body>
+    <h1>Barcode Debug</h1>
 
-  <div id="support"></div>
+    <p>
+      <strong>getUserMedia:</strong> <span id="gum">?</span><br>
+      <strong>BarcodeDetector API:</strong> <span id="bd">?</span>
+    </p>
 
-  <div class="row">
-    <button id="start">Start camera</button>
-    <button id="stop">Stop</button>
-    <button id="snap">Snapshot</button>
-  </div>
+    <p>
+      <button id="start">Start camera</button>
+      <button id="stop" disabled>Stop</button>
+    </p>
 
-  <video id="video" playsinline autoplay muted></video>
-  <canvas id="canvas" width="1280" height="720" style="display:none"></canvas>
+    <video id="video" playsinline muted></video>
+    <canvas id="canvas"></canvas>
 
-  <h3>Detections</h3>
-  <div id="detections">None yet.</div>
+    <h3>Detections</h3>
+    <div id="detections">None yet.</div>
 
-  <h3>Log</h3>
-  <div id="log"></div>
+    <h3>Log</h3>
+    <div id="log"></div>
 
-  <script>
-    const log = (m)=>{ document.getElementById('log').textContent += m + "\n"; console.log(m); };
+    <script>
+      const v = document.getElementById('video');
+      const c = document.getElementById('canvas');
+      const detections = document.getElementById('detections');
+      const log = (m)=>{ document.getElementById('log').textContent = m; };
+      const set = (id, ok)=>{ const el=document.getElementById(id); el.textContent = ok? 'YES' : 'NO'; el.className = ok? 'ok':'bad'; };
 
-    (async () => {
-      let supportHtml = "";
-      const hasMedia = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-      supportHtml += "getUserMedia: " + (hasMedia ? "<b class='ok'>YES</b>" : "<b class='bad'>NO</b>") + "<br/>";
+      let stream, anim, detector, usingZXing=false, zxingReader;
 
-      const hasBD = "BarcodeDetector" in window;
-      supportHtml += "BarcodeDetector: " + (hasBD ? "<b class='ok'>YES</b>" : "<b class='bad'>NO</b>") + "<br/>";
-      if (hasBD) {
+      // feature flags
+      set('gum', !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia));
+      set('bd', 'BarcodeDetector' in window);
+
+      async function startCam(){
         try {
-          const fmts = await BarcodeDetector.getSupportedFormats();
-          supportHtml += "Supported formats: " + fmts.join(", ");
-        } catch(e) {
-          supportHtml += "Supported formats: error: " + e;
+          log('Requesting camera…');
+          const constraints = { video: { facingMode:{ideal:'environment'} }, audio:false };
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          v.srcObject = stream;
+          await v.play();
+          document.getElementById('start').disabled = true;
+          document.getElementById('stop').disabled  = false;
+          log('✅ Camera started');
+
+          if ('BarcodeDetector' in window) {
+            detector = new BarcodeDetector({ formats: ['code_128','ean_13','upc_e','ean_8','qr_code','codabar','itf','data_matrix','pdf417','aztec'] });
+            usingZXing = false;
+            loopNative();
+          } else {
+            usingZXing = true;
+            zxingReader = new ZXing.BrowserMultiFormatReader();
+            loopZXing();
+          }
+        } catch (e) {
+          log('❌ getUserMedia error:\n' + e.name + ': ' + e.message);
         }
       }
-      document.getElementById('support').innerHTML = supportHtml;
-    })();
 
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    let stream, detector;
+      function stopCam(){
+        cancelAnimationFrame(anim);
+        if (zxingReader) { try { zxingReader.reset(); } catch(_){} }
+        if (stream) stream.getTracks().forEach(t=>t.stop());
+        v.srcObject = null; stream = null;
+        document.getElementById('start').disabled = false;
+        document.getElementById('stop').disabled  = true;
+        log('⏹️ Camera stopped');
+      }
 
-    async function startCam() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" } },
-          audio: false
-        });
-        video.srcObject = stream;
-        await video.play();
-        log("Camera started.");
-        if ("BarcodeDetector" in window) {
-          detector = new BarcodeDetector();
-          scanLoop();
-        } else {
-          log("BarcodeDetector not available; showing preview only.");
+      function showDetections(list){
+        if (!list || !list.length){ detections.textContent = 'None yet.'; return; }
+        detections.innerHTML = list.map(d =>
+          `<div><b>${d.format || d.rawValue ? (d.format||'') : ''}</b> ${d.rawValue || d.text}</div>`
+        ).join('');
+      }
+
+      async function loopNative(){
+        if (!stream) return;
+        try {
+          // draw current frame to canvas to avoid “not ready” size issues
+          c.width = v.videoWidth || 640;
+          c.height = v.videoHeight || 480;
+          const ctx = c.getContext('2d');
+          ctx.drawImage(v, 0, 0, c.width, c.height);
+          const res = await detector.detect(c);
+          showDetections(res.map(r=>({format:r.format, rawValue:r.rawValue})));
+        } catch(e){ /* swallow decode errors */ }
+        anim = requestAnimationFrame(loopNative);
+      }
+
+      async function loopZXing(){
+        if (!stream) return;
+        try {
+          const result = await zxingReader.decodeOnceFromVideoElement(v);
+          if (result) {
+            showDetections([{ format: result.getBarcodeFormat(), text: result.getText() }]);
+          }
+        } catch(e){
+          // decodeOnce throws on timeouts; keep trying
         }
-      } catch (e) {
-        log("getUserMedia error: " + e.name + " / " + e.message);
+        anim = requestAnimationFrame(loopZXing);
       }
-    }
 
-    function stopCam() {
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-        stream = null;
-        log("Camera stopped.");
-      }
-    }
-
-    async function scanLoop() {
-      if (!detector || !video.videoWidth) { requestAnimationFrame(scanLoop); return; }
-      canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      try {
-        const barcodes = await detector.detect(canvas);
-        document.getElementById('detections').textContent =
-          barcodes.length ? JSON.stringify(barcodes.map(b=>({format:b.format, rawValue:b.rawValue})), null, 2) : "None";
-      } catch (e) {
-        log("detect() error: " + e);
-      }
-      requestAnimationFrame(scanLoop);
-    }
-
-    document.getElementById('start').onclick = startCam;
-    document.getElementById('stop').onclick  = stopCam;
-    document.getElementById('snap').onclick  = () => {
-      if (!video.videoWidth) return;
-      canvas.style.display = 'block';
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      log("Snapshot captured to canvas.");
-    };
-  </script>
-</body>
+      document.getElementById('start').onclick = startCam;
+      document.getElementById('stop').onclick  = stopCam;
+    </script>
+  </body>
 </html>
