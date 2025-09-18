@@ -4,8 +4,8 @@ import { Card } from '@/components/ui/card';
 import { ArrowLeft, Camera, Loader2, Upload, AlertCircle } from 'lucide-react';
 import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
 import { useUser } from '@/contexts/UserContext';
-import { useTranslation } from '@/utils/translations';
-import  GPTImageAnalysisService  from '../services/gptImageAnalysis';
+import useTranslation from '@/utils/translations';
+import GPTImageAnalysisService from '@/services/gptImageAnalysis';
 import { ScanLimitDialog } from '@/components/ScanLimitDialog';
 
 interface ScanScreenProps {
@@ -15,14 +15,14 @@ interface ScanScreenProps {
 }
 
 const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
-  const { language, addScanResult } = useAppContext();
   const { user, canScan, incrementScanCount, getScanStatusMessage, creditSummary } = useUser();
-  const t = useTranslation(language);
+  const { addScanResult } = useAppContext();
+  const language = useTranslation();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showLimitDialog, setShowLimitDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [error, setError] = useState('');
-
+  const [error, setError] = useState<string>();
+  
   const handleImageCapture = async () => {
     try {
       const imageBase64 = await GPTImageAnalysisService.captureImageFromCamera();
@@ -30,27 +30,28 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
       setError('');
     } catch (error) {
       console.error('Camera capture error:', error);
+      setError('Camera capture error');
     }
   };
 
   const handleAnalyze = async () => {
     if (!selectedImage) {
-      setError('請先上傳食品標籤圖片才能分析成分');
+      setError(language === 'zh' ? '请先拍摄商品照片才可进行分析' : 'Please capture product image first');
       return;
     }
 
     setIsAnalyzing(true);
     setError('');
-    
+
     try {
-      // Use 食安眼 (Food Safety Eye) analyzeProduct method
+      // 调用 (Food Safety Eye) 分析服务
       const analysis = await GPTImageAnalysisService.analyzeProduct(
         selectedImage,
         undefined,
         undefined,
         language === 'zh' ? 'zh' : 'en'
       );
-      
+
       const result: AnalysisResult = {
         id: Date.now().toString(),
         ingredients: analysis.ingredients,
@@ -67,23 +68,23 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
         quickSummary: analysis.quickSummary,
         overallSafety: analysis.overallSafety,
         summary: analysis.summary,
-        productName: analysis.productName,
+        warnings: analysis.warnings,
         barcode: analysis.barcode,
-        taiwanWarnings: analysis.taiwanWarnings,
-        scansLeft: analysis.scansLeft,
-        creditsExpiry: analysis.creditsExpiry,
+        healthWarnings: analysis.healthWarnings,
+        scanInfo: analysis.scanInfo,
+        creditExpiry: analysis.creditsExpiry,
         overall_risk: analysis.overall_risk,
         child_safe: analysis.child_safe,
-        notes: analysis.notes
+        notes: analysis.notes,
       };
-      
+
       addScanResult(result);
       setIsAnalyzing(false);
       onResult(result);
     } catch (error: any) {
       console.error('Analysis error:', error);
       setIsAnalyzing(false);
-      
+
       // Show error without returning to dashboard
       onResult({
         id: Date.now().toString(),
@@ -98,8 +99,18 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
         isNaturalProduct: false,
         regulatedAdditives: [],
         junkFoodScore: 0,
-        quickSummary: 'Error'
-      }, error.message || 'No result – please try another image.');
+        quickSummary: 'Error',
+        overallSafety: '',
+        summary: '',
+        warnings: [],
+        barcode: '',
+        healthWarnings: [],
+        scanInfo: '',
+        creditExpiry: '',
+        overall_risk: '',
+        child_safe: false,
+        notes: ''
+      }, 'No result – please try another image.');
     }
   };
 
@@ -113,7 +124,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-xl font-bold text-green-800">
-            {type === 'label' ? t.scanLabel : t.scanBarcode}
+            {type === 'label' ? 'Scan Label' : 'Scan Barcode'}
           </h1>
         </div>
 
@@ -130,26 +141,25 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
           <div className="text-center">
             <div className="w-64 h-64 bg-gray-100 rounded-lg mx-auto mb-6 flex items-center justify-center border-2 border-dashed border-gray-300 overflow-hidden">
               {selectedImage ? (
-                <img 
-                  src={selectedImage} 
-                  alt="Captured product" 
-                  className="w-full h-full object-cover rounded-lg"
-                />
+                <img src={selectedImage} alt="Captured product" className="w-full h-full object-cover rounded-lg" />
               ) : isAnalyzing ? (
                 <div className="text-center">
                   <Loader2 className="w-12 h-12 text-green-500 animate-spin mx-auto mb-4" />
                   <p className="text-gray-600">
-                    {language === 'zh' ? '正在分析成分...' : 'Analyzing ingredients...'}
+                    {language === 'zh' ? '正在分析原料…' : 'Analyzing ingredients…'}
                   </p>
                 </div>
               ) : (
                 <div className="text-center">
                   <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500">
-                    {type === 'label' 
-                      ? (language === 'zh' ? '拍攝產品標籤成分列表' : 'Capture ingredient list')
-                      : (language === 'zh' ? '拍攝產品條碼' : 'Capture barcode')
-                    }
+                    {type === 'label'
+                      ? language === 'zh'
+                        ? '拍摄商品成分列表'
+                        : 'Capture ingredient list'
+                      : language === 'zh'
+                      ? '拍摄商品条码'
+                      : 'Capture barcode'}
                   </p>
                 </div>
               )}
@@ -168,7 +178,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
                 className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-semibold disabled:opacity-50"
               >
                 <Camera className="w-5 h-5 mr-2" />
-                {language === 'zh' ? '拍攝照片' : 'Take Photo'}
+                {language === 'zh' ? '拍照' : 'Take Photo'}
               </Button>
             ) : (
               <div className="space-y-3">
@@ -182,28 +192,31 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
                   ) : (
                     <Upload className="w-5 h-5 mr-2" />
                   )}
-                  {isAnalyzing 
-                    ? (language === 'zh' ? '分析中...' : 'Analyzing...')
-                    : (language === 'zh' ? '開始分析' : 'Start Analysis')
-                  }
+                  {isAnalyzing
+                    ? language === 'zh'
+                      ? '分析中…'
+                      : 'Analyzing…'
+                    : language === 'zh'
+                    ? '开始分析'
+                    : 'Start Analysis'}
                 </Button>
                 <Button
                   onClick={() => setSelectedImage(null)}
                   variant="outline"
                   className="w-full"
                 >
-                  {language === 'zh' ? '重新拍攝' : 'Retake Photo'}
+                  {language === 'zh' ? '重新拍摄' : 'Retake Photo'}
                 </Button>
               </div>
             )}
           </div>
         </Card>
+
+        <ScanLimitDialog
+          open={showLimitDialog}
+          onClose={() => setShowLimitDialog(false)}
+        />
       </div>
-      
-      <ScanLimitDialog 
-        open={showLimitDialog}
-        onClose={() => setShowLimitDialog(false)}
-      />
     </div>
   );
 };
