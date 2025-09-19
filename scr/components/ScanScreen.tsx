@@ -24,11 +24,6 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null); // dataURL
   const [error, setError] = useState<string>();
 
-  const openCamera = () => {
-    // Trigger native camera picker on mobile
-    inputRef.current?.click();
-  };
-
   const fileToDataURL = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -37,44 +32,63 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
       reader.readAsDataURL(file);
     });
 
+  const openCamera = () => {
+    const el = inputRef.current;
+    if (!el) return;
+    try {
+      // Prefer modern file picker if available (Chrome/Android supports this)
+      // @ts-ignore
+      if (el.showPicker) el.showPicker();
+      else el.click();
+    } catch {
+      el.click();
+    }
+  };
+
+  // 🔥 Auto-analyze right after a regular capture
   const onInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const files = e.target.files;
-      e.target.value = ''; // allow re-selecting same file later
+      e.target.value = ''; // allow same file re-pick
       if (!files || !files.length) return;
       const file = files[0];
       const dataUrl = await fileToDataURL(file);
       setSelectedImage(dataUrl);
       setError('');
+      await handleAnalyze(dataUrl); // pass the image directly
     } catch (err) {
       console.error('File read error:', err);
       setError('Could not read photo. Please try again.');
     }
   };
 
-  // Optional fallback: if someone is on a browser that blocks <input capture>, try the previous service
+  // 🔥 Alternate capture path (uses service) and auto-analyzes as well
   const fallbackCapture = async () => {
     try {
       const dataUrl = await GPTImageAnalysisService.captureImageFromCamera();
       setSelectedImage(dataUrl);
       setError('');
+      await handleAnalyze(dataUrl);
     } catch (err) {
       console.error('Fallback capture failed:', err);
-      setError('Camera not available. Try using the Gallery option.');
+      setError('Camera not available. Try the other button or gallery.');
     }
   };
 
-  const handleAnalyze = async () => {
-    if (!selectedImage) {
+  // Core analyze function (accepts an optional image to avoid race with setState)
+  const handleAnalyze = async (imgOverride?: string) => {
+    const img = imgOverride ?? selectedImage;
+    if (!img) {
       setError(language === 'zh' ? '请先拍照后再分析' : 'Please take a photo first');
       return;
     }
+
     setIsAnalyzing(true);
     setError('');
 
     try {
       const analysis = await GPTImageAnalysisService.analyzeProduct(
-        selectedImage,
+        img,
         undefined,
         undefined,
         language === 'zh' ? 'zh' : 'en'
@@ -138,7 +152,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
           child_safe: false,
           notes: '',
         },
-        'No result – please try another image.'
+        language === 'zh' ? '没有结果，请尝试另一张照片。' : 'No result – please try another image.'
       );
     }
   };
@@ -147,14 +161,22 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-      {/* Hidden camera input */}
+      {/* Keep input in layout (opacity:0) so browsers don't ignore clicks */}
       <input
+        id="camera-input"
         ref={inputRef}
         type="file"
         accept="image/*"
         capture="environment"
         onChange={onInputChange}
-        style={{ display: 'none' }}
+        style={{
+          position: 'absolute',
+          width: '0.1px',
+          height: '0.1px',
+          opacity: 0,
+          overflow: 'hidden',
+          zIndex: -1,
+        }}
       />
 
       <div className="max-w-md mx-auto pt-8">
@@ -163,7 +185,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-xl font-bold text-green-800">
-            {type === 'label' ? 'Scan Label' : 'Scan Barcode'}
+            {type === 'label' ? (language === 'zh' ? '扫描产品标签' : 'Scan Label') : (language === 'zh' ? '扫描条码' : 'Scan Barcode')}
           </h1>
         </div>
 
@@ -192,7 +214,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
                   <p className="text-gray-500">
                     {type === 'label'
                       ? language === 'zh'
-                        ? '拍摄商品成分列表'
+                        ? '拍摄产品标签成分列表'
                         : 'Capture ingredient list'
                       : language === 'zh'
                       ? '拍摄商品条码'
@@ -214,19 +236,14 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
                   {language === 'zh' ? '拍照' : 'Take Photo'}
                 </Button>
 
-                {/* Optional: fallback to previous service (for odd browsers) */}
-                <Button
-                  variant="outline"
-                  onClick={fallbackCapture}
-                  className="w-full"
-                >
+                <Button variant="outline" onClick={fallbackCapture} className="w-full">
                   {language === 'zh' ? '备用拍照方式' : 'Try Alternate Capture'}
                 </Button>
               </div>
             ) : (
               <div className="space-y-3">
                 <Button
-                  onClick={handleAnalyze}
+                  onClick={() => handleAnalyze()}
                   disabled={isAnalyzing}
                   className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-semibold disabled:opacity-50"
                 >
@@ -243,6 +260,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
                     ? '开始分析'
                     : 'Start Analysis'}
                 </Button>
+
                 <Button onClick={() => setSelectedImage(null)} variant="outline" className="w-full">
                   {language === 'zh' ? '重新拍摄' : 'Retake Photo'}
                 </Button>
