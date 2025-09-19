@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { ArrowLeft, Camera, Loader2, Upload, AlertCircle } from 'lucide-react';
 import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
 import { useUser } from '@/contexts/UserContext';
-import useTranslation from '@/utils/translations';
+import { useTranslation } from '@/utils/translations';
 import GPTImageAnalysisService from '@/services/gptImageAnalysis';
 
 interface ScanScreenProps {
