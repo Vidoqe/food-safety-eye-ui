@@ -21,7 +21,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null); // data URL
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [error, setError] = useState<string>();
 
   const openCamera = () => {
@@ -37,12 +37,12 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
     }
   };
 
-  // --- GREEN BUTTON PATH ---
-  // Convert file -> dataURL, preview it, then kick analysis on next tick.
+  // === STEP 1 DEBUG: confirm this fires when green button flow returns a photo ===
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("📸 onInputChange fired");  // DEBUG LOG
     try {
       const files = e.target.files;
-      e.target.value = ''; // allow re-pick of same file
+      e.target.value = ''; // allow re-pick of same file next time
       if (!files || !files.length) return;
 
       const file = files[0];
@@ -51,11 +51,8 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
         const dataUrl = reader.result as string;
         setSelectedImage(dataUrl);
         setError('');
-
-        // Defer one tick to avoid any mobile/webview event timing quirks.
-        setTimeout(() => {
-          void handleAnalyze(dataUrl);
-        }, 0);
+        console.log("✅ Image loaded from FileReader"); // DEBUG LOG
+        // NOTE: Step 1 does not call handleAnalyze yet.
       };
       reader.onerror = () => {
         setError('Could not read photo. Please try again.');
@@ -67,21 +64,18 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
     }
   };
 
-  // --- ALTERNATE PATH ---
-  // Keep this one auto-analyzing too so you always have a working path.
   const fallbackCapture = async () => {
     try {
       const dataUrl = await GPTImageAnalysisService.captureImageFromCamera();
       setSelectedImage(dataUrl);
       setError('');
-      await handleAnalyze(dataUrl);
+      // Step 1: leave as-is (no auto-analyze change here)
     } catch (err) {
       console.error('Fallback capture failed:', err);
       setError('Camera not available. Try the Gallery option.');
     }
   };
 
-  // Core analyze (optionally takes image to avoid state race)
   const handleAnalyze = async (imgOverride?: string) => {
     const img = imgOverride ?? selectedImage;
     if (!img) {
@@ -123,7 +117,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
         creditExpiry: analysis.creditsExpiry,
         overall_risk: analysis.overall_risk,
         child_safe: analysis.child_safe,
-        notes: analysis.notes,
+        notes: '',
       };
 
       addScanResult(result);
@@ -158,7 +152,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
           child_safe: false,
           notes: '',
         },
-        language === 'zh' ? '没有结果，请尝试另一张照片。' : 'No result – please try another image.'
+        'No result – please try another image.'
       );
     }
   };
@@ -167,7 +161,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-      {/* Keep input present (opacity:0) so browsers don't ignore programmatic clicks */}
+      {/* This input is what the green button ultimately triggers */}
       <input
         id="camera-input"
         ref={inputRef}
