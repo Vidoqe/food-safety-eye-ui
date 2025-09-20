@@ -37,12 +37,12 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
     }
   };
 
-  // === STEP 1 DEBUG: confirm this fires when green button flow returns a photo ===
+  // === STEP 2: now we auto-analyze after photo ===
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log("📸 onInputChange fired");  // DEBUG LOG
     try {
       const files = e.target.files;
-      e.target.value = ''; // allow re-pick of same file next time
+      e.target.value = ''; // allow re-pick
       if (!files || !files.length) return;
 
       const file = files[0];
@@ -52,7 +52,8 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
         setSelectedImage(dataUrl);
         setError('');
         console.log("✅ Image loaded from FileReader"); // DEBUG LOG
-        // NOTE: Step 1 does not call handleAnalyze yet.
+        // 🔥 Immediately analyze
+        handleAnalyze(dataUrl);
       };
       reader.onerror = () => {
         setError('Could not read photo. Please try again.');
@@ -69,7 +70,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
       const dataUrl = await GPTImageAnalysisService.captureImageFromCamera();
       setSelectedImage(dataUrl);
       setError('');
-      // Step 1: leave as-is (no auto-analyze change here)
+      await handleAnalyze(dataUrl); // keep alternate working
     } catch (err) {
       console.error('Fallback capture failed:', err);
       setError('Camera not available. Try the Gallery option.');
@@ -77,6 +78,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
   };
 
   const handleAnalyze = async (imgOverride?: string) => {
+    console.log("🔍 handleAnalyze called"); // DEBUG LOG
     const img = imgOverride ?? selectedImage;
     if (!img) {
       setError(language === 'zh' ? '请先拍照后再分析' : 'Please take a photo first');
@@ -161,7 +163,6 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-      {/* This input is what the green button ultimately triggers */}
       <input
         id="camera-input"
         ref={inputRef}
