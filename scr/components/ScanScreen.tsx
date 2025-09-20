@@ -1,3 +1,4 @@
+// scr/components/ScanScreen.tsx
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
 import { useUser } from '@/contexts/UserContext';
 import { useTranslation } from '@/utils/translations';
 import GPTImageAnalysisService from '@/services/gptImageAnalysis';
+import ScanLimitDialog from '@/components/ScanLimitDialog';
 
 interface ScanScreenProps {
   type: 'label' | 'barcode';
@@ -14,34 +16,42 @@ interface ScanScreenProps {
 }
 
 const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
-  const { addScanResult } = useAppContext();
-  const { getScanStatusMessage } = useUser();
-  const language = useTranslation();
+  const { user, canScan, incrementScanCount, getScanStatusMessage, creditSummary } = useAppContext();
+  const { language } = useUser();
+  const t = useTranslation(language);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showLimitDialog, setShowLimitDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useState<string>('');
 
-  // SINGLE PATH: camera capture (same logic as the old Alternate button)
-  const takePhotoAndAnalyze = async () => {
+  const scanStatusMessage = getScanStatusMessage();
+
+  // --- GREEN BUTTON (single path) ---
+  const openCamera = async () => {
     try {
+      // Same capture logic as the old "alternate" path
+      const imageBase64 = await GPTImageAnalysisService.captureImageFromCamera();
+      setSelectedImage(imageBase64);
       setError('');
-      // 1) capture directly from camera (no <input/>)
-      const dataUrl = await GPTImageAnalysisService.captureImageFromCamera();
-      setSelectedImage(dataUrl);
-
-      // 2) analyze immediately
-      await handleAnalyze(dataUrl);
-    } catch (err) {
-      console.error('Camera/analysis error:', err);
-      setError(language === 'zh' ? '無法拍照或分析，請再試一次。' : 'Could not capture or analyze, please try again.');
+      // Immediately analyze after capture
+      await handleAnalyze(imageBase64);
+    } catch (err: any) {
+      console.error('Camera capture error:', err);
+      setError(t.language === 'zh' ? '無法開啟相機或讀取照片' : 'Could not open camera or read photo');
     }
   };
 
-  const handleAnalyze = async (imgOverride?: string) => {
-    const img = imgOverride ?? selectedImage;
-    if (!img) {
-      setError(language === 'zh' ? '請先拍照' : 'Please take a photo first');
+  const handleAnalyze = async (imageBase64Param?: string) => {
+    const imageBase64 = imageBase64Param ?? selectedImage;
+    if (!imageBase64) {
+      setError(t.language === 'zh' ? '請先拍照或選擇照片' : 'Please capture a photo first');
+      return;
+    }
+
+    // Credit / usage limit
+    if (!canScan()) {
+      setShowLimitDialog(true);
       return;
     }
 
@@ -49,8 +59,9 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
     setError('');
 
     try {
+      // Send raw image to backend; backend/GPT performs OCR (no Google Vision required)
       const analysis = await GPTImageAnalysisService.analyzeProduct(
-        img,
+        imageBase64,
         undefined,
         undefined,
         language === 'zh' ? 'zh' : 'en'
@@ -64,30 +75,37 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
         timestamp: new Date(),
         productType: type === 'barcode' ? 'Barcode Scan' : 'Label Scan',
         isEdible: true,
-        extractedIngredients: analysis.extractedIngredients,
-        keyDetectedSubstances: analysis.regulatedAdditives,
-        isNaturalProduct: analysis.isNaturalProduct,
-        regulatedAdditives: analysis.regulatedAdditives,
-        junkFoodScore: analysis.junkFoodScore,
-        quickSummary: analysis.quickSummary,
-        overallSafety: analysis.overallSafety,
-        summary: analysis.summary,
-        warnings: analysis.warnings,
-        barcode: analysis.barcode,
-        healthWarnings: analysis.healthWarnings,
-        scanInfo: analysis.scanInfo,
-        creditExpiry: analysis.creditsExpiry,
-        overall_risk: analysis.overall_risk,
-        child_safe: analysis.child_safe,
-        notes: '',
+        extractedIngredients: analysis.extractedIngredients ?? analysis.ingredients ?? [],
+        keyDetectedSubstances: analysis.regulatedAdditives ?? [],
+        isNaturalProduct: analysis.isNaturalProduct ?? false,
+        regulatedAdditives: analysis.regulatedAdditives ?? [],
+        junkFoodScore: analysis.junkFoodScore ?? 0,
+        quickSummary: analysis.quickSummary ?? '',
+        overallSafety: analysis.overallSafety ?? '',
+        summary: analysis.summary ?? '',
+        barcode: analysis.barcode ?? '',
+        scanInfo: analysis.scanInfo ?? '',
+        creditsExpiry: analysis.creditsExpiry ?? '',
+        overall_risk: analysis.overall_risk ?? '',
+        child_safe: analysis.child_safe ?? true,
+        notes: analysis.notes ?? '',
+        healthWarnings: analysis.healthWarnings ?? [],
+        warnings: analysis.warnings ?? [],
       };
 
-      addScanResult(result);
-      setIsAnalyzing(false);
+      incrementScanCount();
       onResult(result);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Analysis error:', err);
       setIsAnalyzing(false);
+
+      // Show an inline error AND still return an error result (so UI can show something)
+      const errMsg =
+        t.language === 'zh'
+          ? '分析失敗，請重試或重新拍照。'
+          : 'Analysis failed. Please try again or retake the photo.';
+      setError(errMsg);
+
       onResult(
         {
           id: Date.now().toString(),
@@ -95,7 +113,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
           verdict: 'moderate',
           tips: [],
           timestamp: new Date(),
-          productType: 'Error',
+          productType: type === 'barcode' ? 'Barcode Scan' : 'Label Scan',
           isEdible: false,
           extractedIngredients: [],
           keyDetectedSubstances: [],
@@ -105,21 +123,22 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
           quickSummary: 'Error',
           overallSafety: '',
           summary: '',
-          warnings: [],
           barcode: '',
-          healthWarnings: [],
           scanInfo: '',
-          creditExpiry: '',
-          overall_risk: '',
-          child_safe: false,
+          creditsExpiry: '',
+          overall_risk: 'moderate',
+          child_safe: true,
           notes: '',
+          healthWarnings: [],
+          warnings: [],
         },
-        language === 'zh' ? '沒有結果，請換一張清晰照片再試。' : 'No result—please try another, clearer image.'
+        errMsg
       );
+      return;
+    } finally {
+      setIsAnalyzing(false);
     }
   };
-
-  const scanStatusMessage = getScanStatusMessage();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
@@ -129,18 +148,12 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-xl font-bold text-green-800">
-            {type === 'label'
-              ? language === 'zh'
-                ? '掃描產品標籤'
-                : 'Scan Label'
-              : language === 'zh'
-              ? '掃描條碼'
-              : 'Scan Barcode'}
+            {type === 'label' ? (t.language === 'zh' ? '掃描產品標籤' : 'Scan Label') : 'Scan'}
           </h1>
         </div>
 
         {scanStatusMessage && (
-          <Card className="p-4 mb-4 bg-red-50 border-red-200">
+          <Card className="p-4 mb-4 border-red-200">
             <div className="flex items-center text-red-700">
               <AlertCircle className="w-5 h-5 mr-2" />
               <p className="text-sm font-medium">{scanStatusMessage}</p>
@@ -153,57 +166,61 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
             <div className="w-64 h-64 bg-gray-100 rounded-lg mx-auto mb-6 flex items-center justify-center border-2 border-dashed border-gray-300 overflow-hidden">
               {selectedImage ? (
                 <img src={selectedImage} alt="Captured product" className="w-full h-full object-cover rounded-lg" />
-              ) : isAnalyzing ? (
-                <div className="text-center">
-                  <Loader2 className="w-12 h-12 text-green-500 animate-spin mx-auto mb-4" />
-                  <p className="text-gray-600">{language === 'zh' ? '正在分析成分…' : 'Analyzing ingredients…'}</p>
-                </div>
               ) : (
                 <div className="text-center">
-                  <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <Camera className="w-16 h-16 text-gray-400 mx-auto mb-2" />
                   <p className="text-gray-500">
-                    {type === 'label'
-                      ? language === 'zh'
-                        ? '拍攝成分列表'
-                        : 'Capture ingredient list'
-                      : language === 'zh'
-                      ? '拍攝商品條碼'
-                      : 'Capture barcode'}
+                    {t.language === 'zh' ? '拍攝產品標籤成分列表' : 'Capture ingredient list'}
                   </p>
                 </div>
               )}
             </div>
 
-            {error && <div className="text-red-500 text-sm mb-4 bg-red-50 p-2 rounded">{error}</div>}
+            {error && (
+              <div className="text-red-500 text-sm mb-4 bg-red-50 p-2 rounded">
+                {error}
+              </div>
+            )}
 
-            {/* SINGLE BUTTON — uses the same logic as the old "Alternate" */}
-            <div className="space-y-3">
+            {!selectedImage ? (
               <Button
-                onClick={takePhotoAndAnalyze}
+                onClick={openCamera}
                 disabled={isAnalyzing}
-                className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-semibold disabled:opacity-50"
+                className="w-full h-12 bg-green-600 hover:bg-green-600 text-white font-semibold disabled:opacity-50"
               >
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                    {language === 'zh' ? '分析中…' : 'Analyzing…'}
-                  </>
-                ) : (
-                  <>
-                    <Camera className="w-5 h-5 mr-2" />
-                    {language === 'zh' ? '拍照' : 'Take Photo'}
-                  </>
-                )}
+                <Camera className="w-5 h-5 mr-2" />
+                {t.language === 'zh' ? '拍照' : 'Take Photo'}
               </Button>
-
-              {selectedImage && !isAnalyzing && (
-                <Button onClick={() => setSelectedImage(null)} variant="outline" className="w-full">
-                  {language === 'zh' ? '重新拍照' : 'Retake Photo'}
+            ) : (
+              <div className="space-y-3">
+                <Button
+                  onClick={() => handleAnalyze()}
+                  disabled={isAnalyzing}
+                  className="w-full h-12 bg-green-600 hover:bg-green-600 text-white font-semibold disabled:opacity-50"
+                >
+                  {isAnalyzing ? (
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  ) : (
+                    <Upload className="w-5 h-5 mr-2" />
+                  )}
+                  {isAnalyzing
+                    ? t.language === 'zh' ? '分析中…' : 'Analyzing…'
+                    : t.language === 'zh' ? '開始分析' : 'Start Analysis'}
                 </Button>
-              )}
-            </div>
+
+                <Button
+                  onClick={() => setSelectedImage(null)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {t.language === 'zh' ? '重新拍攝' : 'Retake Photo'}
+                </Button>
+              </div>
+            )}
           </div>
         </Card>
+
+        <ScanLimitDialog open={showLimitDialog} onClose={() => setShowLimitDialog(false)} />
       </div>
     </div>
   );
