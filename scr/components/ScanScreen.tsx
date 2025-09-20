@@ -28,7 +28,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
     const el = inputRef.current;
     if (!el) return;
     try {
-      // Prefer modern picker when available (Chrome/Android supports this)
+      // Prefer modern picker (Chrome/Android supports this)
       // @ts-ignore
       if (el.showPicker) el.showPicker();
       else el.click();
@@ -37,22 +37,25 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
     }
   };
 
-  // === GREEN BUTTON FIX ===
-  // When the user takes/chooses a photo via the green button,
-  // immediately start analysis after the image is read.
-  const onInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // --- GREEN BUTTON PATH ---
+  // Convert file -> dataURL, preview it, then kick analysis on next tick.
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const files = e.target.files;
-      e.target.value = ''; // allow re-picking the same file later
+      e.target.value = ''; // allow re-pick of same file
       if (!files || !files.length) return;
 
       const file = files[0];
       const reader = new FileReader();
-      reader.onload = async () => {
+      reader.onload = () => {
         const dataUrl = reader.result as string;
         setSelectedImage(dataUrl);
         setError('');
-        await handleAnalyze(dataUrl); // 🔥 auto-analyze for green button flow
+
+        // Defer one tick to avoid any mobile/webview event timing quirks.
+        setTimeout(() => {
+          void handleAnalyze(dataUrl);
+        }, 0);
       };
       reader.onerror = () => {
         setError('Could not read photo. Please try again.');
@@ -64,21 +67,21 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
     }
   };
 
-  // Alternate capture (leave behavior unchanged unless you want it to auto-analyze too)
+  // --- ALTERNATE PATH ---
+  // Keep this one auto-analyzing too so you always have a working path.
   const fallbackCapture = async () => {
     try {
       const dataUrl = await GPTImageAnalysisService.captureImageFromCamera();
       setSelectedImage(dataUrl);
       setError('');
-      // If you want alternate to auto-analyze as well, uncomment:
-      // await handleAnalyze(dataUrl);
+      await handleAnalyze(dataUrl);
     } catch (err) {
       console.error('Fallback capture failed:', err);
       setError('Camera not available. Try the Gallery option.');
     }
   };
 
-  // Core analyze method (accepts optional image to avoid setState race)
+  // Core analyze (optionally takes image to avoid state race)
   const handleAnalyze = async (imgOverride?: string) => {
     const img = imgOverride ?? selectedImage;
     if (!img) {
