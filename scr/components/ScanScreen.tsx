@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft, Camera, Loader2, Upload, AlertCircle } from 'lucide-react';
@@ -18,67 +18,30 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
   const { getScanStatusMessage } = useUser();
   const language = useTranslation();
 
-  const inputRef = useRef<HTMLInputElement | null>(null);
-
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [error, setError] = useState<string>();
 
-  const openCamera = () => {
-    const el = inputRef.current;
-    if (!el) return;
+  // SINGLE PATH: camera capture (same logic as the old Alternate button)
+  const takePhotoAndAnalyze = async () => {
     try {
-      // Prefer modern picker on mobile Chrome
-      // @ts-ignore
-      if (el.showPicker) el.showPicker();
-      else el.click();
-    } catch {
-      el.click();
-    }
-  };
-
-  // Green button => capture + analyze immediately
-  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const files = e.target.files;
-      e.target.value = ''; // allow same-file reselect
-      if (!files || !files.length) return;
-
-      const file = files[0];
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const dataUrl = reader.result as string;
-        setSelectedImage(dataUrl);
-        setError('');
-        await handleAnalyze(dataUrl); // 🔥 analyze right away
-      };
-      reader.onerror = () => {
-        setError('Could not read photo. Please try again.');
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      console.error('File read error:', err);
-      setError('Could not read photo. Please try again.');
-    }
-  };
-
-  // Alternate (kept for testing parity)
-  const fallbackCapture = async () => {
-    try {
+      setError('');
+      // 1) capture directly from camera (no <input/>)
       const dataUrl = await GPTImageAnalysisService.captureImageFromCamera();
       setSelectedImage(dataUrl);
-      setError('');
+
+      // 2) analyze immediately
       await handleAnalyze(dataUrl);
     } catch (err) {
-      console.error('Fallback capture failed:', err);
-      setError('Camera not available. Try the Gallery option.');
+      console.error('Camera/analysis error:', err);
+      setError(language === 'zh' ? '無法拍照或分析，請再試一次。' : 'Could not capture or analyze, please try again.');
     }
   };
 
   const handleAnalyze = async (imgOverride?: string) => {
     const img = imgOverride ?? selectedImage;
     if (!img) {
-      setError(language === 'zh' ? '请先拍照后再分析' : 'Please take a photo first');
+      setError(language === 'zh' ? '請先拍照' : 'Please take a photo first');
       return;
     }
 
@@ -122,7 +85,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
       addScanResult(result);
       setIsAnalyzing(false);
       onResult(result);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Analysis error:', err);
       setIsAnalyzing(false);
       onResult(
@@ -151,7 +114,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
           child_safe: false,
           notes: '',
         },
-        'No result – please try another image.'
+        language === 'zh' ? '沒有結果，請換一張清晰照片再試。' : 'No result—please try another, clearer image.'
       );
     }
   };
@@ -160,23 +123,6 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-      {/* Hidden input the green button triggers */}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onChange={onInputChange}
-        style={{
-          position: 'absolute',
-          width: '0.1px',
-          height: '0.1px',
-          opacity: 0,
-          overflow: 'hidden',
-          zIndex: -1,
-        }}
-      />
-
       <div className="max-w-md mx-auto pt-8">
         <div className="flex items-center mb-6">
           <Button variant="ghost" onClick={onBack} className="mr-4">
@@ -185,10 +131,10 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
           <h1 className="text-xl font-bold text-green-800">
             {type === 'label'
               ? language === 'zh'
-                ? '扫描产品标签'
+                ? '掃描產品標籤'
                 : 'Scan Label'
               : language === 'zh'
-              ? '扫描条码'
+              ? '掃描條碼'
               : 'Scan Barcode'}
           </h1>
         </div>
@@ -210,7 +156,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
               ) : isAnalyzing ? (
                 <div className="text-center">
                   <Loader2 className="w-12 h-12 text-green-500 animate-spin mx-auto mb-4" />
-                  <p className="text-gray-600">{language === 'zh' ? '正在分析原料…' : 'Analyzing ingredients…'}</p>
+                  <p className="text-gray-600">{language === 'zh' ? '正在分析成分…' : 'Analyzing ingredients…'}</p>
                 </div>
               ) : (
                 <div className="text-center">
@@ -218,10 +164,10 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
                   <p className="text-gray-500">
                     {type === 'label'
                       ? language === 'zh'
-                        ? '拍摄产品标签成分列表'
+                        ? '拍攝成分列表'
                         : 'Capture ingredient list'
                       : language === 'zh'
-                      ? '拍摄商品条码'
+                      ? '拍攝商品條碼'
                       : 'Capture barcode'}
                   </p>
                 </div>
@@ -230,48 +176,32 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
 
             {error && <div className="text-red-500 text-sm mb-4 bg-red-50 p-2 rounded">{error}</div>}
 
-            {!selectedImage ? (
-              <div className="space-y-3">
-                {/* Green Take Photo → capture + analyze */}
-                <Button
-                  onClick={openCamera}
-                  className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-semibold disabled:opacity-50"
-                >
-                  <Camera className="w-5 h-5 mr-2" />
-                  {language === 'zh' ? '拍照' : 'Take Photo'}
-                </Button>
-
-                {/* Alternate capture (kept for testing) */}
-                <Button variant="outline" onClick={fallbackCapture} className="w-full">
-                  {language === 'zh' ? '备用拍照方式' : 'Try Alternate Capture'}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <Button
-                  onClick={() => handleAnalyze()}
-                  disabled={isAnalyzing}
-                  className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-semibold disabled:opacity-50"
-                >
-                  {isAnalyzing ? (
+            {/* SINGLE BUTTON — uses the same logic as the old "Alternate" */}
+            <div className="space-y-3">
+              <Button
+                onClick={takePhotoAndAnalyze}
+                disabled={isAnalyzing}
+                className="w-full h-12 bg-green-600 hover:bg-green-700 text-white font-semibold disabled:opacity-50"
+              >
+                {isAnalyzing ? (
+                  <>
                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  ) : (
-                    <Upload className="w-5 h-5 mr-2" />
-                  )}
-                  {isAnalyzing
-                    ? language === 'zh'
-                      ? '分析中…'
-                      : 'Analyzing…'
-                    : language === 'zh'
-                    ? '开始分析'
-                    : 'Start Analysis'}
-                </Button>
+                    {language === 'zh' ? '分析中…' : 'Analyzing…'}
+                  </>
+                ) : (
+                  <>
+                    <Camera className="w-5 h-5 mr-2" />
+                    {language === 'zh' ? '拍照' : 'Take Photo'}
+                  </>
+                )}
+              </Button>
 
+              {selectedImage && !isAnalyzing && (
                 <Button onClick={() => setSelectedImage(null)} variant="outline" className="w-full">
-                  {language === 'zh' ? '重新拍摄' : 'Retake Photo'}
+                  {language === 'zh' ? '重新拍照' : 'Retake Photo'}
                 </Button>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </Card>
       </div>
