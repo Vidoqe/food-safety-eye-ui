@@ -21,22 +21,14 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | null>(null); // dataURL
+  const [selectedImage, setSelectedImage] = useState<string | null>(null); // data URL
   const [error, setError] = useState<string>();
-
-  const fileToDataURL = (file: File): Promise<string> =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
 
   const openCamera = () => {
     const el = inputRef.current;
     if (!el) return;
     try {
-      // Prefer modern file picker if available (Chrome/Android supports this)
+      // Prefer modern picker when available (Chrome/Android supports this)
       // @ts-ignore
       if (el.showPicker) el.showPicker();
       else el.click();
@@ -45,37 +37,48 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
     }
   };
 
-  // 🔥 Auto-analyze right after a regular capture
+  // === GREEN BUTTON FIX ===
+  // When the user takes/chooses a photo via the green button,
+  // immediately start analysis after the image is read.
   const onInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const files = e.target.files;
-      e.target.value = ''; // allow same file re-pick
+      e.target.value = ''; // allow re-picking the same file later
       if (!files || !files.length) return;
+
       const file = files[0];
-      const dataUrl = await fileToDataURL(file);
-      setSelectedImage(dataUrl);
-      setError('');
-      await handleAnalyze(dataUrl); // pass the image directly
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const dataUrl = reader.result as string;
+        setSelectedImage(dataUrl);
+        setError('');
+        await handleAnalyze(dataUrl); // 🔥 auto-analyze for green button flow
+      };
+      reader.onerror = () => {
+        setError('Could not read photo. Please try again.');
+      };
+      reader.readAsDataURL(file);
     } catch (err) {
       console.error('File read error:', err);
       setError('Could not read photo. Please try again.');
     }
   };
 
-  // 🔥 Alternate capture path (uses service) and auto-analyzes as well
+  // Alternate capture (leave behavior unchanged unless you want it to auto-analyze too)
   const fallbackCapture = async () => {
     try {
       const dataUrl = await GPTImageAnalysisService.captureImageFromCamera();
       setSelectedImage(dataUrl);
       setError('');
-      await handleAnalyze(dataUrl);
+      // If you want alternate to auto-analyze as well, uncomment:
+      // await handleAnalyze(dataUrl);
     } catch (err) {
       console.error('Fallback capture failed:', err);
-      setError('Camera not available. Try the other button or gallery.');
+      setError('Camera not available. Try the Gallery option.');
     }
   };
 
-  // Core analyze function (accepts an optional image to avoid race with setState)
+  // Core analyze method (accepts optional image to avoid setState race)
   const handleAnalyze = async (imgOverride?: string) => {
     const img = imgOverride ?? selectedImage;
     if (!img) {
@@ -161,7 +164,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-      {/* Keep input in layout (opacity:0) so browsers don't ignore clicks */}
+      {/* Keep input present (opacity:0) so browsers don't ignore programmatic clicks */}
       <input
         id="camera-input"
         ref={inputRef}
@@ -185,7 +188,13 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <h1 className="text-xl font-bold text-green-800">
-            {type === 'label' ? (language === 'zh' ? '扫描产品标签' : 'Scan Label') : (language === 'zh' ? '扫描条码' : 'Scan Barcode')}
+            {type === 'label'
+              ? language === 'zh'
+                ? '扫描产品标签'
+                : 'Scan Label'
+              : language === 'zh'
+              ? '扫描条码'
+              : 'Scan Barcode'}
           </h1>
         </div>
 
