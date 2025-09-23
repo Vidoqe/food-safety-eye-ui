@@ -1,7 +1,12 @@
 {
   "rewrites": [
-    { "source": "/camera-test",  "destination": "/camera-test.html" },
+    { "source": "/camera-test", "destination": "/camera-test.html" },
     { "source": "/barcode-test", "destination": "/barcode-test.html" }
   ],
-  "cleanUrls": true
+  "cleanUrls": true,
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "nodejs18.x"
+    }
+  }
 }
