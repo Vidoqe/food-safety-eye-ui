@@ -1,12 +1,10 @@
 {
-  "rewrites": [
-    { "source": "/camera-test", "destination": "/camera-test.html" },
-    { "source": "/barcode-test", "destination": "/barcode-test.html" }
-  ],
-  "cleanUrls": true,
   "functions": {
-    "api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  }
+    "api/**/*.js": { "runtime": "nodejs18.x" }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1.js" },
+    { "source": "/camera-test",  "destination": "/camera-test.html" },
+    { "source": "/barcode-test", "destination": "/barcode-test.html" }
+  ]
 }
