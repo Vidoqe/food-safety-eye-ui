@@ -14,7 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ ok: false, error: 'Method Not Allowed' });
   }
 
-  // Body might come in as string or already-parsed object
+  // Body might be a string; parse if needed.
   let body: any = req.body;
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch {}
@@ -23,25 +23,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const image = body?.image as string | undefined;
   const language = (body?.language as string | undefined) ?? 'en';
 
-  const diagnostics: Record<string, any> = {
+  const diagnostics = {
     received: !!image,
     language,
     imageType: typeof image,
     imageStartsWith: image ? image.slice(0, 30) : '',
     imageLength: image?.length ?? 0,
-    note: 'This diagnostics block is here to confirm the frontend really sent a data URL.',
+    route: '/api/analyze-product-image',
+    note: 'Expect image to be a data URL: data:image/...;base64,...',
   };
 
-  // Validate image
   if (!image) {
-    return res.status(400).json({
-      ok: false,
-      error: 'No image provided in request body.',
-      diagnostics,
-    });
+    return res.status(400).json({ ok: false, error: 'No image provided.', diagnostics });
   }
 
-  // Must be a data URL: data:image/png;base64,xxxx or data:image/jpeg;base64,xxxx
   const isDataUrl = /^data:image\/[a-zA-Z]+;base64,/.test(image);
   if (!isDataUrl) {
     return res.status(400).json({
@@ -51,35 +46,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
-  // ====== PLACEHOLDER ANALYSIS ======
-  // For now, we’ll return a tiny fake analysis so the table fills in.
-  // Once we confirm imageLength > 1000 and the Data URL looks good,
-  // we’ll plug in the real OCR + GPT analysis.
-  const fakeRows: AnalysisRow[] = [
-    {
-      ingredient: 'Water',
-      riskLevel: 'Low',
-      childRisk: 'No',
-      badge: 'green',
-      taiwanFda: 'No specific restriction',
-    },
-    {
-      ingredient: 'Sugar',
-      riskLevel: 'Moderate',
-      childRisk: 'Unknown',
-      badge: 'yellow',
-      taiwanFda: 'No specific restriction',
-    },
+  // TEMPORARY FAKE ANALYSIS so UI can populate while we debug the pipe.
+  const rows: AnalysisRow[] = [
+    { ingredient: 'Water',  riskLevel: 'Low',      childRisk: 'No',       badge: 'green',  taiwanFda: 'No specific restriction' },
+    { ingredient: 'Sugar',  riskLevel: 'Moderate', childRisk: 'Unknown',  badge: 'yellow', taiwanFda: 'No specific restriction' },
   ];
 
   return res.status(200).json({
     ok: true,
     overall: {
       verdict: 'Moderate Risk (limit intake)',
-      summary: 'Temporary placeholder analysis to verify data flow.',
-      tips: ['If you see these rows, the API received the image correctly.'],
+      summary: 'Placeholder until OCR+GPT is reattached.',
+      tips: ['Seeing these rows means the API received the image correctly.'],
     },
     diagnostics,
-    ingredients: fakeRows,
+    ingredients: rows,
   });
 }
