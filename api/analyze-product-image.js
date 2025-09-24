@@ -10,7 +10,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "No image data provided" });
     }
 
-    // Placeholder analysis logic
+    // ✅ placeholder logic
     res.status(200).json({
       ok: true,
       message: "Image received successfully",
