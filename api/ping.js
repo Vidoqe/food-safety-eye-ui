@@ -1,8 +1,7 @@
-// api/ping.js
-module.exports = (req, res) => {
+export default function handler(req, res) {
   res.status(200).json({
     ok: true,
-    now: new Date().toISOString(),
-    note: "Serverless functions are working."
+    now: Date.now(),
+    note: "Serverless functions are working.",
   });
-};
+}

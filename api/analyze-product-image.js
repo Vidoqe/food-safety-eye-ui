@@ -1,28 +1,22 @@
-// api/analyze-product-image.js
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "Method Not Allowed" });
+    const { imageBase64 } = req.body;
+
+    if (!imageBase64) {
+      return res.status(400).json({ error: "No image data provided" });
     }
 
-    const { imageBase64, barcode } = req.body || {};
-    if (!imageBase64 && !barcode) {
-      return res.status(400).json({ ok: false, error: "imageBase64 or barcode required" });
-    }
-
-    return res.status(200).json({
+    // Placeholder analysis logic
+    res.status(200).json({
       ok: true,
-      received: {
-        imageBase64: Boolean(imageBase64),
-        barcode: barcode || null,
-      },
-      result: {
-        overallRisk: "Moderate",
-        tips: ["Placeholder analysis – route works"],
-        ingredients: [],
-      },
+      message: "Image received successfully",
+      length: imageBase64.length,
     });
   } catch (err) {
-    return res.status(500).json({ ok: false, error: String(err) });
+    res.status(500).json({ error: "Server error", details: err.message });
   }
-};
+}
