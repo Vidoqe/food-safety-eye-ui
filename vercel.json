@@ -1,8 +1,12 @@
 {
   "version": 2,
   "functions": {
-    "api/*.js": {
-      "runtime": "nodejs22.x"
-    }
-  }
+    "api/*.js": { "runtime": "nodejs22.x" }
+  },
+  "routes": [
+    { "src": "/api/ping", "dest": "/api/ping.js" },
+    { "src": "/api/hello", "dest": "/api/hello.js" },
+    { "src": "/api/analyze-image", "dest": "/api/analyze-image.js" },
+    { "src": "/api/analyze-product-image", "dest": "/api/analyze-product-image.js" }
+  ]
 }
