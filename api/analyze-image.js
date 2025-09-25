@@ -1,15 +1,39 @@
-module.exports = async (req, res) => {
+// api/analyze-image.js
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ ok: false, error: "Method Not Allowed" });
   }
+
   try {
-    const { imageBase64 } = req.body || {};
-    if (!imageBase64) {
-      return res.status(400).json({ ok: false, error: "No image provided" });
+    const response = await fetch(process.env.SUPABASE_EDGE_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+      body: JSON.stringify(req.body),
+    });
+
+    // Try to parse JSON response from Supabase
+    let data;
+    try {
+      data = await response.json();
+    } catch {
+      // If it wasn’t valid JSON, capture raw text
+      const text = await response.text();
+      return res.status(response.status).json({
+        ok: false,
+        error: "Supabase function did not return JSON",
+        details: text,
+      });
     }
-    // placeholder
-    return res.status(200).json({ ok: true, length: imageBase64.length });
-  } catch (err) {
-    return res.status(500).json({ ok: false, error: err.message });
+
+    return res.status(response.status).json(data);
+  } catch (error) {
+    return res.status(500).json({
+      ok: false,
+      error: "Server error while contacting Supabase",
+      details: error.message,
+    });
   }
-};
+}
