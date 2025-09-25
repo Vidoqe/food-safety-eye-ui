@@ -1,21 +1,15 @@
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ ok: false, error: "Method Not Allowed" });
   }
-
   try {
     const { imageBase64 } = req.body || {};
     if (!imageBase64) {
-      return res.status(400).json({ error: "No image data provided" });
+      return res.status(400).json({ ok: false, error: "No image provided" });
     }
-
-    // placeholder: just confirm we received something
-    return res.status(200).json({
-      ok: true,
-      message: "Image received successfully",
-      length: imageBase64.length,
-    });
+    // placeholder
+    return res.status(200).json({ ok: true, length: imageBase64.length });
   } catch (err) {
-    return res.status(500).json({ error: "Server error", details: err.message });
+    return res.status(500).json({ ok: false, error: err.message });
   }
-}
+};
