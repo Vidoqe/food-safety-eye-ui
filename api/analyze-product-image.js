@@ -1,15 +1,20 @@
+// api/analyze-product-image.js
 export default async function handler(req, res) {
-  res.setHeader("Content-Type", "application/json; charset=utf-8");
-
-  if (req.method !== "POST") {
-    return res.status(405).json({ ok: false, error: "Method Not Allowed" });
-  }
-
   try {
-    // Vercel usually parses JSON, but be defensive
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+
+    if (req.method !== "POST") {
+      return res.status(405).json({ ok: false, error: "Method not allowed" });
+    }
+
+    // Vercel usually parses JSON, but handle the string-body case too
     let body = req.body;
     if (typeof body === "string") {
-      try { body = JSON.parse(body); } catch { /* ignore */ }
+      try {
+        body = JSON.parse(body);
+      } catch {
+        return res.status(400).json({ ok: false, error: "Invalid JSON body" });
+      }
     }
 
     const { imageBase64 } = body || {};
@@ -17,18 +22,18 @@ export default async function handler(req, res) {
       return res.status(400).json({ ok: false, error: "No imageBase64 provided" });
     }
 
-    // 👉 Placeholder “analysis”
+    // 🔸 Placeholder logic (replace later with real analysis)
     return res.status(200).json({
       ok: true,
       message: "Image received successfully",
       length: imageBase64.length,
-      endpoint: "analyze-product-image"
+      endpoint: "analyze-product-image",
     });
   } catch (err) {
     return res.status(500).json({
       ok: false,
       error: "Server error",
-      details: String(err && err.message ? err.message : err)
+      details: err?.message || String(err),
     });
   }
 }

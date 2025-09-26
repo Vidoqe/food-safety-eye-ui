@@ -1,58 +1,69 @@
 import React, { useRef, useState } from "react";
 
-const ScanScreen: React.FC = () => {
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [log, setLog] = useState<string>("");
+export default function ScanScreen() {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [log, setLog] = useState<string[]>([]);
 
-  // Helper to log messages
-  const addLog = (msg: string) => {
-    setLog((prev) => new Date().toLocaleTimeString() + " " + msg + "\n" + prev);
-  };
+  const addLog = (msg: string) => setLog((l) => [...l, msg]);
 
-  // Handle file selection
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const file = e.target.files[0];
-    setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
-    addLog(`Selected: ${file.name} (${Math.round(file.size / 1024)} KB)`);
-    e.target.value = "";
-  };
-
-  // Open camera
-  const openCamera = () => {
+  const pickPhoto = () => {
     inputRef.current?.click();
   };
 
-  // Convert file → base64 and send to API
+  const onFileChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    addLog(`Selected: ${file.name} (${Math.round(file.size / 1024)} KB)`);
+
+    // Preview
+    const preview = URL.createObjectURL(file);
+    setImageUrl(preview);
+  };
+
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string); // data:image/...;base64,AAAA
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
   const startAnalysis = async () => {
-    if (!selectedFile) {
-      addLog("No file selected for analysis.");
-      return;
-    }
-
     try {
-      const base64String: string = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(selectedFile); // Converts to data:image/jpeg;base64,...
-      });
+      const file = inputRef.current?.files?.[0];
+      if (!file) {
+        addLog("No file selected");
+        return;
+      }
 
+      const base64String = await fileToBase64(file);
       addLog(`Base64 length: ${base64String.length}`);
 
       const response = await fetch("/api/analyze-product-image", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json; charset=utf-8" },
         body: JSON.stringify({ imageBase64: base64String }),
       });
 
-      const result = await response.json();
-      addLog("Analysis complete: " + JSON.stringify(result, null, 2));
+      // Always try JSON first; if it fails, show raw text to help debugging
+      const text = await response.text();
+      let json: any;
+      try {
+        json = JSON.parse(text);
+      } catch {
+        addLog(`Non-JSON response: ${text.slice(0, 200)}`);
+        throw new Error("Server did not return JSON");
+      }
+
+      if (!response.ok || json?.ok === false) {
+        throw new Error(json?.error || `HTTP ${response.status}`);
+      }
+
+      addLog("Analysis complete: " + JSON.stringify(json, null, 2));
     } catch (err: any) {
-      addLog("Error: " + err.message);
+      addLog("Error: " + (err?.message || String(err)));
     }
   };
 
@@ -60,49 +71,49 @@ const ScanScreen: React.FC = () => {
     <div className="px-4 py-6">
       <h1 className="text-2xl font-bold text-center mb-4">Scan Product Label</h1>
 
-      {/* Hidden camera input */}
+      {/* Hidden input */}
       <input
         ref={inputRef}
         type="file"
         accept="image/*"
         capture="environment"
         onChange={onFileChange}
-        style={{ display: "none" }}
+        className="hidden"
       />
 
-      {/* Preview image */}
-      <div className="border-2 border-dashed rounded-xl p-6 bg-white/70 mb-4 flex items-center justify-center">
-        {previewUrl ? (
-          <img src={previewUrl} alt="preview" className="max-h-64 object-contain rounded" />
+      {/* Preview */}
+      <div className="border-2 border-dashed rounded-xl p-4 mb-4">
+        {imageUrl ? (
+          <img src={imageUrl} alt="preview" className="mx-auto max-h-96 object-contain" />
         ) : (
-          <div className="text-gray-500 text-center">📷 Capture ingredient list</div>
+          <p className="text-center text-sm opacity-70">No image selected</p>
         )}
       </div>
 
-      {/* Buttons */}
-      <button
-        onClick={openCamera}
-        className="block w-full text-center rounded-xl bg-green-600 py-3 text-white text-lg font-semibold hover:bg-green-700 active:scale-95 transition"
-      >
-        Take Photo
-      </button>
+      <div className="flex gap-3 justify-center mb-4">
+        <button
+          onClick={pickPhoto}
+          className="bg-green-600 text-white px-5 py-3 rounded-lg font-semibold"
+        >
+          Take Photo
+        </button>
+        <button
+          onClick={startAnalysis}
+          className="bg-blue-600 text-white px-5 py-3 rounded-lg font-semibold"
+        >
+          Start Analysis
+        </button>
+      </div>
 
-      <button
-        onClick={startAnalysis}
-        className="mt-3 block w-full text-center rounded-xl bg-blue-600 py-3 text-white text-lg font-semibold hover:bg-blue-700 active:scale-95 transition"
-      >
-        Start Analysis
-      </button>
-
-      {/* Log */}
-      <div className="mt-6 text-xs text-gray-500">
-        <b>Event Log</b>
-        <pre className="border rounded p-2 h-40 overflow-auto whitespace-pre-wrap">
-          {log || "No events yet…"}
-        </pre>
+      {/* Event log */}
+      <div className="bg-white border rounded-md p-3 text-sm whitespace-pre-wrap">
+        <strong>Event Log</strong>
+        <div className="mt-2">
+          {log.map((l, i) => (
+            <div key={i}>{l}</div>
+          ))}
+        </div>
       </div>
     </div>
   );
-};
-
-export default ScanScreen;
+}
