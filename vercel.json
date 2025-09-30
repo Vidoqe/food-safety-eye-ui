@@ -3,7 +3,7 @@
     "api/*.js": {
       "maxDuration": 30,
       "memory": 1024,
-      "runtime": "vercel-nodejs@20.0.0"
+      "runtime": "nodejs20.x"
     }
   }
 }
