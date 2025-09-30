@@ -1,39 +1,30 @@
-// api/analyze-product-image.js
-export default async function handler(req, res) {
+export default async function handler(req, res) { console.log("🔍 Incoming body:", req.body);
+console.log("🔑 SUPABASE_URL:", process.env.VITE_SUPABASE_URL);
+console.log("🔑 SUPABASE_KEY exists:", !!process.env.VITE_SUPABASE_ANON_KEY);
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  if (req.method !== "POST") {
+    return res.status(405).json({ ok: false, error: "Method Not Allowed" });
+  }
+
   try {
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-
-    if (req.method !== "POST") {
-      return res.status(405).json({ ok: false, error: "Method not allowed" });
-    }
-
-    // Vercel usually parses JSON, but handle the string-body case too
     let body = req.body;
-    if (typeof body === "string") {
-      try {
-        body = JSON.parse(body);
-      } catch {
-        return res.status(400).json({ ok: false, error: "Invalid JSON body" });
-      }
+    if (typeof body === "string") { try { body = JSON.parse(body); } catch {} }
+
+    const { imageUrl, imageBase64 } = body || {};
+
+    if (!imageUrl && !imageBase64) {
+      return res.status(400).json({ ok: false, error: "Provide imageUrl or imageBase64" });
     }
 
-    const { imageBase64 } = body || {};
-    if (!imageBase64 || typeof imageBase64 !== "string") {
-      return res.status(400).json({ ok: false, error: "No imageBase64 provided" });
-    }
-
-    // 🔸 Placeholder logic (replace later with real analysis)
+    // Placeholder “analysis”
     return res.status(200).json({
       ok: true,
-      message: "Image received successfully",
-      length: imageBase64.length,
-      endpoint: "analyze-product-image",
+      received: imageUrl ? "url" : "base64",
+      imageUrl: imageUrl || null,
+      length: imageBase64 ? imageBase64.length : undefined,
+      endpoint: "analyze-product-image"
     });
   } catch (err) {
-    return res.status(500).json({
-      ok: false,
-      error: "Server error",
-      details: err?.message || String(err),
-    });
+    return res.status(500).json({ ok: false, error: "Server error", details: String(err && err.message ? err.message : err) });
   }
 }
