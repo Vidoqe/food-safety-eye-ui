@@ -3,9 +3,7 @@
     "api/*.js": {
       "maxDuration": 30,
       "memory": 1024,
-      "regions": ["hkg1"],
       "runtime": "nodejs18.x",
-      "maxDurationSeconds": 30,
       "maxLambdaSize": "50mb",
       "maxUploadFileSize": "10mb"
     }
