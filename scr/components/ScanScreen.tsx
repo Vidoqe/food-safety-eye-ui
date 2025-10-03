@@ -1,147 +1,211 @@
-// scr/components/ScanScreen.tsx
-import React, { useRef, useState } from "react";
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { ArrowLeft, Camera, Loader2, Upload, AlertCircle } from 'lucide-react';
+import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
+import { useUser } from '@/contexts/UserContext';
+import { useTranslation } from '@/utils/translations';
+import  GPTImageAnalysisService  from '../services/gptImageAnalysis';
+import { ScanLimitDialog } from '@/components/ScanLimitDialog';
 
-// Small helper to add lines to the event log
-function useLogger() {
-  const [lines, setLines] = useState<string[]>([]);
-  return {
-    lines,
-    add: (msg: string) => setLines((prev) => [...prev, msg]),
-    clear: () => setLines([]),
-  };
+interface ScanScreenProps {
+  type: 'label' | 'barcode';
+  onBack: () => void;
+  onResult: (result: AnalysisResult, error?: string) => void;
 }
 
-export default function ScanScreen() {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const logger = useLogger();
+const ScanScreen: React.FC<ScanScreenProps> = ({ type, onBack, onResult }) => {
+  const { language, addScanResult } = useAppContext();
+  const { user, canScan, incrementScanCount, getScanStatusMessage, creditSummary } = useUser();
+  const t = useTranslation(language);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showLimitDialog, setShowLimitDialog] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
-  async function toBase64(file: File): Promise<string> {
-    return await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = reject;
-      reader.readAsDataURL(file); // yields data:image/...;base64,XXXX
-    });
-  }
-
-  function onChooseClick() {
-    if (fileInputRef.current) fileInputRef.current.click();
-  }
-
-  function onFileSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    logger.clear();
-    if (!file) {
-      logger.add("No file selected");
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setPreviewUrl(url);
-    logger.add(`Selected: ${file.name} (${Math.round(file.size / 1024)} KB)`);
-  }
-
-  async function startAnalysis() {
-    const input = fileInputRef.current;
-    const selectedFile = input?.files?.[0];
-
-    logger.add("Starting analysis…");
-
-    if (!selectedFile) {
-      logger.add("No file selected");
-      return;
-    }
-
+  const handleImageCapture = async () => {
     try {
-      setBusy(true);
-
-      // Convert to base64
-      const base64String = await toBase64(selectedFile);
-      logger.add(`Base64 length: ${base64String.length}`);
-
-      // POST JSON to our API
-      const resp = await fetch("/api/analyze-product-image", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: base64String }),
-      });
-
-      // Try to parse JSON; if server returned text (e.g. error page), show that
-      let result: any = null;
-      const text = await resp.text();
-      try {
-        result = JSON.parse(text);
-      } catch {
-        logger.add(`Non-JSON response: ${text.slice(0, 200)}`);
-      }
-
-      if (!resp.ok) {
-        logger.add(`Server error (${resp.status})`);
-      }
-
-      if (result) {
-        logger.add("Analysis complete: " + JSON.stringify(result, null, 2));
-      }
-    } catch (err: any) {
-      logger.add("Error: " + (err?.message ?? String(err)));
-    } finally {
-      setBusy(false);
+      const imageBase64 = await GPTImageAnalysisService.captureImageFromCamera();
+      setSelectedImage(imageBase64);
+      setError('');
+    } catch (error) {
+      console.error('Camera capture error:', error);
     }
-  }
+  };
+
+  const handleAnalyze = async () => {
+    if (!selectedImage) {
+      setError('請先上傳食品標籤圖片才能分析成分');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setError('');
+    
+    try {
+      // Use 食安眼 (Food Safety Eye) analyzeProduct method
+      const analysis = await GPTImageAnalysisService.analyzeProduct(
+        selectedImage,
+        undefined,
+        undefined,
+        language === 'zh' ? 'zh' : 'en'
+      );
+      
+      const result: AnalysisResult = {
+        id: Date.now().toString(),
+        ingredients: analysis.ingredients,
+        verdict: analysis.verdict,
+        tips: analysis.tips || [],
+        timestamp: new Date(),
+        productType: type === 'barcode' ? 'Barcode Scan' : 'Label Scan',
+        isEdible: true,
+        extractedIngredients: analysis.extractedIngredients,
+        keyDetectedSubstances: analysis.regulatedAdditives,
+        isNaturalProduct: analysis.isNaturalProduct,
+        regulatedAdditives: analysis.regulatedAdditives,
+        junkFoodScore: analysis.junkFoodScore,
+        quickSummary: analysis.quickSummary,
+        overallSafety: analysis.overallSafety,
+        summary: analysis.summary,
+        productName: analysis.productName,
+        barcode: analysis.barcode,
+        taiwanWarnings: analysis.taiwanWarnings,
+        scansLeft: analysis.scansLeft,
+        creditsExpiry: analysis.creditsExpiry,
+        overall_risk: analysis.overall_risk,
+        child_safe: analysis.child_safe,
+        notes: analysis.notes
+      };
+      
+      addScanResult(result);
+      setIsAnalyzing(false);
+      onResult(result);
+    } catch (error: any) {
+      console.error('Analysis error:', error);
+      setIsAnalyzing(false);
+      
+      // Show error without returning to dashboard
+      onResult({
+        id: Date.now().toString(),
+        ingredients: [],
+        verdict: 'moderate',
+        tips: [],
+        timestamp: new Date(),
+        productType: 'Error',
+        isEdible: false,
+        extractedIngredients: [],
+        keyDetectedSubstances: [],
+        isNaturalProduct: false,
+        regulatedAdditives: [],
+        junkFoodScore: 0,
+        quickSummary: 'Error'
+      }, error.message || 'No result – please try another image.');
+    }
+  };
+
+  const scanStatusMessage = getScanStatusMessage();
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Scan Product Label</h1>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
+      <div className="max-w-md mx-auto pt-8">
+        <div className="flex items-center mb-6">
+          <Button variant="ghost" onClick={onBack} className="mr-4">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <h1 className="text-xl font-bold text-green-800">
+            {type === 'label' ? t.scanLabel : t.scanBarcode}
+          </h1>
+        </div>
 
-      {/* Hidden input so mobile opens camera; keep it in DOM */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={onFileSelected}
-      />
-
-      {/* Choose / Take Photo */}
-      <div className="flex gap-3 mb-4">
-        <button
-          onClick={onChooseClick}
-          className="px-4 py-2 rounded bg-gray-200"
-          disabled={busy}
-        >
-          Choose File
-        </button>
-
-        <button
-          onClick={startAnalysis}
-          className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60"
-          disabled={busy}
-        >
-          {busy ? "Analyzing…" : "Start Analysis"}
-        </button>
-      </div>
-
-      {/* Preview */}
-      <div className="mb-4">
-        {previewUrl ? (
-          <img
-            src={previewUrl}
-            alt="preview"
-            className="w-full rounded border"
-          />
-        ) : (
-          <div className="text-sm text-gray-500">No image selected yet.</div>
+        {scanStatusMessage && (
+          <Card className="p-4 mb-4 bg-red-50 border-red-200">
+            <div className="flex items-center text-red-700">
+              <AlertCircle className="w-5 h-5 mr-2" />
+              <p className="text-sm font-medium">{scanStatusMessage}</p>
+            </div>
+          </Card>
         )}
-      </div>
 
-      {/* Event log */}
-      <div className="rounded border bg-gray-50 p-3 text-sm whitespace-pre-wrap">
-        {logger.lines.length === 0
-          ? "Event log will appear here…"
-          : logger.lines.join("\n")}
+        <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <div className="text-center">
+            <div className="w-64 h-64 bg-gray-100 rounded-lg mx-auto mb-6 flex items-center justify-center border-2 border-dashed border-gray-300 overflow-hidden">
+              {selectedImage ? (
+                <img 
+                  src={selectedImage} 
+                  alt="Captured product" 
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              ) : isAnalyzing ? (
+                <div className="text-center">
+                  <Loader2 className="w-12 h-12 text-green-500 animate-spin mx-auto mb-4" />
+                  <p className="text-gray-600">
+                    {language === 'zh' ? '正在分析成分...' : 'Analyzing ingredients...'}
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">
+                    {type === 'label' 
+                      ? (language === 'zh' ? '拍攝產品標籤成分列表' : 'Capture ingredient list')
+                      : (language === 'zh' ? '拍攝產品條碼' : 'Capture barcode')
+                    }
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="text-red-500 text-sm mb-4 bg-red-50 p-2 rounded">
+                {error}
+              </div>
+            )}
+
+            {!selectedImage ? (
+              <Button
+                onClick={handleImageCapture}
+                disabled={isAnalyzing}
+                className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-semibold disabled:opacity-50"
+              >
+                <Camera className="w-5 h-5 mr-2" />
+                {language === 'zh' ? '拍攝照片' : 'Take Photo'}
+              </Button>
+            ) : (
+              <div className="space-y-3">
+                <Button
+                  onClick={handleAnalyze}
+                  disabled={isAnalyzing}
+                  className="w-full h-12 bg-green-500 hover:bg-green-600 text-white font-semibold disabled:opacity-50"
+                >
+                  {isAnalyzing ? (
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  ) : (
+                    <Upload className="w-5 h-5 mr-2" />
+                  )}
+                  {isAnalyzing 
+                    ? (language === 'zh' ? '分析中...' : 'Analyzing...')
+                    : (language === 'zh' ? '開始分析' : 'Start Analysis')
+                  }
+                </Button>
+                <Button
+                  onClick={() => setSelectedImage(null)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {language === 'zh' ? '重新拍攝' : 'Retake Photo'}
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
       </div>
+      
+      <ScanLimitDialog 
+        open={showLimitDialog}
+        onClose={() => setShowLimitDialog(false)}
+      />
     </div>
   );
-}
+};
+
+export default ScanScreen;
