@@ -12,7 +12,7 @@ import { useUser } from '../contexts/UserContext';
 import IngredientAnalysisService from '../services/ingredientAnalysis.ts';
 
 // GPT analyzer (image + text). We’ll use it for manual text too.
-import GPTImageAnalysisService, { type GPTAnalysisResult } from '../services/gptImageAnalysis';
+import { GPTImageAnalysisService, type GPTAnalysisResult }  from '../services/gptImageAnalysis';
 
 interface ManualInputScreenProps {
   onBack?: () => void;

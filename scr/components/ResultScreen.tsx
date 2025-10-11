@@ -1,32 +1,10 @@
-// scr/screens/ResultScreen.tsx
+// src/components/ResultScreen.tsx
 import React from 'react';
 import IngredientRiskTable from '@/components/IngredientRiskTable';
 import { useAppContext } from '@/contexts/AppContext';
+import type { GPTAnalysisResult, Risk } from '@/services/gptImageAnalysis';
 
-/** Types should match your IngredientAnalysisService output */
-type Risk = 'healthy' | 'low' | 'moderate' | 'harmful';
-
-interface IngredientRow {
-  name: string;
-  name_en: string;
-  name_zh: string;
-  status: Risk;
-  badge: string;
-  childSafe: boolean;
-  reason?: string;
-  matchedKey?: string;
-  taiwanRegulation?: string;
-  chinese?: string; // for backward-compat in your table
-}
-
-interface AnalysisResult {
-  verdict: Risk | 'moderate'; // keep union tolerant
-  ingredients: IngredientRow[];
-  tips?: string[];
-  summary?: string;
-}
-
-/** Fallback badge map (used if a row or verdict has no badge) */
+// fallback badge for verdict
 const BADGE_FALLBACK: Record<Risk, string> = {
   harmful: '🔴',
   moderate: '🟡',
@@ -53,26 +31,19 @@ function verdictText(v: Risk, lang: 'en' | 'zh') {
   }
 }
 
-function sectionTitle(key: 'overview' | 'summary' | 'tips' | 'details', lang: 'en' | 'zh') {
+function sectionTitle(
+  key: 'overview' | 'summary' | 'tips' | 'details',
+  lang: 'en' | 'zh'
+) {
   const map = {
-    en: {
-      overview: 'Overall Result',
-      summary: 'Summary',
-      tips: 'Tips',
-      details: 'Ingredient Details',
-    },
-    zh: {
-      overview: '整體結果',
-      summary: '摘要',
-      tips: '建議',
-      details: '成分詳情',
-    },
+    en: { overview: 'Overall Result', summary: 'Summary', tips: 'Tips', details: 'Ingredient Details' },
+    zh: { overview: '整體結果', summary: '摘要', tips: '建議', details: '成分詳情' },
   };
   return map[lang][key];
 }
 
 interface Props {
-  result: AnalysisResult | null;
+  result: GPTAnalysisResult | null;
   onBack?: () => void;
 }
 
@@ -86,10 +57,7 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
           {language === 'zh' ? '尚未產生結果。' : 'No result yet.'}
         </p>
         {onBack && (
-          <button
-            onClick={onBack}
-            className="mt-4 rounded bg-gray-200 px-4 py-2 hover:bg-gray-300"
-          >
+          <button onClick={onBack} className="mt-4 rounded bg-gray-200 px-4 py-2 hover:bg-gray-300">
             {language === 'zh' ? '返回' : 'Back'}
           </button>
         )}
@@ -97,7 +65,6 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
     );
   }
 
-  // Normalize verdict type + badge
   const verdict: Risk =
     result.verdict === 'low' || result.verdict === 'healthy'
       ? 'healthy'
@@ -105,7 +72,7 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
       ? 'harmful'
       : 'moderate';
 
-  const verdictBadge = BADGE_FALLBACK[verdict] ?? '⚪';
+  const verdictBadge = BADGE_FALLBACK[verdict] ?? '🟡';
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
@@ -115,7 +82,7 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
         {onBack && (
           <button
             onClick={onBack}
-            className="rounded bg-gray-100 px-3 py-2 text-sm hover:bg-gray-200"
+            className="rounded bg-gray-100 px-3 py-1.5 text-sm hover:bg-gray-200"
           >
             {language === 'zh' ? '返回' : 'Back'}
           </button>
@@ -126,24 +93,19 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
       <div className="rounded-2xl border p-4 md:p-5 bg-white shadow-sm">
         <div className="flex items-center gap-3">
           <div className="text-2xl">{verdictBadge}</div>
-          <div>
-            <div className="text-lg font-medium">
-              {verdictText(verdict, language)}
-            </div>
-            {!!result.summary && (
-              <div className="text-gray-600 mt-1">
-                {result.summary}
-              </div>
-            )}
-          </div>
+          <div className="text-lg font-medium">{verdictText(verdict, language)}</div>
         </div>
+
+        {!!result.summary && (
+          <div className="text-gray-700 mt-3">{result.summary}</div>
+        )}
       </div>
 
       {/* Tips */}
       {!!result.tips?.length && (
         <div className="rounded-2xl border p-4 md:p-5 bg-white shadow-sm">
           <h3 className="text-lg font-semibold mb-2">{sectionTitle('tips', language)}</h3>
-          <ul className="list-disc ml-5 space-y-1">
+          <ul className="list-disc ml-6 space-y-1">
             {result.tips.map((t, i) => (
               <li key={i} className="text-gray-700">{t}</li>
             ))}
@@ -151,9 +113,18 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
         </div>
       )}
 
-      {/* Ingredient Table */}
-      <div className="rounded-2xl border p-2 md:p-4 bg-white shadow-sm">
+      {/* Ingredient section */}
+      <div className="rounded-2xl border p-3 md:p-4 bg-white shadow-sm">
         <h3 className="text-lg font-semibold mb-3">{sectionTitle('details', language)}</h3>
+
+        {(result.ingredients?.length ?? 0) === 0 && (
+          <div className="rounded-xl border p-3 bg-yellow-50 text-yellow-900 mb-3">
+            {language === 'zh'
+              ? '無法從照片辨識成分表。請靠近成分文字並保持良好光線；或改用手動輸入。'
+              : 'Couldn’t detect an ingredient list from the photo. Move closer, keep text in focus with good lighting, or use Manual input.'}
+          </div>
+        )}
+
         <IngredientRiskTable ingredients={result.ingredients || []} />
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import  GPTImageAnalysisService  from '../services/gptImageAnalysis';
+import { GPTImageAnalysisService, type GPTAnalysisResult }   from '../services/gptImageAnalysis';
 
 interface ApiTestScreenProps {
   onBack: () => void;
@@ -69,7 +69,7 @@ const ApiTestScreen: React.FC<ApiTestScreenProps> = ({ onBack }) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxZ3pobHVna3h5dGlvbnlybm9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMzQ5OTQsImV4cCI6MjA2NzYxMDk5NH0.LK8YHE_JDl0Mj0vl-SFhAbUvrpLu-rIbL3lakuBqddM"
+          "Authorization": "Bearer foodSafetySecret123" 
         },
         body: JSON.stringify({
           image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA", // test image sample
