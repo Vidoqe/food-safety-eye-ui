@@ -16,7 +16,7 @@ const SUPABASE_URL =
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxZ3pobHVna3h5dGlvbnlybm9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMzQ5OTQsImV4cCI6MjA2NzYxMDk5NH0.LK8YHE_JDl0Mj0vl-SFhAbUvrpLu-rIbL3IakuBqddM';
 
 // Must match the secret your Edge Function checks
-const BEARER_TOKEN = 'foodSafetySecret123';
+const BEARER_TOKEN = 'foodsafetysecret123';
 
 /* ============== Public types (lightweight) ============== */
 export type Risk = 'healthy' | 'low' | 'moderate' | 'harmful' | 'unknown';
@@ -121,8 +121,8 @@ export async function analyzeProduct(params: {
           'Content-Type': 'application/json',
           // This must match the Edge Function check:
           // const authHeader = req.headers.get('authorization');
-          // 'Bearer foodSafetySecret123'
-          Authorization: `Bearer ${BEARER_TOKEN}`,
+          // 'Bearer foodsafetysecret123'
+          Authorization: `Bearer ${foodsafetysecret123}`,
           // Required by Supabase Functions Gateway
           apikey: ANON_KEY,
         },
