@@ -1,92 +1,37 @@
 /**
- * src/services/gptImageAnalysis.ts  — Food Safety Eye (UI)
+ * scr/services/gptImageAnalysis.ts — Food Safety Eye (UI)
  * Calls Supabase Edge Function `analyze-product-image`
- * Auth uses a shared secret (string) that MUST match the Function check.
- * Logs enough info to debug in DevTools.
+ * Uses shared secret auth + loud debug logs.
+ * Updated: 2025-10-12
  */
 
-console.log("[UI] gptImageAnalysis loaded");
+console.log("BUNDLE_MARKER_2025-10-12 :: gptImageAnalysis loaded");
 
-/* =======================  CONFIG  ======================= */
-/** 1) Your Supabase Edge Function (public) URL  */
+/* ========================= CONFIG =========================
+ * 1) SUPABASE_URL  → your function invoke URL
+ * 2) ANON_KEY      → your Supabase anon (public) key
+ * 3) SHARED_SECRET → MUST match the secret your function checks
+ * ========================================================= */
 const SUPABASE_URL =
   "https://hqgzhlugkxytionyrnor.supabase.co/functions/v1/analyze-product-image";
-
-/** 2) Supabase ANON key (public; from Project Settings → API → anon key) */
 const ANON_KEY = "<eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxZ3pobHVna3h5dGlvbnlybm9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMzQ5OTQsImV4cCI6MjA2NzYxMDk5NH0.LK8YHE_JDl0Mj0vl-SFhAbUvrpLu-rIbL3IakuBqddM>";
+const SHARED_SECRET = "foodsafetysecret456"; // <-- your new shared secret
 
-/** 3) 🔐 SHARED SECRET sent in the Authorization header (string)
- *  ───────────────────────────────────────────────────────────
- *  ⬇⬇⬇  PUT YOUR SECRET HERE (must match the Function)  ⬇⬇⬇
- *  Example you asked for: "foodsafetysecret123"
- */
-const SHARED_SECRET = "foodsafetysecret123";
-/* ======================================================== */
+/* ======================= TYPES ======================= */
+export type AnalyzeParams = {
+  imageBase64?: string; // data URL: "data:image/jpeg;base64,..."
+  barcode?: string;
+  ingredients?: string;
+  lang?: "zh" | "en" | "zh-hant" | string;
+};
 
-/** Converts a File to data:URL */
-function fileToDataURL(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
+export type AnalysisResponse = {
+  ok: boolean;
+  result?: any;
+  error?: string;
+};
 
-/** Compress a data:URL down to ~1400px max side as JPEG for upload */
-async function compressDataUrl(
-  dataUrl: string,
-  maxSide = 1400,
-  quality = 0.75
-): Promise<string> {
-  const img = new Image();
-  img.crossOrigin = "anonymous";
-  await new Promise((res, rej) => {
-    img.onload = () => res(null);
-    img.onerror = () => rej(new Error("Image decode failed"));
-    img.src = dataUrl;
-  });
-
-  const { width, height } = img;
-  const scale = Math.min(1, maxSide / Math.max(width, height));
-  const outW = Math.round(width * scale);
-  const outH = Math.round(height * scale);
-
-  const canvas = document.createElement("canvas");
-  canvas.width = outW;
-  canvas.height = outH;
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(img, 0, 0, outW, outH);
-
-  return canvas.toDataURL("image/jpeg", quality);
-}
-
-/** Open camera/file picker and return a compressed image as data:URL */
-export async function captureImageFromCamera(): Promise<string> {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  (input as any).capture = "environment";
-
-  return new Promise<string>((resolve, reject) => {
-    input.onchange = async () => {
-      try {
-        const file = (input as HTMLInputElement).files?.[0];
-        if (!file) return reject(new Error("No file selected"));
-        const raw = await fileToDataURL(file);
-        const compressed = await compressDataUrl(raw, 1400, 0.75);
-        console.log("[UI] captured image dataUrl length:", compressed.length);
-        resolve(compressed);
-      } catch (err) {
-        reject(err);
-      }
-    };
-    input.onerror = () => reject(new Error("Camera/file picker failed"));
-    input.click();
-  });
-}
-
-/** fetch with timeout + DEBUG logs */
+/* ============ Small helper: fetch + timeout ============ */
 async function fetchWithTimeout(
   url: string,
   init: RequestInit,
@@ -102,53 +47,18 @@ async function fetchWithTimeout(
   try {
     const resp = await fetch(url, { ...init, signal: controller.signal });
     const ms = Math.round(performance.now() - started);
-    console.log("[UI][DEBUG] fetch response status:", resp.status, `(${ms}ms)`);
+    console.log("[UI][DEBUG] fetch -> status:", resp.status, `(${ms}ms)`);
     return resp;
   } finally {
     clearTimeout(timer);
   }
 }
 
-/** Public API used by Scan screens */
-export type AnalyzeParams = {
-  imageBase64?: string;
-  barcode?: string;
-  ingredients?: string;
-  lang?: "zh" | "en" | "zh-hant" | "zh-Hant" | "zh_TW";
-};
-
-export type GPTRisk = "healthy" | "low" | "moderate" | "harmful" | "unknown";
-
-export type IngredientRow = {
-  name: string;
-  name_zh?: string;
-  status?: GPTRisk;
-  badge?: string;
-  childSafe?: boolean;
-  reason?: string;
-  taiwanRegulation?: string;
-  chinese?: string;
-};
-
-export type AnalysisResult = {
-  verdict: GPTRisk;
-  ingredients: IngredientRow[];
-  tips?: string[];
-  summary?: string;
-};
-
-export type AnalysisResponse = {
-  ok: boolean;
-  result?: AnalysisResult;
-  error?: string;
-};
-
-/** Main call from UI → Supabase Function */
+/* ===================== Public API ===================== */
 export async function analyzeProduct(params: AnalyzeParams): Promise<AnalysisResponse> {
   const { imageBase64 = "", barcode = "", ingredients = "", lang = "zh" } = params;
 
-  // sanity logs (never log the whole body)
-  console.log("[UI][DEBUG] analyzeProduct: overview →", {
+  console.log("[UI][DEBUG] analyzeProduct about to fetch →", {
     image: imageBase64 ? `${imageBase64.length} chars` : "none",
     barcode,
     ingredientsLen: ingredients?.length ?? 0,
@@ -162,49 +72,69 @@ export async function analyzeProduct(params: AnalyzeParams): Promise<AnalysisRes
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          /** 🔐 This MUST match the Function check exactly */
+          // 🔐 MUST match your Edge Function auth check:
           Authorization: `Bearer ${SHARED_SECRET}`,
-          /** Required by Supabase Functions Gateway (public key) */
+          // Required by Supabase Functions Gateway:
           apikey: ANON_KEY,
         },
-        body: JSON.stringify({ image: imageBase64, barcode, ingredients, lang }),
+        body: JSON.stringify({
+          image: imageBase64,
+          barcode,
+          ingredients,
+          lang,
+        }),
       },
       35000
     );
 
+    // Log a short preview of the response body for quick debugging
+    const textPreview = await response
+      .clone()
+      .text()
+      .then((t) => t.slice(0, 300))
+      .catch(() => "");
+    console.log("[UI][DEBUG] fetch -> text(0..300):", textPreview || "(empty)");
+
     if (!response.ok) {
-      const text = await response.text().catch(() => "");
-      console.error("[UI] Edge Function error:", response.status, text?.slice(0, 300));
-      // translate common auth/URL mistakes into friendly hints
-      if (response.status === 401) {
-        return { ok: false, error: "Unauthorized (check SHARED_SECRET on UI & Function)" };
-      }
-      if (response.status === 404) {
-        return { ok: false, error: "Function URL not found (check SUPABASE_URL)" };
-      }
-      return { ok: false, error: `Server error ${response.status}` };
+      return { ok: false, error: `Server error ${response.status}: ${textPreview}` };
     }
 
-    const result = (await response.json()) as AnalysisResult;
-    console.log("[UI] Edge Function JSON received:", result);
+    const json = await response.json().catch(() => null);
+    if (!json) return { ok: false, error: "Malformed JSON from server" };
 
-    // minimal normalization so UI never crashes
-    if (!result || !result.verdict) {
-      return { ok: false, error: "Malformed response from server" };
-    }
-    (result as any).ingredients = Array.isArray(result.ingredients)
-      ? result.ingredients
-      : [];
-
-    return { ok: true, result };
+    return { ok: true, result: json };
   } catch (err: any) {
-    console.error("[UI] analyzeProduct threw:", err?.message ?? err);
+    console.error("[UI][ERROR] analyzeProduct threw:", err?.message ?? err);
     return { ok: false, error: String(err?.message ?? err) };
   }
 }
 
-/** Convenient default export for screens */
+/* ============== Optional: camera capture helper ============== */
+export async function captureImageFromCamera(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    (input as any).capture = "environment";
+    input.onchange = async () => {
+      try {
+        const file = (input as HTMLInputElement).files?.[0];
+        if (!file) return reject(new Error("No file selected"));
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Failed to read image"));
+        reader.readAsDataURL(file);
+      } catch (e) {
+        reject(e);
+      }
+    };
+    input.onerror = () => reject(new Error("Camera/file picker failed"));
+    input.click();
+  });
+}
+
+/* =================== Default-style export =================== */
 export const GPTImageAnalysisService = {
-  captureImageFromCamera,
   analyzeProduct,
+  captureImageFromCamera,
 };
