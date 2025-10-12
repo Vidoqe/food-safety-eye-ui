@@ -172,7 +172,7 @@ export async function analyzeProduct(params: {
         headers: {
           'Content-Type': 'application/json',
           // Your Function checks this shared secret only on the server (OK).
-          Authorization: 'Bearer food-safety-edge', // or whatever shared secret you verify
+          Authorization: 'Bearer foodSafetySecret123', // or whatever shared secret you verify
           apikey: ANON_KEY,
         },
         body: JSON.stringify({
