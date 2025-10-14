@@ -5,7 +5,7 @@ import { ArrowLeft, Camera, Loader2, Upload, AlertCircle } from 'lucide-react';
 import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
 import { useUser } from '@/contexts/UserContext';
 import { useTranslation } from '@/utils/translations';
-import { GPTImageAnalysisService, type GPTAnalysisResult }  from '../services/gptImageAnalysis';
+import { analyzeProduct }  from '../services/gptImageAnalysis';
 import { ScanLimitDialog } from '@/components/ScanLimitDialog';
 
 interface ScanScreenProps {
