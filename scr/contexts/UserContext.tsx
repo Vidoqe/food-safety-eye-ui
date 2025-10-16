@@ -50,25 +50,13 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const initializeUser = async () => {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', 'demo@example.com')
-        .single();
+      // 🧩 TEMP FIX: disable Supabase user lookup (caused 400 error)
+const data = null;
+const error = null;
 
-      if (error && error.code === 'PGRST116') {
-        const { data: newUser, error: createError } = await supabase
-          .from('users')
-          .insert({
-            email: 'demo@example.com',
-            subscription_plan: 'free',
-            subscription_active: true,
-            last_credit_refresh: new Date().toISOString().split('T')[0]
-          })
-          .select()
-          .single();
+// Optionally log a message for debugging
+console.log("⚠️ User lookup temporarily disabled to prevent 400 error");
 
-        if (createError) throw createError;
         
         const userData = {
           id: newUser.id,
