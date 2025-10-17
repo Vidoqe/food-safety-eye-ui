@@ -1,211 +1,113 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import { ScanCreditsService, CreditSummary } from '@/services/scanCreditsService';
+// scr/contexts/UserContext.tsx
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 
+/** ------------------ Types ------------------ */
+export type Plan = "free" | "pro" | "team";
 export interface User {
   id: string;
-  email?: string;
-  subscriptionPlan: 'free' | 'premium' | 'gold';
+  email: string;
+  subscriptionPlan: Plan;
   subscriptionActive: boolean;
-  lastCreditRefresh: string;
+  lastCreditRefresh: string; // ISO date (YYYY-MM-DD)
+  creditsLeft: number;
 }
 
-interface UserContextType {
+interface UserContextValue {
   user: User | null;
-  loading: boolean;
-  creditSummary: CreditSummary | null;
-  incrementScanCount: () => Promise<boolean>;
-  canScan: boolean;
-  upgradeUser: (plan: 'premium' | 'gold') => Promise<void>;
-  language: 'en' | 'zh';
-  setLanguage: (lang: 'en' | 'zh') => void;
-  showUpgradeConfirmation: boolean;
-  setShowUpgradeConfirmation: (show: boolean) => void;
-  upgradedPlan: 'premium' | 'gold' | null;
-  getScanStatusMessage: () => string;
-  refreshCredits: () => Promise<void>;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
+  refreshCredits: (u?: User) => Promise<void>;
+  upgradeUser: (plan: Plan) => Promise<void>;
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+/** ------------------ Context ------------------ */
+const UserContext = createContext<UserContextValue | undefined>(undefined);
 
 export const useUser = () => {
-  const context = useContext(UserContext);
-  if (!context) {
-    throw new Error('useUser must be used within UserProvider');
-  }
-  return context;
+  const ctx = useContext(UserContext);
+  if (!ctx) throw new Error("useUser must be used within <UserProvider>");
+  return ctx;
 };
 
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [creditSummary, setCreditSummary] = useState<CreditSummary | null>(null);
-  const [language, setLanguage] = useState<'en' | 'zh'>('zh');
-  const [showUpgradeConfirmation, setShowUpgradeConfirmation] = useState(false);
-  const [upgradedPlan, setUpgradedPlan] = useState<'premium' | 'gold' | null>(null);
+/** ------------------ Helpers ------------------ */
+function todayISO(): string {
+  return new Date().toISOString().split("T")[0];
+}
 
+/**
+ * If the stored refresh date is not today, top up credits.
+ * (Adjust the numbers to match your product logic.)
+ */
+async function topUpIfNewDay(u: User, setUser: (v: User) => void) {
+  const isNewDay = u.lastCreditRefresh !== todayISO();
+  if (!isNewDay) return;
+
+  const topped: User = {
+    ...u,
+    lastCreditRefresh: todayISO(),
+    // Example policy: free gets 500/day, pro 3,000/day, team 10,000/day
+    creditsLeft:
+      u.subscriptionPlan === "team" ? 10000 : u.subscriptionPlan === "pro" ? 3000 : 500,
+  };
+  setUser(topped);
+}
+
+/** ------------------ Provider ------------------ */
+export const UserProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+
+  // Called by screens that need to ensure credits are fresh.
+  const refreshCredits = async (incoming?: User) => {
+    const base = incoming ?? user;
+    if (!base) return;
+    await topUpIfNewDay(base, (u) => setUser(u));
+  };
+
+  // TEMP: Local demo user initializer (no Supabase).
   useEffect(() => {
+    const initializeUser = async () => {
+      try {
+        // Local demo user so build/deploy works without DB
+        const userData: User = {
+          id: "demo",
+          email: "demo@example.com",
+          subscriptionPlan: "free",
+          subscriptionActive: true,
+          lastCreditRefresh: todayISO(),
+          creditsLeft: 500,
+        };
+
+        setUser(userData);
+        await refreshCredits(userData);
+      } catch (error) {
+        console.error("Error initializing user:", error);
+      }
+    };
+
     initializeUser();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const initializeUser = async () => {
-    try {
-      // 🧩 TEMP FIX: disable Supabase user lookup (caused 400 error)
-const data = null;
-const error = null;
-
-// Optionally log a message for debugging
-console.log("⚠️ User lookup temporarily disabled to prevent 400 error");
-
-        
-        const userData = {
-          id: newUser.id,
-          email: newUser.email,
-          subscriptionPlan: newUser.subscription_plan,
-          subscriptionActive: newUser.subscription_active,
-          lastCreditRefresh: newUser.last_credit_refresh
-        };
-        setUser(userData);
-        await refreshCredits(userData);
-      } else if (data) {
-        const userData = {
-          id: data.id,
-          email: data.email,
-          subscriptionPlan: data.subscription_plan,
-          subscriptionActive: data.subscription_active,
-          lastCreditRefresh: data.last_credit_refresh
-        };
-        setUser(userData);
-        await refreshCredits(userData);
-      }
-    } catch (error) {
-      console.error('Error initializing user:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refreshCredits = async (userData?: User) => {
-    const currentUser = userData || user;
-    if (!currentUser) return;
-
-    try {
-      await ScanCreditsService.cleanupExpiredCredits(currentUser.id);
-      
-      const today = new Date().toISOString().split('T')[0];
-      const lastRefresh = currentUser.lastCreditRefresh;
-      
-      if (lastRefresh !== today && currentUser.subscriptionActive) {
-        const lastRefreshDate = new Date(lastRefresh);
-        const todayDate = new Date(today);
-        
-        if (lastRefreshDate.getMonth() !== todayDate.getMonth() || 
-            lastRefreshDate.getFullYear() !== todayDate.getFullYear()) {
-          await ScanCreditsService.addMonthlyCredits(currentUser.id, currentUser.subscriptionPlan);
-          
-          await supabase
-            .from('users')
-            .update({ last_credit_refresh: today })
-            .eq('id', currentUser.id);
-          
-          setUser(prev => prev ? { ...prev, lastCreditRefresh: today } : null);
-        }
-      }
-      
-      const summary = await ScanCreditsService.getCreditSummary(currentUser.id);
-      setCreditSummary(summary);
-    } catch (error) {
-      console.error('Error refreshing credits:', error);
-    }
-  };
-
-  const incrementScanCount = async (): Promise<boolean> => {
-    if (!user || !user.subscriptionActive) return false;
-    
-    const success = await ScanCreditsService.consumeCredit(user.id);
-    if (success) {
-      await refreshCredits();
-    }
-    return success;
-  };
-
-  const upgradeUser = async (plan: 'premium' | 'gold') => {
+  // Optional: handler for upgrading plan (pure client for now).
+  const upgradeUser = async (plan: Plan) => {
     if (!user) return;
-
     try {
-  // TEMP: disable Supabase write to avoid 400s / auth headaches.
-  // Keep this commented code for later re-enable.
-  /*
-  const { error } = await supabase
-    .from('users')
-    .update({
-      subscription_plan: plan,
-      subscription_active: true,
-    })
-    .eq('id', user.id);
-  if (error) throw error;
-  */
-
-  // Update local state so the app behaves correctly
-  setUser(prev =>
-    prev
-      ? {
-          ...prev,
-          subscriptionPlan: plan,
-          subscriptionActive: true,
-        }
-      : null
-  );
-
-  await refreshCredits();
-  setUpgradedPlan(plan);
-  setShowUpgradeConfirmation(true);
-} catch (error) {
-  console.error('upgradeUser error:', error);
-}
-},
-
-  const getScanStatusMessage = () => {
-    if (!user) return '';
-    
-    if (!user.subscriptionActive) {
-      return language === 'zh' 
-        ? '您的訂閱已結束。請重新啟用以使用您儲存的掃描次數。'
-        : 'Your subscription has ended. Please reactivate to use your saved credits.';
+      // In DB-backed version you would update Supabase here.
+      const updated: User = {
+        ...user,
+        subscriptionPlan: plan,
+        subscriptionActive: true,
+      };
+      setUser(updated);
+      await refreshCredits(updated);
+    } catch (error) {
+      console.error("upgradeUser error:", error);
     }
-    
-    if (!creditSummary || creditSummary.totalCredits === 0) {
-      return language === 'zh'
-        ? '沒有剩餘掃描次數。升級以繼續使用。'
-        : 'No scans left. Upgrade to continue.';
-    }
-    
-    return '';
   };
 
-  const canScan = user ? (
-    user.subscriptionActive && creditSummary && creditSummary.totalCredits > 0
-  ) : false;
-
-  return (
-    <UserContext.Provider
-      value={{
-        user,
-        loading,
-        creditSummary,
-        incrementScanCount,
-        canScan,
-        upgradeUser,
-        language,
-        setLanguage,
-        showUpgradeConfirmation,
-        setShowUpgradeConfirmation,
-        upgradedPlan,
-        getScanStatusMessage,
-        refreshCredits
-      }}
-    >
-      {children}
-    </UserContext.Provider>
+  const value = useMemo<UserContextValue>(
+    () => ({ user, setUser, refreshCredits, upgradeUser }),
+    [user]
   );
+
+  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
