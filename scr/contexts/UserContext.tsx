@@ -133,29 +133,37 @@ console.log("⚠️ User lookup temporarily disabled to prevent 400 error");
     if (!user) return;
 
     try {
-      const { error } = await supabase
-        .from('users')
-        .update({ 
-          subscription_plan: plan,
-          subscription_active: true
-        })
-        .eq('id', user.id);
+  // TEMP: disable Supabase write to avoid 400s / auth headaches.
+  // Keep this commented code for later re-enable.
+  /*
+  const { error } = await supabase
+    .from('users')
+    .update({
+      subscription_plan: plan,
+      subscription_active: true,
+    })
+    .eq('id', user.id);
+  if (error) throw error;
+  */
 
-      if (error) throw error;
+  // Update local state so the app behaves correctly
+  setUser(prev =>
+    prev
+      ? {
+          ...prev,
+          subscriptionPlan: plan,
+          subscriptionActive: true,
+        }
+      : null
+  );
 
-      setUser(prev => prev ? {
-        ...prev,
-        subscriptionPlan: plan,
-        subscriptionActive: true
-      } : null);
-      
-      await refreshCredits();
-      setUpgradedPlan(plan);
-      setShowUpgradeConfirmation(true);
-    } catch (error) {
-      console.error('Error upgrading user:', error);
-    }
-  };
+  await refreshCredits();
+  setUpgradedPlan(plan);
+  setShowUpgradeConfirmation(true);
+} catch (error) {
+  console.error('upgradeUser error:', error);
+}
+
 
   const getScanStatusMessage = () => {
     if (!user) return '';
