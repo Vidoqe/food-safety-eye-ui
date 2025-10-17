@@ -163,7 +163,7 @@ console.log("⚠️ User lookup temporarily disabled to prevent 400 error");
 } catch (error) {
   console.error('upgradeUser error:', error);
 }
-
+},
 
   const getScanStatusMessage = () => {
     if (!user) return '';
