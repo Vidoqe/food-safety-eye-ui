@@ -1,36 +1,20 @@
 
-// scr/App.tsx
-import React from "react";
-import { Toaster } from "sonner";
-import * as Tooltip from "@radix-ui/react-tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import React, { Suspense } from "react";
+import ErrorBoundary from "./components/ErrorBoundary";
 
-import { ThemeProvider } from "@/components/theme-provider";
-import { UserProvider } from "@/contexts/UserContext";
-
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-
-const queryClient = new QueryClient();
+// Your file is scr/components/FoodSafetyAnalyser.tsx (capital S, British "s")
+const FoodSafetyAnalyser = React.lazy(() => import("./components/FoodSafetyAnalyser"));
 
 export default function App() {
+  console.log("[App] mounted");
   return (
-    <ThemeProvider defaultTheme="light">
-      <QueryClientProvider client={queryClient}>
-        <Tooltip.Provider>
-          <UserProvider>
-            <Toaster />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </UserProvider>
-        </Tooltip.Provider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <div style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
+      <div style={{ marginBottom: 16 }}>✅ App mounted (local)</div>
+      <ErrorBoundary>
+        <Suspense fallback={<div>Loading analyzer…</div>}>
+          <FoodSafetyAnalyser />
+        </Suspense>
+      </ErrorBoundary>
+    </div>
   );
 }
-

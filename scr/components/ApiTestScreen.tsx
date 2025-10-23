@@ -1,164 +1,114 @@
 // scr/components/ApiTestScreen.tsx
-import React, { useState } from 'react';
-import { analyzeProduct, type AnalysisResult } from '../services/gptImageAnalysis';
+import React, { useState } from "react";
+import { analyzeProduct, type AnalyzeResult } from "../services/gptImageAnalysis";
 
-interface ApiTestScreenProps {
-  onClose?: () => void;
-}
-
-export default function ApiTestScreen({ onClose }: ApiTestScreenProps) {
-  const [ingredients, setIngredients] = useState<string>('水、糖、檸檬酸、苯甲酸鈉、人工香料、黃色5號');
-  const [barcode, setBarcode] = useState<string>(''); // e.g. 4710088412345
-  const [lang, setLang] = useState<'zh' | 'en'>('zh');
+export default function FoodSafetyAnalyser() {
+  const [ingredients, setIngredients] = useState("");
+  const [barcode, setBarcode] = useState("");
+  const [image, setImage] = useState<string | null>(null);
+  const [lang, setLang] = useState<"zh" | "en">("zh");
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<AnalyzeResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
 
-  const runIngredientsTest = async () => {
+  async function pickImage() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    (input as any).capture = "environment";
+    input.onchange = async () => {
+      const file = (input as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(String(r.result || ""));
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+      setImage(dataUrl);
+    };
+    input.click();
+  }
+
+  async function handleAnalyze() {
     setLoading(true);
     setError(null);
     setResult(null);
     try {
-      const resp = await analyzeProduct({
-        imageBase64: '',
-        ingredients,
-        barcode: '',
+      const r = await analyzeProduct({
+        image: image ?? "",
+        ingredients: ingredients.trim(),
+        barcode: barcode.trim(),
         lang,
       });
-      setResult(resp);
-    } catch (err: any) {
-      setError(err?.message ?? String(err));
+      if (!r.ok) {
+        setError(r.message || "Analysis failed");
+      }
+      setResult(r);
+      // quick confirm
+      alert(`Edge responded ok=${r.ok}\n` + JSON.stringify(r, null, 2).slice(0, 1500));
+    } catch (e: any) {
+      console.error(e);
+      setError(e?.message || String(e));
+      alert(`Error: ${e?.message || String(e)}`);
     } finally {
       setLoading(false);
     }
-  };
-
-  const runBarcodeTest = async () => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    try {
-      const resp = await analyzeProduct({
-        imageBase64: '',
-        ingredients: '',
-        barcode,
-        lang,
-      });
-      setResult(resp);
-    } catch (err: any) {
-      setError(err?.message ?? String(err));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const runEmptyTest = async () => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    try {
-      const resp = await analyzeProduct({
-        imageBase64: '',
-        ingredients: '',
-        barcode: '',
-        lang,
-      });
-      setResult(resp);
-    } catch (err: any) {
-      setError(err?.message ?? String(err));
-    } finally {
-      setLoading(false);
-    }
-  };
+  }
 
   return (
-    <div className="mx-auto max-w-3xl p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">API Test Screen</h1>
-        {onClose && (
-          <button
-            onClick={onClose}
-            className="rounded-md bg-gray-100 px-3 py-1 text-sm hover:bg-gray-200"
-          >
-            Close
-          </button>
-        )}
-      </div>
+    <div style={{ maxWidth: 720, margin: "24px auto", padding: 16 }}>
+      <h2>API Test Screen</h2>
 
-      <div className="mb-6 grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Ingredients (text)</label>
+      <div style={{ display: "grid", gap: 12 }}>
+        <label>
+          Ingredients (text)
           <textarea
-            className="w-full rounded-md border p-2"
-            rows={6}
             value={ingredients}
             onChange={(e) => setIngredients(e.target.value)}
-            placeholder="Paste an ingredient list here…"
+            rows={4}
+            style={{ width: "100%" }}
+            placeholder="e.g. sugar, milk, salt, flavour"
           />
-          <button
-            onClick={runIngredientsTest}
-            disabled={loading}
-            className="rounded-md bg-emerald-600 px-4 py-2 text-white hover:bg-emerald-700 disabled:opacity-50"
-          >
-            {loading ? 'Testing…' : 'Test Ingredients'}
-          </button>
-        </div>
+        </label>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-medium">Barcode</label>
+        <label>
+          Barcode
           <input
-            className="w-full rounded-md border p-2"
             value={barcode}
             onChange={(e) => setBarcode(e.target.value)}
-            placeholder="e.g. 4710088412345"
+            placeholder="e.g. 4712345678901"
           />
+        </label>
 
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-medium">Language</label>
-            <select
-              className="rounded-md border p-2"
-              value={lang}
-              onChange={(e) => setLang(e.target.value as 'zh' | 'en')}
-            >
-              <option value="zh">zh</option>
-              <option value="en">en</option>
-            </select>
-          </div>
+        <label>
+          Language
+          <select value={lang} onChange={(e) => setLang(e.target.value as "zh" | "en")}>
+            <option value="zh">中文</option>
+            <option value="en">English</option>
+          </select>
+        </label>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={runBarcodeTest}
-              disabled={loading}
-              className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading ? 'Testing…' : 'Test Barcode'}
-            </button>
-            <button
-              onClick={runEmptyTest}
-              disabled={loading}
-              className="rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 disabled:opacity-50"
-            >
-              {loading ? 'Testing…' : 'Test Empty (should error)'}
-            </button>
-          </div>
+        <div>
+          <button onClick={pickImage}>Pick/Take Image</button>
+          {image ? <span style={{ marginLeft: 8 }}>📷 image attached</span> : null}
         </div>
+
+        <button onClick={handleAnalyze} disabled={loading}>
+          {loading ? "Analyzing…" : "Analyze"}
+        </button>
+
+        {error && <pre style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{error}</pre>}
+
+        {result && (
+          <details open>
+            <summary>Result JSON</summary>
+            <pre style={{ whiteSpace: "pre-wrap" }}>
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          </details>
+        )}
       </div>
-
-      {error && (
-        <div className="mb-4 rounded-md border border-red-300 bg-red-50 p-3 text-red-700">
-          <div className="font-semibold">Error</div>
-          <div className="text-sm">{error}</div>
-        </div>
-      )}
-
-      {result && (
-        <div className="rounded-md border bg-white p-3">
-          <div className="mb-2 font-semibold">Raw Response</div>
-          <pre className="max-h-[50vh] overflow-auto text-xs leading-relaxed">
-            {JSON.stringify(result, null, 2)}
-          </pre>
-        </div>
-      )}
     </div>
   );
 }
