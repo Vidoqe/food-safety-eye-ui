@@ -80,6 +80,6 @@ try {
   console.error("[AnalyzeProduct] invalid JSON:", text);
   throw new Error("Invalid JSON from edge");
 }
-}
+
 
  
