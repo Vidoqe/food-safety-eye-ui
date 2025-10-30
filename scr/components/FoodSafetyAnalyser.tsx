@@ -71,14 +71,19 @@ export default function FoodSafetyAnalyser() {
       setLoading(true);
 
       const payload = {
-        image: imageDataUrl || undefined,
-        ingredients: ingredients.trim() || undefined,
-        barcode: barcode.trim() || undefined,
-        lang,
-      };
+  image: imageDataUrl || undefined,
+  ingredients: ingredients.trim() || undefined,
+  barcode: barcode.trim() || undefined,
+  lang,
+};
 
-      const res = await AnalyzeProduct(payload);
-      console.log("[Analyze] result:", res);
+// 🔍 Debugging lines
+console.log("[DEBUG] canAnalyze =", canAnalyze);
+console.log("[DEBUG] payload about to send:", payload);
+
+const res = await AnalyzeProduct(payload);
+console.log("[DEBUG] [Analyze] result:", res);
+
 
       // Normalize: the Edge returns { ok, result }, but older code expects fields at top-level
 const data: any = (res && "result" in (res as any)) ? (res as any).result : res;

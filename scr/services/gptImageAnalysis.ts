@@ -29,7 +29,10 @@ const EDGE_URL =
   import.meta.env.VITE_SUPABASE_EDGE_URL ||
   "https://hqgzhlugkytionynror.supabase.co/functions/v1/analyze-product-image";
 const EDGE_SECRET = import.meta.env.VITE_EDGE_SHARED_SECRET || "foodsafetysecret456";
-
+console.log("[CFG] EDGE_URL =", EDGE_URL);
+console.log("[CFG] EDGE_SECRET set?", Boolean(EDGE_SECRET));
+console.log("[CFG] EDGE_URL:", import.meta.env.VITE_SUPABASE_EDGE_URL);
+console.log("[CFG] EDGE_SECRET:", import.meta.env.VITE_EDGE_SHARED_SECRET);
 async function fetchWithTimeout(
   url: string,
   init: RequestInit,
@@ -54,34 +57,26 @@ export async function AnalyzeProduct(params: AnalyzeParams): Promise<AnalyzeResu
     lang: params.lang ?? "zh",
   };
 
-  const res = await fetchWithTimeout(
-    EDGE_URL,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(EDGE_SECRET ? { Authorization: `Bearer ${EDGE_SECRET}` } : {}),
-      },
-      body: JSON.stringify(body),
+  const res = await fetchWithTimeout(EDGE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${EDGE_SECRET}`,
     },
-    30000
-  );
+    body: JSON.stringify(body),
+  });
 
+  // handle response
   const text = await res.text();
-  let json: any = {};
-  try {
-    json = text ? JSON.parse(text) : {};
-  } catch {
-    // leave empty if not JSON
-  }
-
   if (!res.ok) {
-    return {
-      ok: false,
-      message: `Edge returned ${res.status}`,
-      ...(typeof json === "object" ? json : { raw: { errorText: text } }),
-    };
+    console.error("[AnalyzeProduct] error response:", text);
+    throw new Error("Edge function returned error");
   }
 
-  return (json as AnalyzeResult) ?? { ok: true, message: "No payload" };
+  try {
+    return JSON.parse(text);
+  } catch {
+    console.error("[AnalyzeProduct] invalid JSON:", text);
+    throw new Error("Invalid JSON from edge");
+  }
 }
