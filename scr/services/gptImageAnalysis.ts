@@ -82,10 +82,4 @@ try {
 }
 }
 
-  try {
-    return JSON.parse(text);
-  } catch {
-    console.error("[AnalyzeProduct] invalid JSON:", text);
-    throw new Error("Invalid JSON from edge");
-  }
-}
+ 
