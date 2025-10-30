@@ -1,5 +1,10 @@
 import React, { useRef, useState } from 'react';
-import { analyzeProduct } from '../services/gptImageAnalysis';
+const result = await AnalyzeProduct({
+  image: imageDataUrl || "",
+  ingredients: ingredientsText || "",
+  barcode: barcodeText || "",
+  lang: lang || "en",
+});
 
 export default function ScanScreen() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);

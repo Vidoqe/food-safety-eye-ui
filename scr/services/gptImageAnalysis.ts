@@ -61,18 +61,24 @@ export async function AnalyzeProduct(params: AnalyzeParams): Promise<AnalyzeResu
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${EDGE_SECRET}`,
+      "x-shared-secret": EDGE_SECRET,   // ← updated
     },
     body: JSON.stringify(body),
   });
 
-  // handle response
   const text = await res.text();
   if (!res.ok) {
     console.error("[AnalyzeProduct] error response:", text);
     throw new Error("Edge function returned error");
   }
 
+  try {
+    return JSON.parse(text);
+  } catch {
+    console.error("[AnalyzeProduct] invalid JSON:", text);
+    throw new Error("Invalid JSON from edge");
+  }
+}
   try {
     return JSON.parse(text);
   } catch {
