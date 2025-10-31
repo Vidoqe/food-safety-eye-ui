@@ -8,27 +8,10 @@ const FoodSafetyAnalyser = React.lazy(
   () => import("./components/FoodSafetyAnalyser")
 );
 
+import React from "react";
+import HomeScreen from "./components/HomeScreen";
+
 export default function App() {
-  console.log("[App] mounted");
-
-  // "landing" = marketing home screen
-  // "analyze" = the form / scanner / results UI
-  const [mode, setMode] = useState<"landing" | "analyze">("landing");
-
-  return (
-    <div style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
-      {/* keep this small debug line so you know build is the right one */}
-      <div style={{ marginBottom: 16 }}>✅ App mounted (local)</div>
-
-      {mode === "landing" ? (
-        <LandingScreen onStart={() => setMode("analyze")} />
-      ) : (
-        <ErrorBoundary>
-          <Suspense fallback={<div>Loading analyzer…</div>}>
-            <FoodSafetyAnalyser />
-          </Suspense>
-        </ErrorBoundary>
-      )}
-    </div>
-  );
+  console.log("[App] mounted ✅");
+  return <HomeScreen />;
 }
