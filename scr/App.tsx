@@ -6,7 +6,7 @@ import HomeScreen from "./components/HomeScreen";
 import SettingsScreen from "./components/SettingsScreen";
 import ManualInputScreen from "./components/ManualInputScreen";
 import ScanHistoryScreen from "./components/ScanHistoryScreen";
-import ApiTestScreen from "./components/ApiTestScreen";
+
 
 // context providers etc (these are names you've shown me in your codebase)
 import { AppProvider } from "./contexts/AppContext";
@@ -26,8 +26,7 @@ export default function App() {
   const gotoSettings = () => setScreen("settings");
   const gotoManual = () => setScreen("manual");
   const gotoHistory = () => setScreen("history");
-  const gotoApiTest = () => setScreen("apiTest");
-
+  
   return (
     <UserProvider>
       <AppProvider>
@@ -44,7 +43,7 @@ export default function App() {
               onManualInput={gotoManual}
               onSettings={gotoSettings}
               onScanHistory={gotoHistory}
-              onApiTest={gotoApiTest}
+              
             />
           )}
 
@@ -66,12 +65,7 @@ export default function App() {
             />
           )}
 
-          {screen === "apiTest" && (
-            <ApiTestScreen
-              onBack={gotoHome}
-            />
-          )}
-        </div>
+                  </div>
       </AppProvider>
     </UserProvider>
   );
