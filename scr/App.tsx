@@ -1,46 +1,78 @@
 
 import React from "react";
 
-// providers (the wrappers that make language / user / history work)
-import { AppContextProvider } from "./contexts/AppContext";
-import { UserContextProvider } from "./contexts/UserContext";
-import { ScanHistoryProvider } from "./hooks/useScanHistory";
-
-// app layout + screens
-import AppLayout from "./components/AppLayout";
+// main screens
 import HomeScreen from "./components/HomeScreen";
+import SettingsScreen from "./components/SettingsScreen";
+import ManualInputScreen from "./components/ManualInputScreen";
+import ScanHistoryScreen from "./components/ScanHistoryScreen";
+import ApiTestScreen from "./components/ApiTestScreen";
 
+// context providers etc (these are names you've shown me in your codebase)
+import { AppProvider } from "./contexts/AppContext";
+import { UserProvider } from "./contexts/UserContext";
+
+// simple in-memory nav
 export default function App() {
-  console.log("[App] mounted ✅ (RESTORED)");
+  console.log("[App] mounted ✅");
+
+  // we keep simple state for which screen is visible
+  const [screen, setScreen] = React.useState<
+    "home" | "settings" | "manual" | "history" | "apiTest"
+  >("home");
+
+  // handlers we pass down to HomeScreen buttons
+  const gotoHome = () => setScreen("home");
+  const gotoSettings = () => setScreen("settings");
+  const gotoManual = () => setScreen("manual");
+  const gotoHistory = () => setScreen("history");
+  const gotoApiTest = () => setScreen("apiTest");
 
   return (
-    <AppContextProvider>
-      <UserContextProvider>
-        <ScanHistoryProvider>
-          <AppLayout>
+    <UserProvider>
+      <AppProvider>
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
+          {screen === "home" && (
             <HomeScreen
               onScanLabel={() => {
-                console.log("TODO: go to Scan Label screen");
+                // this is your camera flow (ScanScreen / barcode etc.)
+                // you already have this wired in HomeScreen, so we just let HomeScreen handle it
               }}
               onScanBarcode={() => {
-                console.log("TODO: go to Scan Barcode screen");
+                // same story – HomeScreen calls its own logic
               }}
-              onManualInput={() => {
-                console.log("TODO: go to Manual Input screen");
-              }}
-              onSettings={() => {
-                console.log("TODO: go to Settings screen");
-              }}
-              onScanHistory={() => {
-                console.log("TODO: go to Scan History screen");
-              }}
-              onApiTest={() => {
-                console.log("TODO: go to API Test screen");
-              }}
+              onManualInput={gotoManual}
+              onSettings={gotoSettings}
+              onScanHistory={gotoHistory}
+              onApiTest={gotoApiTest}
             />
-          </AppLayout>
-        </ScanHistoryProvider>
-      </UserContextProvider>
-    </AppContextProvider>
+          )}
+
+          {screen === "settings" && (
+            <SettingsScreen
+              onBack={gotoHome}
+            />
+          )}
+
+          {screen === "manual" && (
+            <ManualInputScreen
+              onBack={gotoHome}
+            />
+          )}
+
+          {screen === "history" && (
+            <ScanHistoryScreen
+              onBack={gotoHome}
+            />
+          )}
+
+          {screen === "apiTest" && (
+            <ApiTestScreen
+              onBack={gotoHome}
+            />
+          )}
+        </div>
+      </AppProvider>
+    </UserProvider>
   );
 }
