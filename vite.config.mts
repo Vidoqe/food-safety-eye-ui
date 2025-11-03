@@ -5,13 +5,19 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./scr"),
+      "@": path.resolve(__dirname, "./scr"), // ✅ your actual folder name
     },
   },
-  server: { port: 3000 },
+
+  server: {
+    port: 3000,
+  },
+
   build: {
-  copyPublicDir: true, // ✅ ensures public/ is included in build
-  target: "esnext",    // ✅ allow top-level await & modern syntax
-},
+    copyPublicDir: true, // ✅ include public/ in build
+    target: "esnext",    // ✅ allow top-level await
+  },
+});
