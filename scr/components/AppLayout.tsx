@@ -14,7 +14,7 @@ import UpgradeConfirmationScreen from './UpgradeConfirmationScreen';
 import FirstLaunchPrompt from './FirstLaunchPrompt';
 import PrivacyPolicyPage from './PrivacyPolicyPage';
 import TermsOfUsePage from './TermsOfUsePage';
-import ApiTestScreen from './ApiTestScreen';
+
 
 type Screen = 'splash' | 'home' | 'scan-label' | 'scan-barcode' | 'manual-input' | 'result' | 'settings' | 'junk-food-info' | 'scan-history' | 'upgrade-confirmation' | 'privacy-policy' | 'terms-of-use' | 'api-test';
 
@@ -232,13 +232,7 @@ const AppLayout: React.FC = () => {
             onBack={handleBack}
           />
         );
-      case 'api-test':
-        return (
-          <ApiTestScreen
-            onBack={handleBack}
-          />
-        );
-      case 'upgrade-confirmation':
+           case 'upgrade-confirmation':
         return upgradedPlan ? (
           <UpgradeConfirmationScreen
             plan={upgradedPlan}
