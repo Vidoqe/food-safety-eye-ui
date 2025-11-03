@@ -1,42 +1,36 @@
 
+// scr/App.tsx
 import React from "react";
-import { AppProvider } from "./contexts/AppContext";
-import { UserProvider } from "./contexts/UserContext";
-import HomeScreen from "./components/HomeScreen";
-import SettingsScreen from "./components/SettingsScreen";
-import ManualInputScreen from "./components/ManualInputScreen";
-import ScanHistoryScreen from "./components/ScanHistoryScreen";
+import { Toaster } from "sonner";
+import * as Tooltip from "@radix-ui/react-tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import { ThemeProvider } from "@/components/theme-provider";
+import { UserProvider } from "@/contexts/UserContext";
+
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
+
+const queryClient = new QueryClient();
 
 export default function App() {
-  console.log("[App] mounted ✅");
-
-  const [screen, setScreen] = React.useState<
-    "home" | "settings" | "manual" | "history"
-  >("home");
-
-  const gotoHome = () => setScreen("home");
-  const gotoSettings = () => setScreen("settings");
-  const gotoManual = () => setScreen("manual");
-  const gotoHistory = () => setScreen("history");
-
   return (
-    <UserProvider>
-      <AppProvider>
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-          {screen === "home" && (
-            <HomeScreen
-              onScanLabel={() => console.log("Scan label")}
-              onScanBarcode={() => console.log("Scan barcode")}
-              onManualInput={gotoManual}
-              onSettings={gotoSettings}
-              onScanHistory={gotoHistory}
-            />
-          )}
-          {screen === "settings" && <SettingsScreen onBack={gotoHome} />}
-          {screen === "manual" && <ManualInputScreen onBack={gotoHome} />}
-          {screen === "history" && <ScanHistoryScreen onBack={gotoHome} />}
-        </div>
-      </AppProvider>
-    </UserProvider>
+    <ThemeProvider defaultTheme="light">
+      <QueryClientProvider client={queryClient}>
+        <Tooltip.Provider>
+          <UserProvider>
+            <Toaster />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </UserProvider>
+        </Tooltip.Provider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
+
