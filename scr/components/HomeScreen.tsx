@@ -1,173 +1,139 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Camera, Scan, Settings, History, Shield, Heart, Type, Code, Clock } from 'lucide-react';
-import { useAppContext } from '@/contexts/AppContext';
-import { useTranslation } from '@/utils/translations';
-import { useScanHistory } from '@/hooks/useScanHistory';
-import { useUser } from '@/contexts/UserContext';
-import AppLogo from './AppLogo';
-import TrustIcons from './TrustIcons';
+import React from "react";
 
-interface HomeScreenProps {
+type HomeScreenProps = {
   onScanLabel: () => void;
   onScanBarcode: () => void;
   onManualInput: () => void;
   onSettings: () => void;
   onScanHistory: () => void;
-  onApiTest: () => void;
-}
+};
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ 
-  onScanLabel, 
-  onScanBarcode, 
+const HomeScreen: React.FC<HomeScreenProps> = ({
+  onScanLabel,
+  onScanBarcode,
   onManualInput,
-  onSettings, 
+  onSettings,
   onScanHistory,
-  onApiTest
 }) => {
-  const { language } = useAppContext();
-  const { user, creditSummary } = useUser();
-  const { scanHistory } = useScanHistory();
-  const t = useTranslation(language);
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
-      <div className="max-w-md mx-auto">
-        {/* App Header with Logo */}
-        <div className="mb-8">
-          <AppLogo size="large" showText={true} className="mt-6" />
-          
-          {/* Child Safety Focused Tagline */}
-          <div className="text-center mt-4 px-4">
-            <div className="flex items-center justify-center mb-2">
-              <Shield className="w-5 h-5 text-green-600 mr-2" />
-              <Heart className="w-5 h-5 text-red-500" />
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-emerald-100 text-emerald-900">
+      <div className="mx-auto flex max-w-md flex-col gap-4 px-4 pb-6 pt-6">
+        {/* Top logo + title */}
+        <header className="flex items-center gap-4">
+          <div className="relative h-16 w-16 rounded-full bg-white shadow-md ring-4 ring-emerald-200 flex items-center justify-center">
+            <div className="h-8 w-8 rounded-full bg-emerald-500 flex items-center justify-center">
+              <span className="text-xl">👁️</span>
             </div>
-            <h2 className="text-lg font-semibold text-green-700 mb-2">
-              {language === 'zh' ? '守護孩子健康，從食品安全開始' : 'Protecting Children\'s Health Through Food Safety'}
-            </h2>
-            <p className="text-green-600 text-sm leading-relaxed">
-              {language === 'zh' 
-                ? '食安眼幫助家長識別有害成分，為孩子和家人提供安全的飲食選擇。讓每一口都安心，每一餐都放心。'
-                : 'Food Safety Eye helps parents identify risky ingredients, ensuring safe food choices for children and families. Every bite matters, every meal counts.'}
-            </p>
-            
-            {/* Trust Icons */}
-            <TrustIcons language={language} />
           </div>
-        </div>
-
-        {/* Scan Credits Display */}
-        {user && creditSummary && (
-          <Card className="p-4 mb-6 bg-white/90 backdrop-blur-sm border-green-200">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-green-700 mb-2">
-                {language === 'zh' ? '掃描次數餘額' : 'Scan Credits Balance'}
-              </h3>
-              <div className="text-3xl font-bold text-green-600 mb-2">
-                {creditSummary.totalCredits}
-              </div>
-              {creditSummary.expiringCredits > 0 && (
-                <div className="flex items-center justify-center text-orange-600 text-sm">
-                  <Clock className="w-4 h-4 mr-1" />
-                  {language === 'zh' 
-                    ? `${creditSummary.expiringCredits} 次掃描將在 ${creditSummary.daysUntilExpiry} 天後到期`
-                    : `${creditSummary.expiringCredits} credits expire in ${creditSummary.daysUntilExpiry} days`}
-                </div>
-              )}
-            </div>
-          </Card>
-        )}
-
-        {/* Action Buttons */}
-        <div className="space-y-4 mt-8">
-          <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <Button
-              onClick={onScanLabel}
-              className="w-full h-16 bg-green-500 hover:bg-green-600 text-white text-lg font-semibold shadow-lg"
-            >
-              <Camera className="w-6 h-6 mr-3" />
-              {language === 'zh' ? '掃描產品標籤' : 'Scan Product Label'}
-            </Button>
-          </Card>
-
-          <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <Button
-              onClick={onScanBarcode}
-              className="w-full h-16 bg-blue-500 hover:bg-blue-600 text-white text-lg font-semibold shadow-lg"
-            >
-              <Scan className="w-6 h-6 mr-3" />
-              {language === 'zh' ? '掃描條碼' : 'Scan Barcode'}
-            </Button>
-          </Card>
-
-          <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <Button
-              onClick={onManualInput}
-              className="w-full h-16 bg-purple-500 hover:bg-purple-600 text-white text-lg font-semibold shadow-lg"
-            >
-              <Type className="w-6 h-6 mr-3" />
-              {language === 'zh' ? '手動輸入成分' : 'Manual Input'}
-            </Button>
-          </Card>
-
-          <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <Button
-              onClick={onApiTest}
-              className="w-full h-16 bg-orange-500 hover:bg-orange-600 text-white text-lg font-semibold shadow-lg"
-            >
-              <Code className="w-6 h-6 mr-3" />
-              {language === 'zh' ? 'API 測試' : 'API Test'}
-            </Button>
-          </Card>
-
-          <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <Button
-              onClick={onScanHistory}
-              variant="outline"
-              className="w-full h-16 border-purple-300 text-purple-700 hover:bg-purple-50 text-lg font-semibold relative"
-            >
-              <History className="w-6 h-6 mr-3" />
-              {language === 'zh' ? '掃描記錄' : 'Scan History'}
-              {scanHistory.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-purple-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
-                  {scanHistory.length}
-                </span>
-              )}
-            </Button>
-          </Card>
-
-          <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <Button
-              onClick={onSettings}
-              variant="outline"
-              className="w-full h-16 border-green-300 text-green-700 hover:bg-green-50 text-lg font-semibold"
-            >
-              <Settings className="w-6 h-6 mr-3" />
-              {language === 'zh' ? '設定' : 'Settings'}
-            </Button>
-          </Card>
-        </div>
-
-        {/* Plan Info */}
-        {user && (
-          <div className="mt-6 text-center">
-            <p className="text-sm text-green-600">
-              {language === 'zh' ? '當前方案：' : 'Current Plan: '}
-              <span className="font-semibold">
-                {user.subscriptionPlan === 'gold' ? (language === 'zh' ? '黃金' : 'Gold') :
-                 user.subscriptionPlan === 'premium' ? (language === 'zh' ? '高級' : 'Premium') :
-                 (language === 'zh' ? '免費' : 'Free')}
-              </span>
-              {!user.subscriptionActive && (
-                <span className="text-red-500 ml-2">
-                  ({language === 'zh' ? '已停用' : 'Inactive'})
-                </span>
-              )}
+          <div>
+            <h1 className="text-xl font-bold leading-tight text-emerald-900">
+              Food Safety Eye
+            </h1>
+            <p className="text-base font-semibold text-emerald-800">
+              食安眼
+            </p>
+            <p className="text-xs text-emerald-700">
+              守護孩子健康，從食品安全開始
             </p>
           </div>
-        )}
+        </header>
+
+        {/* Main hero card */}
+        <section className="mt-1 rounded-2xl bg-white p-4 shadow-md">
+          <p className="text-sm text-emerald-800 mb-3">
+            食安眼幫助家長識別有害成分，為孩子和家人提供安全的飲食選擇。
+          </p>
+          <div className="grid grid-cols-2 gap-3 text-xs text-emerald-800">
+            <div className="flex flex-col items-center gap-1 rounded-xl bg-emerald-50 px-2 py-2">
+              <span className="text-xl">👶</span>
+              <span className="font-semibold">Child Safe</span>
+              <span className="text-[11px] text-emerald-700">兒童安全</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 rounded-xl bg-emerald-50 px-2 py-2">
+              <span className="text-xl">🌿</span>
+              <span className="font-semibold">Healthy Choice</span>
+              <span className="text-[11px] text-emerald-700">健康選擇</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 rounded-xl bg-emerald-50 px-2 py-2">
+              <span className="text-xl">⚠️</span>
+              <span className="font-semibold">Additive Warning</span>
+              <span className="text-[11px] text-emerald-700">添加物警示</span>
+            </div>
+            <div className="flex flex-col items-center gap-1 rounded-xl bg-emerald-50 px-2 py-2">
+              <span className="text-xl">🛡️</span>
+              <span className="font-semibold">Taiwan Rules</span>
+              <span className="text-[11px] text-emerald-700">台灣法規</span>
+            </div>
+          </div>
+
+          {/* Big primary action button */}
+          <button
+            onClick={onScanLabel}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white shadow-md hover:bg-emerald-700 active:bg-emerald-800"
+          >
+            <span className="text-lg">📷</span>
+            <span className="leading-tight text-left">
+              拍攝產品標籤
+              <br />
+              <span className="text-[11px] opacity-90">Scan Product Label</span>
+            </span>
+          </button>
+        </section>
+
+        {/* Secondary actions */}
+        <section className="grid grid-cols-2 gap-3">
+          <button
+            onClick={onManualInput}
+            className="flex flex-col items-start gap-1 rounded-2xl bg-white p-3 text-left shadow-sm hover:bg-emerald-50"
+          >
+            <span className="text-lg">📝</span>
+            <span className="text-sm font-semibold text-emerald-900">
+              Input ingredient list
+            </span>
+            <span className="text-[11px] text-emerald-700">
+              文字掃描 / 手動輸入
+            </span>
+          </button>
+
+          <button
+            onClick={onScanBarcode}
+            className="flex flex-col items-start gap-1 rounded-2xl bg-white p-3 text-left shadow-sm hover:bg-emerald-50"
+          >
+            <span className="text-lg">🏷️</span>
+            <span className="text-sm font-semibold text-emerald-900">
+              Scan barcode
+            </span>
+            <span className="text-[11px] text-emerald-700">
+              條碼比對產品資訊
+            </span>
+          </button>
+
+          <button
+            onClick={onScanHistory}
+            className="flex flex-col items-start gap-1 rounded-2xl bg-white p-3 text-left shadow-sm hover:bg-emerald-50"
+          >
+            <span className="text-lg">📜</span>
+            <span className="text-sm font-semibold text-emerald-900">
+              View history
+            </span>
+            <span className="text-[11px] text-emerald-700">
+              過去掃描紀錄
+            </span>
+          </button>
+
+          <button
+            onClick={onSettings}
+            className="flex flex-col items-start gap-1 rounded-2xl bg-white p-3 text-left shadow-sm hover:bg-emerald-50"
+          >
+            <span className="text-lg">⚙️</span>
+            <span className="text-sm font-semibold text-emerald-900">
+              Settings & plan
+            </span>
+            <span className="text-[11px] text-emerald-700">
+              語言 / 帳號 / 方案
+            </span>
+          </button>
+        </section>
       </div>
     </div>
   );
