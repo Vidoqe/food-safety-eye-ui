@@ -3,6 +3,7 @@ import { useScanHistory } from '@/hooks/useScanHistory';
 import { useUser } from '@/contexts/UserContext';
 import AppLogo from './AppLogo';
 import TrustIcons from './TrustIcons';
+import { useAppContext } from "@/contexts/AppContext";
 
 interface HomeScreenProps {
   onScanLabel: () => void;
