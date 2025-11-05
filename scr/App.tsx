@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { UserProvider } from "@/contexts/UserContext";
+import { AppProvider } from "@/contexts/AppContext";
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -20,17 +21,18 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <Tooltip.Provider>
           <UserProvider>
-            <Toaster />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
+            <AppProvider>
+              <Toaster />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </AppProvider>
           </UserProvider>
         </Tooltip.Provider>
       </QueryClientProvider>
     </ThemeProvider>
   );
 }
-
