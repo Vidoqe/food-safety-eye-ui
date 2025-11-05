@@ -1,4 +1,5 @@
-          import { useTranslation } from '@/utils/translations';
+import { Shield } from "lucide-react";          
+import { useTranslation } from '@/utils/translations';
 import { useScanHistory } from '@/hooks/useScanHistory';
 import { useUser } from '@/contexts/UserContext';
 import AppLogo from './AppLogo';
