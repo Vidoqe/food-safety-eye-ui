@@ -1,11 +1,16 @@
-import { Shield, Heart } from "lucide-react";          
-import { useTranslation } from '@/utils/translations';
-import { useScanHistory } from '@/hooks/useScanHistory';
-import { useUser } from '@/contexts/UserContext';
-import AppLogo from './AppLogo';
-import TrustIcons from './TrustIcons';
+// scr/components/HomeScreen.tsx
+import React from "react";
+import { Shield, Heart } from "lucide-react";
+
+import { Card } from "@/components/ui/card";
+
+import { useTranslation } from "@/utils/translations";
+import { useScanHistory } from "@/hooks/useScanHistory";
+import { useUser } from "@/contexts/UserContext";
 import { useAppContext } from "@/contexts/AppContext";
 
+import AppLogo from "./AppLogo";
+import TrustIcons from "./TrustIcons";
 interface HomeScreenProps {
   onScanLabel: () => void;
   onScanBarcode: () => void;
