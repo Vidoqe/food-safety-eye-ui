@@ -69,8 +69,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
                 {language === 'zh' ? '掃描次數餘額' : 'Scan Credits Balance'}
               </h3>
               <div className="text-3xl font-bold text-green-600 mb-2">
-                {creditSummary.totalCredits}
-              </div>
+  {Number(creditSummary?.totalCredits ?? 0)}
+</div>
               {creditSummary.expiringCredits > 0 && (
                 <div className="flex items-center justify-center text-orange-600 text-sm">
                   <Clock className="w-4 h-4 mr-1" />
