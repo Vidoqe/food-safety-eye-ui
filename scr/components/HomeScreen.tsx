@@ -1,6 +1,6 @@
 // scr/components/HomeScreen.tsx
 import React from "react";
-import { Shield, Heart, Camera, Scan, Type, Code } from "lucide-react";
+import { Shield, Heart, Camera, Scan, Type, Code, Settings } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
