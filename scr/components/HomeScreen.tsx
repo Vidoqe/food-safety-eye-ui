@@ -3,6 +3,7 @@ import React from "react";
 import { Shield, Heart } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 import { useTranslation } from "@/utils/translations";
 import { useScanHistory } from "@/hooks/useScanHistory";
