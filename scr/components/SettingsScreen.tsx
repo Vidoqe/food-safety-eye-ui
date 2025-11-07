@@ -97,7 +97,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onPrivacyPolicy
               {user && (
                 <>
                   <p className="text-sm text-gray-600">
-                    {user.scansUsed}/{user.maxScans + user.bonusScans} scans used this month
+                    {Number(user?.scansUsed ?? 0)}/{Number(user?.maxScans ?? 0) + Number(user?.bonusScans ?? 0)} scans used this month
                   </p>
                   {user.bonusScans > 0 && (
                     <p className="text-xs text-green-600 mt-1">
