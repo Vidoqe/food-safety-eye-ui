@@ -1,6 +1,7 @@
 
 // scr/App.tsx
 import React from "react";
+import ManualInputScreen from "./components/ManualInputScreen";
 import { Toaster } from "sonner";
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -24,11 +25,12 @@ export default function App() {
             <AppProvider>
               <Toaster />
               <BrowserRouter>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </BrowserRouter>
+  <Routes>
+    <Route path="/" element={<Index />} />
+    <Route path="/manual-input" element={<ManualInputScreen />} />
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+</BrowserRouter>
             </AppProvider>
           </UserProvider>
         </Tooltip.Provider>
