@@ -5,6 +5,7 @@ import { AnalyzeProduct, type AnalyzeResult } from "../services/gptImageAnalysis
 type Lang = "zh" | "en";
 
 interface ManualInputScreenProps {
+
   onBack?: () => void;
   onResult?: (result: AnalyzeResult) => void;
 }
@@ -45,7 +46,7 @@ export default function ManualInputScreen({ onBack, onResult }: ManualInputScree
 
       const payload = {
         image: undefined,                         // manual input only (no photo)
-        ingredients: ingredients.trim() || undefined,
+        ingredientsText: ingredients.trim() || undefined,
         barcode: barcode.trim() || undefined,
         lang,
       };
