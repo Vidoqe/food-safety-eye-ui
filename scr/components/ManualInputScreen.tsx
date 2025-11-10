@@ -45,8 +45,8 @@ export default function ManualInputScreen({ onBack, onResult }: ManualInputScree
       setLoading(true);
 
       const payload = {
-  image: undefined,                 // manual input only
-  ingredientsText: ingredients.trim() || undefined,  // ✅ renamed
+  image: undefined, // manual mode (no image)
+  ingredientsText: ingredients.trim() || undefined, // ✅ must use this key
   barcode: barcode.trim() || undefined,
   lang,
 };
