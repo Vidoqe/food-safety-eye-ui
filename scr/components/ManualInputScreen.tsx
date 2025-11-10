@@ -45,11 +45,11 @@ export default function ManualInputScreen({ onBack, onResult }: ManualInputScree
       setLoading(true);
 
       const payload = {
-  image: undefined, // manual mode (no photo)
-  ingredientsText: ingredients.trim() || undefined, // ✅ must use ingredientsText
-  barcode: barcode.trim() || undefined,
-  lang,
-};
+    image: undefined, // manual mode (no photo)
+    ingredientsText: ingredients.trim() || undefined, // ✅ use this key!
+    barcode: barcode.trim() || undefined,
+    lang,
+  };
 
       const res = await AnalyzeProduct(payload);
       console.log("[Analyze] result:", res);
