@@ -35,49 +35,62 @@ export default function ManualInputScreen({ onBack, onResult }: ManualInputScree
   );
 
   async function handleAnalyze() {
-    setError(null);
-    if (!canAnalyze) {
-      setError(lang === "zh" ? "請輸入成分或條碼（至少一項）" : "Enter ingredients or a barcode (at least one).");
+  setError(null);
+
+  if (!canAnalyze) {
+    setError(
+      lang === "zh"
+        ? "請輸入成分或條碼（至少一項）。"
+        : "Enter ingredients or a barcode (at least one)."
+    );
+    return;
+  }
+
+  try {
+    setLoading(true);
+
+    const payload = {
+      image: undefined, // manual mode
+      ingredientsText: ingredients.trim() || undefined, // 👈 critical
+      barcode: barcode.trim() || undefined,
+      lang,
+    };
+
+    const res = await AnalyzeProduct(payload);
+    console.log("[Analyze] result:", res);
+
+    if (!res?.ok) {
+      setRows([]);
+      setOverall(undefined);
+      setError(
+        res?.message ||
+          (lang === "zh" ? "分析失敗" : "Analysis failed")
+      );
       return;
     }
 
-    try {
-      setLoading(true);
+    setOverall({
+      risk: res.overallResult,
+      message: res.message,
+      childSafeOverall: res.childSafeOverall,
+    });
+    setRows(Array.isArray(res.table) ? res.table : []);
 
-      const payload = {
-    image: undefined, // manual mode (no photo)
-    ingredientsText: ingredients.trim() || undefined, // ✅ use this key!
-    barcode: barcode.trim() || undefined,
-    lang,
-  };
-
-      const res = await AnalyzeProduct(payload);
-      console.log("[Analyze] result:", res);
-
-      if (!res?.ok) {
-        setRows([]);
-        setOverall(undefined);
-        setError(res?.message || (lang === "zh" ? "分析失敗" : "Analysis failed"));
-        return;
-      }
-
-      setOverall({
-        risk: res.overallResult,
-        message: res.message,
-        childSafeOverall: res.childSafeOverall,
-      });
-      setRows(Array.isArray(res.table) ? res.table : []);
-
-      onResult?.(res);
-    } catch (e: any) {
-      console.error(e);
-      setRows([]);
-      setOverall(undefined);
-      setError(e?.message || (lang === "zh" ? "系統錯誤" : "Unexpected error"));
-    } finally {
-      setLoading(false);
-    }
+    onResult?.(res);
+  } catch (e: any) {
+    console.error(e);
+    setRows([]);
+    setOverall(undefined);
+    setError(
+      e?.message ||
+        (lang === "zh" ? "系統錯誤" : "Unexpected error")
+    );
+  } finally {
+    setLoading(false);
   }
+}
+
+
 
   function RiskBadge({ level }: { level: "Low" | "Moderate" | "High" | "Unknown" }) {
     const color =

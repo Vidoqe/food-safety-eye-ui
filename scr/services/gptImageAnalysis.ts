@@ -69,20 +69,21 @@ export async function AnalyzeProduct(
   }
 
   const body = {
-    image: params.image ?? "",
-    ingredients: params.ingredients ?? "",
-    barcode: params.barcode ?? "",
-    lang: params.lang ?? "zh",
-  };
+  image: params.image ?? "",
+  ingredients: params.ingredients ?? "",
+  ingredientsText: (params as any).ingredientsText ?? "", // 👈 add this line
+  barcode: params.barcode ?? "",
+  lang: params.lang ?? "zh",
+};
 
-  const res = await fetchWithTimeout(EDGE_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-shared-secret": EDGE_SECRET,
-    },
-    body: JSON.stringify(body),
-  });
+const res = await fetchWithTimeout(EDGE_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-shared-secret": EDGE_SECRET,
+  },
+  body: JSON.stringify(body),
+});
 
   const text = await res.text();
 
