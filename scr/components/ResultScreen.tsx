@@ -113,11 +113,11 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
         </div>
       )}
 
-      {/* Show photo warning only if no OCR text AND no manual ingredient table */}
+     {/* Show photo warning only if no OCR text AND no manual ingredient table */}
 {(!result.text && (!result.ingredients || result.ingredients.length === 0)) && (
   <div className="rounded-xl border p-3 bg-yellow-50 text-yellow-900 mb-3">
-    {language === 'zh'
-      ? '無法從照片辨識成分表。請靠近拍攝，確保文字清晰或改用手動輸入。'
+    {language === "zh"
+      ? "無法從照片辨識成分表。請靠近拍攝，確保文字清晰或改用手動輸入。"
       : "Couldn’t detect an ingredient list from the photo. Move closer, keep text in focus with good lighting, or use Manual input."}
   </div>
 )}
