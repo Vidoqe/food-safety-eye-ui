@@ -136,7 +136,9 @@ const ingredientRows =
   )}
 
   <IngredientRiskTable ingredients={ingredientRows} />
-</div>
+</div>  {/* closes the ingredient section */}
+</div>  {/* closes the main outer div */}
 );
+export default ResultScreen;
 
 export default ResultScreen;
