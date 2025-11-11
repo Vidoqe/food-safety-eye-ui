@@ -137,6 +137,6 @@ const ingredientRows =
 
   <IngredientRiskTable ingredients={ingredientRows} />
 </div>
-
+);
 
 export default ResultScreen;
