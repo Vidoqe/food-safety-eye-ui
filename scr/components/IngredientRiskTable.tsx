@@ -1,129 +1,130 @@
-// scr/components/IngredientRiskTable.tsx
 import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Ingredient } from '@/contexts/AppContext';
-import { useAppContext } from '@/contexts/AppContext';
 
-interface IngredientRiskTableProps {
-  ingredients: Ingredient[];
-}
+type Row = {
+  ingredient?: string;
+  name?: string;
+  item?: string;
 
-/** Local fallback so a badge always renders */
-const BADGE_FALLBACK: Record<string, string> = {
-  harmful: '🔴',
-  moderate: '🟡',
-  low: '🟢',
-  healthy: '🟢',
+  risk?: string;
+  riskLevel?: string;
+
+  childRisk?: string;
+  child?: string;
+
+  badge?: string;
+
+  regulation?: string;
+  taiwanRegulation?: string;
+  twRegulation?: string;
+  note?: string;
 };
 
-const IngredientRiskTable: React.FC<IngredientRiskTableProps> = ({ ingredients }) => {
-  const { language } = useAppContext();
+interface Props {
+  ingredients: Row[];
+}
 
-  // Sort by risk level (harmful → moderate → healthy/low)
-  const sorted = [...(ingredients || [])].sort((a, b) => {
-    const order: Record<string, number> = { harmful: 0, moderate: 1, healthy: 2, low: 2 };
-    return (order[a.status] ?? 99) - (order[b.status] ?? 99);
-  });
+function pickName(row: Row): string {
+  return (
+    row.ingredient ||
+    row.name ||
+    row.item ||
+    ''
+  );
+}
 
-  const getRiskLevelText = (status: string): string => {
-    if (language === 'zh') {
-      switch (status) {
-        case 'harmful': return '有害';
-        case 'moderate': return '中等風險';
-        case 'healthy':
-        case 'low': return '低風險';
-        default: return '中等風險';
-      }
-    }
-    switch (status) {
-      case 'harmful': return 'Harmful';
-      case 'moderate': return 'Moderate';
-      case 'healthy':
-      case 'low': return 'Low Risk';
-      default: return 'Moderate';
-    }
-  };
+function pickRisk(row: Row): string {
+  return (
+    row.riskLevel ||
+    row.risk ||
+    ''
+  );
+}
 
-  const getChildRiskText = (childSafety: string | boolean | undefined): string => {
-    const val = typeof childSafety === 'string' ? childSafety : (childSafety ? 'yes' : 'no');
-    if (language === 'zh') {
-      switch (val) {
-        case 'yes': return '是';
-        case 'no': return '否';
-        default: return '未知';
-      }
-    }
-    switch (val) {
-      case 'yes': return 'Yes';
-      case 'no': return 'No';
-      default: return 'Unknown';
-    }
-  };
+function pickChildRisk(row: Row): string {
+  return (
+    row.childRisk ||
+    row.child ||
+    ''
+  );
+}
+
+function pickRegulation(row: Row): string {
+  return (
+    row.regulation ||
+    row.taiwanRegulation ||
+    row.twRegulation ||
+    row.note ||
+    ''
+  );
+}
+
+function badgeDisplay(row: Row): string {
+  const source = (
+    row.badge ||
+    row.riskLevel ||
+    row.risk ||
+    ''
+  ).toLowerCase();
+
+  if (!source) return '';
+
+  if (source.includes('red') || source.includes('high')) {
+    return '🔴 red';
+  }
+  if (source.includes('yellow') || source.includes('moderate')) {
+    return '🟠 yellow';
+  }
+  if (source.includes('green') || source.includes('low') || source.includes('safe')) {
+    return '🟢 green';
+  }
+
+  // Fallback: just show whatever we got
+  return source;
+}
+
+const IngredientRiskTable: React.FC<Props> = ({ ingredients }) => {
+  if (!Array.isArray(ingredients) || ingredients.length === 0) {
+    return (
+      <p className="text-gray-500 text-sm">
+        (No ingredient-level details available.)
+      </p>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-800">
-        {language === 'zh' ? '成分風險分析表' : 'Ingredient Risk Analysis'}
-      </h3>
-
-      <div className="overflow-x-auto">
-        <Table className="w-full">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-left">
-                {language === 'zh' ? '成分' : 'Ingredient'}
-              </TableHead>
-              <TableHead className="text-center">
-                {language === 'zh' ? '風險等級' : 'Risk Level'}
-              </TableHead>
-              <TableHead className="text-center">
-                {language === 'zh' ? '兒童風險？' : 'Child Risk?'}
-              </TableHead>
-              <TableHead className="text-center">
-                {language === 'zh' ? '標誌' : 'Badge'}
-              </TableHead>
-              <TableHead className="text-left">
-                {language === 'zh' ? '台灣食藥署法規' : 'Taiwan FDA Regulation'}
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {sorted.map((ingredient, idx) => (
-              <TableRow key={idx}>
-                <TableCell className="font-medium">
-                  {language === 'zh' ? ingredient.chinese : ingredient.name}
-                </TableCell>
-
-                <TableCell className="text-center">
-                  {getRiskLevelText(ingredient.status)}
-                </TableCell>
-
-                <TableCell className="text-center">
-                  {getChildRiskText(ingredient.childSafety || ingredient.childRisk || 'unknown')}
-                </TableCell>
-
-                <TableCell className="text-center text-lg">
-                  {/* Always show a badge */}
-                  {ingredient.badge || BADGE_FALLBACK[ingredient.status] || '⚪'}
-                </TableCell>
-
-                <TableCell className="text-sm">
-                  {ingredient.taiwanRegulation ||
-                    (language === 'zh' ? '無特定限制' : 'No specific restriction')}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+    <div className="overflow-x-auto">
+      <table className="min-w-full text-sm border-collapse">
+        <thead>
+          <tr className="border-b bg-gray-50">
+            <th className="text-left px-3 py-2 font-semibold">Ingredient</th>
+            <th className="text-left px-3 py-2 font-semibold">Risk Level</th>
+            <th className="text-left px-3 py-2 font-semibold">Child Risk?</th>
+            <th className="text-left px-3 py-2 font-semibold">Badge</th>
+            <th className="text-left px-3 py-2 font-semibold">Taiwan FDA Regulation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ingredients.map((row, i) => (
+            <tr key={i} className="border-b last:border-0">
+              <td className="px-3 py-2 whitespace-nowrap">
+                {pickName(row)}
+              </td>
+              <td className="px-3 py-2 whitespace-nowrap">
+                {pickRisk(row)}
+              </td>
+              <td className="px-3 py-2 whitespace-nowrap">
+                {pickChildRisk(row)}
+              </td>
+              <td className="px-3 py-2 whitespace-nowrap">
+                {badgeDisplay(row)}
+              </td>
+              <td className="px-3 py-2">
+                {pickRegulation(row)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
