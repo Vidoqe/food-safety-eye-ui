@@ -133,7 +133,11 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
   const verdictBadge = BADGE_FALLBACK[verdict] ?? '🟡';
 
   // ------- ingredient rows -------
-  const ingredientsForTable = getIngredientRows(result as any);
+  // -------- ingredient rows -------
+const ingredientsForTable =
+  (result.ingredients && result.ingredients.length > 0
+    ? result.ingredients
+    : result.table) || [];
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
@@ -211,3 +215,4 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
 };
 
 export default ResultScreen;
+

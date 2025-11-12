@@ -6,7 +6,7 @@ export default function EdgeTest() {
     try {
       const url =
         import.meta.env.VITE_SUPABASE_EDGE_URL ||
-        "https://hqgzhlugkytionymror.supabase.co/functions/v1/analyze-product-image";
+        "https://hqgzhlugkxytionyrnor.supabase.co/functions/v1/analyze-product-image";
 
       const secret =
         import.meta.env.VITE_EDGE_SHARED_SECRET || "foodsafetysecret456";
