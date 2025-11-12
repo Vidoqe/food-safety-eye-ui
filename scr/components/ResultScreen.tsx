@@ -140,21 +140,43 @@ const ingredientsForTable =
     : result.table) || [];
 
   return (
-    <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
-      {/* Top bar */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">
-          {sectionTitle('overview', language as 'en' | 'zh')}
-        </h2>
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="rounded bg-gray-200 px-3 py-1.5 text-sm hover:bg-gray-300"
-          >
-            {language === 'zh' ? '返回' : 'Back'}
-          </button>
-        )}
-      </div>
+    <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "0.75rem",
+    marginBottom: "1.5rem",
+  }}
+>
+  <h2 style={{ fontSize: "1.25rem", fontWeight: 600 }}>
+    {sectionTitle("overview", language as "en" | "zh")}
+  </h2>
+
+ {onBack && (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "0.75rem",
+      marginBottom: "1.5rem",
+    }}
+  >
+    <button
+      type="button"
+      onClick={() => onBack?.()}
+      style={{
+        padding: "0.3rem 0.8rem",
+        borderRadius: "0.5rem",
+        border: "1px solid #ddd",
+        background: "#f9fafb",
+        cursor: "pointer",
+      }}
+    >
+      {language === "zh" ? "返回" : "Back"}
+    </button>
+  </div>
+)}
+
 
       {/* Overview card */}
       <div className="rounded-2xl border p-4 bg-white shadow-sm">
