@@ -62,6 +62,39 @@ function sectionTitle(
   return map[lang][key];
 }
 
+// ---------- find ingredient rows in result ----------
+
+function getIngredientRows(result: any): any[] {
+  if (!result || typeof result !== 'object') return [];
+
+  // 1) Preferred explicit keys
+  if (Array.isArray(result.ingredients) && result.ingredients.length > 0) {
+    return result.ingredients;
+  }
+  if (Array.isArray(result.table) && result.table.length > 0) {
+    return result.table;
+  }
+
+  // 2) Fallback: scan all properties for an array of objects
+  for (const key of Object.keys(result)) {
+    const val = (result as any)[key];
+    if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'object') {
+      const first = val[0] as any;
+      // heuristic: looks like ingredient rows
+      if (
+        'ingredient' in first ||
+        'name' in first ||
+        'item' in first ||
+        'risk' in first
+      ) {
+        return val;
+      }
+    }
+  }
+
+  return [];
+}
+
 interface Props {
   result: GPTAnalysisResult | null;
   onBack?: () => void;
@@ -99,15 +132,8 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
 
   const verdictBadge = BADGE_FALLBACK[verdict] ?? '🟡';
 
-  // ------- ingredient rows (THIS is the important part) -------
-  // Prefer result.ingredients; if empty/not present, fall back to result.table
-  const ingredientsForTable: any[] =
-    Array.isArray((result as any).ingredients) &&
-    (result as any).ingredients.length > 0
-      ? (result as any).ingredients
-      : Array.isArray((result as any).table)
-      ? (result as any).table
-      : [];
+  // ------- ingredient rows -------
+  const ingredientsForTable = getIngredientRows(result as any);
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
