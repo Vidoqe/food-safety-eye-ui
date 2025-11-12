@@ -54,7 +54,14 @@ async function fetchWithTimeout(
   const ac = new AbortController();
   const t = setTimeout(() => ac.abort(), timeoutMs);
   try {
-    return await fetch(url, { ...init, signal: ac.signal });
+    return await fetch(url, {
+  ...init,
+  headers: {
+    ...(init.headers || {}),
+    "Authorization": `Bearer ${import.meta.env.VITE_EDGE_SHARED_SECRET}`,
+  },
+  signal: ac.signal,
+});
   } finally {
     clearTimeout(t);
   }
