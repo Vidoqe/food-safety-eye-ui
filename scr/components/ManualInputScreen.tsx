@@ -101,19 +101,19 @@ export default function ManualInputScreen({
         }}
       >
         {onBack && (
-          <button
-            type="button"
-            onClick={onBack}
-            style={{
-              padding: "0.3rem 0.8rem",
-              borderRadius: "0.5rem",
-              border: "1px solid #ddd",
-              background: "#f9fafb",
-              cursor: "pointer",
-            }}
-          >
-            ← {lang === "zh" ? "返回" : "Back"}
-          </button>
+        <button
+  type="button"
+  onClick={onBack} // ← capital “C” is required
+  style={{
+    padding: "0.3rem 0.8rem",
+    borderRadius: "0.5rem",
+    border: "1px solid #ddd",
+    background: "#f9fafb",
+    cursor: "pointer",
+  }}
+>
+  {lang === "zh" ? "返回" : "Back"}
+</button>
         )}
         <h1 style={{ fontSize: "1.25rem", fontWeight: 600 }}>
           {lang === "zh"
