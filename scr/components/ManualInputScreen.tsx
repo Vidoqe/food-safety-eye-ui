@@ -1,6 +1,6 @@
 // scr/components/ManualInputScreen.tsx
 import React, { useMemo, useState } from "react";
-import { AnalyzeProduct, type AnalyzeResult } from "../services/gptImageAnalysis";
+import { gptImageAnalysis, type AnalyzeResult } from "../services/gptImageAnalysis";
 
 type Lang = "zh" | "en";
 
@@ -59,7 +59,7 @@ export default function ManualInputScreen({
         lang,
       };
 
-      const res = await AnalyzeProduct(payload as any);
+      const res = await gptImageAnalysis(payload as any);
 
       console.log("[Analyze] result:", res);
       setDebugResult(res); // <-- show raw JSON below the form
