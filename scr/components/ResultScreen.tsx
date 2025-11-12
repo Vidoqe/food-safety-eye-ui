@@ -173,7 +173,9 @@ const ingredientsForTable =
           <h3 className="text-lg font-semibold mb-2">
             {sectionTitle('summary', language as 'en' | 'zh')}
           </h3>
-          <p className="text-gray-700 whitespace-pre-line">{result.summary}</p>
+          <p className="text-gray-700 whitespace-pre-line">
+  {result.summary ?? result.analysis ?? result.message ?? "No detailed analysis available."}
+</p>
         </div>
       )}
 
