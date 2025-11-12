@@ -7,38 +7,58 @@ import type { GPTAnalysisResult, Risk } from '@/services/gptImageAnalysis';
 // fallback badge for verdict
 const BADGE_FALLBACK: Record<Risk, string> = {
   harmful: '🔴',
-  moderate: '🟡',
-  low: '🟢',
+  moderate: '🟠',
+  low: '🟡',
   healthy: '🟢',
 };
 
 function verdictText(v: Risk, lang: 'en' | 'zh') {
   if (lang === 'zh') {
     switch (v) {
-      case 'harmful': return '高風險（建議避免）';
-      case 'moderate': return '中等風險（建議限制）';
+      case 'harmful':
+        return '高風險（建議避免）';
+      case 'moderate':
+        return '中等風險（建議限量）';
       case 'healthy':
-      case 'low': return '低風險（普遍安全）';
-      default: return '中等風險';
+      case 'low':
+        return '低風險（普通安全）';
+      default:
+        return '中等風險';
     }
   }
+
   switch (v) {
-    case 'harmful': return 'High Risk (avoid if possible)';
-    case 'moderate': return 'Moderate Risk (limit intake)';
+    case 'harmful':
+      return 'High Risk (avoid if possible)';
+    case 'moderate':
+      return 'Moderate Risk (limit intake)';
     case 'healthy':
-    case 'low': return 'Low Risk (generally safe)';
-    default: return 'Moderate Risk';
+    case 'low':
+      return 'Low Risk (generally safe)';
+    default:
+      return 'Moderate Risk';
   }
 }
 
 function sectionTitle(
   key: 'overview' | 'summary' | 'tips' | 'details',
-  lang: 'en' | 'zh'
+  lang: 'en' | 'zh',
 ) {
   const map = {
-    en: { overview: 'Overall Result', summary: 'Summary', tips: 'Tips', details: 'Ingredient Details' },
-    zh: { overview: '整體結果', summary: '摘要', tips: '建議', details: '成分詳情' },
-  };
+    en: {
+      overview: 'Overall Result',
+      summary: 'Summary',
+      tips: 'Tips',
+      details: 'Ingredient Details',
+    },
+    zh: {
+      overview: '整體結果',
+      summary: '摘要',
+      tips: '建議',
+      details: '成分詳情',
+    },
+  } as const;
+
   return map[lang][key];
 }
 
@@ -48,41 +68,60 @@ interface Props {
 }
 
 const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
-  const { language } = useAppContext(); // keep using your existing context
+  const { language } = useAppContext(); // 'en' | 'zh'
 
+  // No result yet
   if (!result) {
     return (
       <div className="p-4 max-w-3xl mx-auto">
         <p className="text-gray-600">
-          {language === "zh" ? "尚未產生結果⋯⋯" : "No result yet."}
+          {language === 'zh' ? '尚未產生結果…' : 'No result yet.'}
         </p>
         {onBack && (
           <button
             onClick={onBack}
             className="mt-4 rounded bg-gray-200 px-4 py-2 hover:bg-gray-300"
           >
-            {language === "zh" ? "返回" : "Back"}
+            {language === 'zh' ? '返回' : 'Back'}
           </button>
         )}
       </div>
     );
   }
 
-  const ingredients = result.ingredients || [];
+  // ------- overall verdict -------
+  const verdict: Risk =
+    result.verdict === 'low' || result.verdict === 'healthy'
+      ? 'healthy'
+      : result.verdict === 'harmful'
+      ? 'harmful'
+      : 'moderate';
+
+  const verdictBadge = BADGE_FALLBACK[verdict] ?? '🟡';
+
+  // ------- ingredient rows (THIS is the important part) -------
+  // Prefer result.ingredients; if empty/not present, fall back to result.table
+  const ingredientsForTable: any[] =
+    Array.isArray((result as any).ingredients) &&
+    (result as any).ingredients.length > 0
+      ? (result as any).ingredients
+      : Array.isArray((result as any).table)
+      ? (result as any).table
+      : [];
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
       {/* Top bar */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">
-          {language === "zh" ? "整體結果" : "Overall Result"}
+          {sectionTitle('overview', language as 'en' | 'zh')}
         </h2>
         {onBack && (
           <button
             onClick={onBack}
             className="rounded bg-gray-200 px-3 py-1.5 text-sm hover:bg-gray-300"
           >
-            {language === "zh" ? "返回" : "Back"}
+            {language === 'zh' ? '返回' : 'Back'}
           </button>
         )}
       </div>
@@ -90,29 +129,56 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
       {/* Overview card */}
       <div className="rounded-2xl border p-4 bg-white shadow-sm">
         <p className="text-lg font-semibold mb-1">
-          {result.overallResult ?? ""}
+          <span className="mr-2">{verdictBadge}</span>
+          {verdictText(verdict, language as 'en' | 'zh')}
         </p>
         <p className="text-gray-700 whitespace-pre-line">
-          {result.message ?? ""}
+          {result.message ?? ''}
         </p>
       </div>
 
+      {/* Summary card (if present) */}
+      {result.summary && (
+        <div className="rounded-2xl border p-4 bg-white shadow-sm">
+          <h3 className="text-lg font-semibold mb-2">
+            {sectionTitle('summary', language as 'en' | 'zh')}
+          </h3>
+          <p className="text-gray-700 whitespace-pre-line">{result.summary}</p>
+        </div>
+      )}
+
+      {/* Tips card (if present) */}
+      {Array.isArray(result.tips) && result.tips.length > 0 && (
+        <div className="rounded-2xl border p-4 bg-white shadow-sm">
+          <h3 className="text-lg font-semibold mb-2">
+            {sectionTitle('tips', language as 'en' | 'zh')}
+          </h3>
+          <ul className="list-disc ml-6 space-y-1">
+            {result.tips.map((t, i) => (
+              <li key={i} className="text-gray-700">
+                {t}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Ingredient section */}
-      <div className="rounded-2xl border p-4 bg-white shadow-sm">
+      <div className="rounded-2xl border p-3 md:p-4 bg-white shadow-sm">
         <h3 className="text-lg font-semibold mb-3">
-          {language === "zh" ? "成分詳情" : "Ingredient Details"}
+          {sectionTitle('details', language as 'en' | 'zh')}
         </h3>
 
-        {/* Show photo warning only if no OCR text AND no ingredient table */}
-        {!result.text && ingredients.length === 0 && (
+        {/* Show warning only if no OCR text AND no ingredient rows at all */}
+        {!result.text && ingredientsForTable.length === 0 && (
           <div className="rounded-xl border p-3 bg-yellow-50 text-yellow-900 mb-3">
-            {language === "zh"
-              ? "無法從照片辨識成分表，請靠近拍攝，確保文字清晰或改用手動輸入。"
+            {language === 'zh'
+              ? '無法從照片辨識成分表，請靠近拍攝，確保文字清晰或改用手動輸入。'
               : "Couldn't detect an ingredient list from the photo. Move closer, keep text in focus with good lighting, or use Manual input."}
           </div>
         )}
 
-        <IngredientRiskTable ingredients={ingredients} />
+        <IngredientRiskTable ingredients={ingredientsForTable} />
       </div>
     </div>
   );
