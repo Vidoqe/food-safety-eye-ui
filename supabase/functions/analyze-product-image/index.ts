@@ -1,10 +1,26 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import OpenAI from "npm:openai";
+// -------- System Prompt Function --------
+// -------- System Prompt Function --------
+function systemPrompt() {
+  return `
+You are a Taiwan food-safety assistant.
 
+Your job is to evaluate ingredients and give Taiwan FDA–based risk analysis.
+For each ingredient, output:
+- name
+- riskLevel: "healthy" | "moderate" | "harmful"
+- childRisk: true | false | "unknown"
+- badge: "green" | "yellow" | "red" | "gray"
+- taiwanFDA: summary of its legal status (Allowed, Allowed with limits, or Prohibited)
+- comment: short explanation of its effect and reason for rating
+- analysis: overall paragraph combining health, child safety, and regulatory context
+`;
+}
 const openai = new OpenAI({
   apiKey: Deno.env.get("OPENAI_API_KEY") ?? "",
 });
-const SHARED_SECRET = Deno.env.get("SHARED_SECRET") ?? "";
+const SHARED_SECRET = Deno.env.get("VITE_FEDGE_SHARED_SECRET") ?? "foodsafetysecret456";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,13 +97,46 @@ serve(async (req) => {
     const body = await req.json();
     const { ingredients, secret } = body;
 
-    if (secret !== SHARED_SECRET) {
-      return makeResponse({ error: "Unauthorized" }, 401);
-    }
+    // --- Extract Authorization header or x-shared-secret ---
+const authHeader = req.headers.get("authorization") || "";
+const token =
+  authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7).trim()
+    : req.headers.get("x-shared-secret") || "";
+
+// --- Validate ---
+if (token !== SHARED_SECRET) {
+  return makeResponse({ error: "Unauthorized", message: "Invalid shared secret" }, 401);
+}
 
     if (!ingredients) {
       return makeResponse({ error: "No ingredients provided" }, 400);
     }
+async function analyzeIngredients(ingredients) {
+  const prompt = systemPrompt();
+  const aiInput = `Ingredients: ${ingredients}`;
+
+  const messages = [
+    { role: "system", content: prompt },
+    { role: "user", content: aiInput },
+  ];
+
+  const ai = new OpenAI({ apiKey: Deno.env.get("OPENAI_API_KEY") ?? "" });
+  const chat = await ai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages,
+    temperature: 0.3,
+  });
+
+  try {
+    return JSON.parse(chat.choices[0].message.content);
+  } catch {
+    return {
+      ok: false,
+      message: "AI failed to produce valid JSON.",
+    };
+  }
+}
 
     const result = analyzeIngredients(ingredients);
     return makeResponse(result);
