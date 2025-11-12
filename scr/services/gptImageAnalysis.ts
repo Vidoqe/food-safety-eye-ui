@@ -1,26 +1,25 @@
-export async function gptImageAnalysis(data: any) {
-  // Get your Supabase Edge Function URL and shared secret from .env.local
-  const url = import.meta.env.VITE_SUPABASE_EDGE_URL;
-  const secret = import.meta.env.VITE_EDGE_SHARED_SECRET;
-
-  console.log("Sending data to:", url);
-
+export async function AnalyzeProduct(payload: any, ac?: AbortController) {
+  const url = import.meta.env.VITE_SUPABASE_EDGE_URL!;
   const res = await fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${secret}`,
+      Authorization: `Bearer ${import.meta.env.VITE_EDGE_SHARED_SECRET}`,
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
+    signal: ac?.signal,
   });
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    console.error("Edge function error:", res.status, errorText);
-    throw new Error(`Edge function returned ${res.status}`);
-  }
-
-  const result = await res.json();
-  console.log("Edge function success:", result);
-  return result;
+  if (!res.ok) throw new Error(`Edge returned ${res.status}`);
+  return await res.json();
 }
+
+export type AnalyzeResult = {
+  ingredient: string;
+  riskLevel: "healthy" | "moderate" | "harmful";
+  childRisk: boolean | "unknown";
+  badge: "green" | "yellow" | "red" | "gray";
+  taiwanFDA: string;
+  comment: string;
+  analysis: string;
+};
