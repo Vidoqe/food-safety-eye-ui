@@ -3,20 +3,18 @@ export async function AnalyzeProduct(payload: any, ac?: AbortController) {
   const SHARED_SECRET = import.meta.env.VITE_EDGE_SHARED_SECRET;
 
   try {
-    const res = await fetch(EDGE_URL, {
+    const res = await fetch(EDGE_URL!, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${SHARED_SECRET}`,
+        "x-shared-secret":
+      SHARED_SECRET,
       },
       body: JSON.stringify(payload),
       signal: ac?.signal,
     });
 
-    if (!res.ok) {
-      throw new Error(`Edge returned ${res.status}`);
-    }
-
+    if (!res.ok) throw new Error(`Edge returned ${res.status}`);
     const data = await res.json();
     return data;
   } catch (err) {
@@ -25,12 +23,11 @@ export async function AnalyzeProduct(payload: any, ac?: AbortController) {
   }
 }
 
-export type AnalyzeResult = {
-  ingredient: string;
+export type GPTAnalysisResult = {
+  ingredients: string;
   riskLevel: "healthy" | "moderate" | "harmful";
-  childRisk: boolean | "unknown";
+  childSafe: boolean;
   badge: "green" | "yellow" | "red" | "gray";
-  taiwanFDA: string;
   comment: string;
   analysis: string;
 };
