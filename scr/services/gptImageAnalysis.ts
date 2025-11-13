@@ -12,7 +12,7 @@ export async function AnalyzeProduct(payload: any, ac?: AbortController) {
       },
       body: JSON.stringify({
       ingredients: payload.ingredients
-    });
+    }),
 
     if (!res.ok) throw new Error(`Edge returned ${res.status}`);
     const data = await res.json();
