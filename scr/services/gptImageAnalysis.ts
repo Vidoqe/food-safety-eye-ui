@@ -11,7 +11,7 @@ export async function AnalyzeProduct(payload: any, ac?: AbortController) {
       SHARED_SECRET,
       },
       body: JSON.stringify({
-      ingredients: payload.ingrdients
+      ingredients: payload.ingredients
     });
 
     if (!res.ok) throw new Error(`Edge returned ${res.status}`);
