@@ -10,8 +10,8 @@ export async function AnalyzeProduct(payload: any, ac?: AbortController) {
         "x-shared-secret":
       SHARED_SECRET,
       },
-      body: JSON.stringify(payload),
-      signal: ac?.signal,
+      body: JSON.stringify({
+      ingredients: payload.ingrdients
     });
 
     if (!res.ok) throw new Error(`Edge returned ${res.status}`);
