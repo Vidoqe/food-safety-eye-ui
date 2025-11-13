@@ -3,18 +3,26 @@ export async function AnalyzeProduct(payload: any, ac?: AbortController) {
   const SHARED_SECRET = import.meta.env.VITE_EDGE_SHARED_SECRET;
 
   try {
-    const res = await fetch(EDGE_URL!, {
+    if (!EDGE_URL) {
+      throw new Error("VITE_SUPABASE_EDGE_URL is not set");
+    }
+
+    const res = await fetch(EDGE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-shared-secret":
-      SHARED_SECRET,
+        "x-shared-secret": SHARED_SECRET ?? "",
       },
       body: JSON.stringify({
-      ingredients: payload.ingredients
-    }),
+        ingredients: payload.ingredients,
+      }),
+      signal: ac?.signal,
+    });
 
-    if (!res.ok) throw new Error(`Edge returned ${res.status}`);
+    if (!res.ok) {
+      throw new Error(`Edge returned ${res.status}`);
+    }
+
     const data = await res.json();
     return data;
   } catch (err) {
@@ -22,12 +30,3 @@ export async function AnalyzeProduct(payload: any, ac?: AbortController) {
     throw err;
   }
 }
-
-export type GPTAnalysisResult = {
-  ingredients: string;
-  riskLevel: "healthy" | "moderate" | "harmful";
-  childSafe: boolean;
-  badge: "green" | "yellow" | "red" | "gray";
-  comment: string;
-  analysis: string;
-};
