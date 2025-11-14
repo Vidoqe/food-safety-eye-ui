@@ -14,8 +14,9 @@ export async function AnalyzeProduct(payload: any, ac?: AbortController) {
         "x-shared-secret": SHARED_SECRET ?? "",
       },
       body: JSON.stringify({
-        ingredients: payload.ingredients,
-      }),
+    ingredients: payload.ingredients || payload.text || payload.input || payload.ingrediants,
+    barcode: payload.barcode || "",
+}),
       signal: ac?.signal,
     });
 

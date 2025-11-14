@@ -65,14 +65,27 @@ export default function ManualInputScreen({
       setDebugResult(res); // <-- show raw JSON below the form
 
       // if backend uses an ok flag, honor it
-      if (!(res as any)?.ok) {
-        setResult(null);
-        setError(
-          (res as any)?.error ||
-          (lang === "zh" ? "分析失敗" : "Analysis failed")
-        );
-        return;
-      }
+      try {
+    const res = await fetch(EDGE_URL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "x-shared-secret": SHARED_SECRET ?? "",
+        },
+        body: JSON.stringify({
+            ingredients: payload.ingredients || payload.text || payload.input || "",
+            barcode: payload.barcode || ""
+        }),
+        signal: ac?.signal,
+    });
+
+    const data = await res.json();
+
+    return data; // <-- frontend receives the payload directly
+} catch (err) {
+    console.error("[AnalyzeProduct] Error calling Edge:", err);
+    throw err;
+}
 
       setResult(res);
       onResult?.(res);
