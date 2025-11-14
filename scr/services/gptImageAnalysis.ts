@@ -1,6 +1,6 @@
 export async function AnalyzeProduct(payload: any, ac?: AbortController) {
   const EDGE_URL = import.meta.env.VITE_SUPABASE_EDGE_URL;
-  const SHARED_SECRET = import.meta.env.VITE_EDGE_SHARED_SECRET;
+const SHARED_SECRET = import.meta.env.VITE_EDGE_SHARED_SECRET;
 
   try {
     if (!EDGE_URL) {
