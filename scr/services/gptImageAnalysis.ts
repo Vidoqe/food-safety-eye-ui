@@ -1,33 +1,59 @@
-export async function AnalyzeProduct(payload: any, ac?: AbortController) {
+// scr/services/gptImageAnalysis.ts
+
+export type AnalyzeResult = {
+  ingredients: string;
+  riskLevel: string;
+  childSafe: boolean;
+  badge: string;
+  comment: string;
+  analysis: string;
+};
+
+type AnalyzePayload = {
+  ingredients?: string;
+  text?: string;
+  input?: string;
+  ingrediants?: string; // old typo support
+  barcode?: string;
+};
+
+export async function AnalyzeProduct(
+  payload: AnalyzePayload,
+  ac?: AbortController
+): Promise<AnalyzeResult> {
   const EDGE_URL = import.meta.env.VITE_SUPABASE_EDGE_URL;
-const SHARED_SECRET = import.meta.env.VITE_EDGE_SHARED_SECRET;
+  const SHARED_SECRET = import.meta.env.VITE_EDGE_SHARED_SECRET;
 
-  try {
-    if (!EDGE_URL) {
-      throw new Error("VITE_SUPABASE_EDGE_URL is not set");
-    }
+  console.log("[AnalyzeProduct] EDGE_URL from env:", EDGE_URL);
 
-    const res = await fetch(EDGE_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-shared-secret": SHARED_SECRET ?? "",
-      },
-      body: JSON.stringify({
-    ingredients: payload.ingredients || payload.text || payload.input || payload.ingrediants,
-    barcode: payload.barcode || "",
-}),
-      signal: ac?.signal,
-    });
+  // Build body for Edge function
+  const body = {
+    ingredients:
+      payload.ingredients ??
+      payload.text ??
+      payload.input ??
+      payload.ingrediants ??
+      "",
+    barcode: payload.barcode ?? "",
+  };
 
-    if (!res.ok) {
-      throw new Error(`Edge returned ${res.status}`);
-    }
+  const res = await fetch(EDGE_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(SHARED_SECRET ? { "x-shared-secret": SHARED_SECRET } : {}),
+    },
+    body: JSON.stringify(body),
+    signal: ac?.signal,
+  });
 
-    const data = await res.json();
-    return data;
-  } catch (err) {
-    console.error("[AnalyzeProduct] Error calling Edge:", err);
-    throw err;
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("[AnalyzeProduct] Edge error", res.status, text);
+    throw new Error(`Edge returned ${res.status}`);
   }
+
+  const data = await res.json();
+  console.log("[AnalyzeProduct] Edge data:", data);
+  return data as AnalyzeResult;
 }
