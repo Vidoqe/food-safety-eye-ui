@@ -46,48 +46,39 @@ export default function ManualInputScreen({
       return;
     }
 
-    try {
-      setLoading(true);
+   try {
+  setLoading(true);
 
-      const payload = {
-        // manual mode – no photo
-        image: undefined,
-        // main text we want the backend to use
-        ingredients: ingredients.trim() || undefined,
-        ingredientsText: ingredients.trim() || undefined,
-        barcode: barcode.trim() || undefined,
-        lang,
-      };
+  const payload = {
+    // manual mode – no photo
+    image: undefined,
+    // main text we want the backend to use
+    ingredients: ingredients.trim() || undefined,
+    ingredientsText: ingredients.trim() || undefined,
+    barcode: barcode.trim() || undefined,
+    lang,
+  };
 
-      const res = await AnalyzeProduct(payload as any);
+  const result = await AnalyzeProduct(payload as any);
 
-      console.log("[Analyze] result:", res);
-      setDebugResult(res); // <-- show raw JSON below the form
+  console.log("[Analyze] result:", result);
+  setDebugResult(result);
 
-      const res = await AnalyzeProduct(payload as any);
-console.log("[Analyze] result:", res);
-setDebugResult(res);
-
-setResult(res);
-onResult?.(res);
-    console.error("[AnalyzeProduct] Error calling Edge:", err);
-    throw err;
+  setResult(result);
+  onResult?.(result);
+} catch (e: any) {
+  console.error("[ManualInputScreen] analyze error:", e);
+  setDebugResult(null);
+  setError(
+    e?.message ||
+      (lang === "zh"
+        ? "系統錯誤，請稍後再試。"
+        : "Unexpected error. Please try again.")
+  );
+} finally {
+  setLoading(false);
 }
 
-      setResult(res);
-      onResult?.(res);
-    } catch (e: any) {
-      console.error("[ManualInputScreen] analyze error:", e);
-      setResult(null);
-      setDebugResult(null);
-      setError(
-        e?.message ||
-          (lang === "zh" ? "系統錯誤，請稍後再試。" : "Unexpected error. Please try again.")
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
 
   return (
     <div style={{ padding: "1.5rem", maxWidth: 800, margin: "0 auto" }}>
