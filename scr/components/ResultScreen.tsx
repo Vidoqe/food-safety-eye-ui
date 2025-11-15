@@ -94,7 +94,7 @@ function getIngredientRows(result: any): any[] {
   return [];
 }
 
-}interface Props {
+interface Props {
   result: GPTAnalysisResult | null;
   onBack?: () => void;
 }
