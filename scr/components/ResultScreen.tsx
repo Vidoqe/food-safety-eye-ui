@@ -134,12 +134,8 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
 
   // ------- ingredient rows -------
   // -------- ingredient rows -------
-const ingredientsForTable =
-  (result.ingredients && result.ingredients.length > 0
-    ? result.ingredients
-    : result.table) || [];
-
-  return (
+// ------- ingredient rows -------
+const ingredientsForTable = getIngredientRows(result);  return (
     <div
   style={{
     display: "flex",
