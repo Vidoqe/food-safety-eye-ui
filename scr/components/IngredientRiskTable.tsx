@@ -98,42 +98,46 @@ const IngredientRiskTable: React.FC<Props> = ({ ingredients }) => {
             </th>
           </tr>
         </thead>
-        <tbody>
-          {(!ingredients || ingredients.length === 0) && (
-            <tr>
-              <td
-                colSpan={5}
-                className="px-3 py-3 text-center text-gray-500"
-              >
-                No ingredients analyzed.
-              </td>
-            </tr>
-          )}
+       <tbody>
+  {/* If nothing to show */}
+  {(!ingredients || ingredients.length === 0) && (
+    <tr>
+      <td
+        colSpan={5}
+        className="px-3 py-3 text-center text-gray-500"
+      >
+        No ingredients analyzed.
+      </td>
+    </tr>
+  )}
 
-          {ingredients &&
-            ingredients.map((row, i) => (
-              <tr
-                key={i}
-                className="border-b last:border-0 hover:bg-gray-50"
-              >
-                <td className="px-3 py-2 text-gray-900">
-                  {ingredientName(row) || "—"}
-                </td>
-                <td className="px-3 py-2 text-gray-800">
-                  {riskText(row)}
-                </td>
-                <td className="px-3 py-2 text-gray-800">
-                  {childRiskText(row)}
-                </td>
-                <td className="px-3 py-2 text-gray-800">
-                  {badgeDisplay(row)}
-                </td>
-                <td className="px-3 py-2 text-gray-800">
-                  {regulationText(row)}
-                </td>
-              </tr>
-            ))}
-        </tbody>
+  {/* Ensure ingredients is always an array */}
+  {(Array.isArray(ingredients) ? ingredients : [ingredients]).map(
+    (row: any, i: number) => (
+      <tr
+        key={i}
+        className="border-b last:border-0 hover:bg-gray-50"
+      >
+        <td className="px-3 py-2 text-gray-900">
+          {ingredientName(row) || "-"}
+        </td>
+        <td className="px-3 py-2 text-gray-800">
+          {riskText(row)}
+        </td>
+        <td className="px-3 py-2 text-gray-800">
+          {childriskText(row)}
+        </td>
+        <td className="px-3 py-2 text-gray-800">
+          {badgeDisplay(row)}
+        </td>
+        <td className="px-3 py-2 text-gray-800">
+          {regulationText(row)}
+        </td>
+      </tr>
+    )
+  )}
+</tbody>
+
       </table>
     </div>
   );
