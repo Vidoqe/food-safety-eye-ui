@@ -162,13 +162,14 @@ const ingredients = getIngredientRows(result);
 
 return (
   <div
-    style={{
-      display: "flex",
-      alignItems: "center",
-      gap: "0.75rem",
-      marginBottom: "1.5rem",
-    }}
-  >
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: "0.75rem",
+    marginBottom: "1.5rem",
+  }}
+>
   <h2 style={{ fontSize: "1.25rem", fontWeight: 600 }}>
     {sectionTitle("overview", language as "en" | "zh")}
   </h2>
