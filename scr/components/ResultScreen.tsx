@@ -66,34 +66,42 @@ function sectionTitle(
 function getIngredientRows(result: any): any[] {
   if (!result || typeof result !== "object") return [];
 
-  // If backend already sends an array (future-proof)
-  if (Array.isArray(result.ingredients)) return result.ingredients;
-  if (Array.isArray(result.table)) return result.table;
-
-  // CURRENT CASE: backend sends a single object
-  if (
-    typeof result.ingredients === "string" &&
-    result.ingredients.trim().length > 0
-  ) {
-    return [
-      {
-        ingredient: result.ingredients,
-        riskLevel: result.riskLevel ?? "unknown",
-        childRisk:
-          result.childSafe === true
-            ? "low"
-            : result.childSafe === false
-            ? "risk"
-            : "unknown",
-        badge: result.badge ?? "",
-        law: result.law ?? "",
-      },
-    ];
+  // 1) If backend already sends an array (future-proof)
+  if (Array.isArray(result.ingredients) && result.ingredients.length > 0) {
+    return result.ingredients;
+  }
+  if (Array.isArray(result.table) && result.table.length > 0) {
+    return result.table;
   }
 
-  return [];
-}
+  // 2) CURRENT CASE: backend sends a single object with a combined string
+  const ingredientsText =
+    typeof result.ingredients === "string" ? result.ingredients : "";
 
+  if (!ingredientsText.trim()) return [];
+
+  const base = {
+    riskLevel: result.riskLevel ?? "unknown",
+    childRisk:
+      result.childSafe === true
+        ? "low"
+        : result.childSafe === false
+        ? "risk"
+        : "unknown",
+    badge: result.badge ?? "",
+    law: result.law ?? "",
+  };
+
+  // Split "salt,sugar,aspartame" into ["salt","sugar","aspartame"]
+  return ingredientsText
+    .split(/[,;、]/) // commas, semicolons, Chinese 、 etc.
+    .map((raw: string) => raw.trim())
+    .filter((name: string) => name.length > 0)
+    .map((name: string) => ({
+      ingredient: name,
+      ...base,
+    }));
+}
 interface Props {
   result: GPTAnalysisResult | null;
   onBack?: () => void;
@@ -132,17 +140,17 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
   const verdictBadge = BADGE_FALLBACK[verdict] ?? '🟡';
 
   // ------- ingredient rows -------
-  // -------- ingredient rows -------
-// ------- ingredient rows -------
-const ingredientsForTable = getIngredientRows(result);  return (
-    <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: "0.75rem",
-    marginBottom: "1.5rem",
-  }}
->
+const ingredients = getIngredientRows(result);
+
+return (
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "0.75rem",
+      marginBottom: "1.5rem",
+    }}
+  >
   <h2 style={{ fontSize: "1.25rem", fontWeight: 600 }}>
     {sectionTitle("overview", language as "en" | "zh")}
   </h2>
