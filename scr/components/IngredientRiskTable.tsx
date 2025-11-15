@@ -73,26 +73,6 @@ function regulationText(row: IngredientRow): string {
   );
 }
 
-function badgeDisplay(row: IngredientRow): string {
-  const source = (
-    normalize(row.badge) ||
-    normalize(row.riskLevel) ||
-    normalize(row.risk)
-  )
-    .toString()
-    .trim()
-    .toLowerCase();
-
-  if (!source) return "";
-
-  if (source.includes("red")) return "🔴 red";
-  if (source.includes("yellow") || source.includes("amber")) return "🟠 yellow";
-  if (source.includes("green")) return "🟢 green";
-  if (source.includes("gray") || source.includes("grey")) return "⚪ gray";
-
-  // fallback: just show whatever text we got
-  return source;
-}
 
 const IngredientRiskTable: React.FC<Props> = ({ ingredients }) => {
   return (
