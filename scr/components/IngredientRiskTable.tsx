@@ -1,24 +1,27 @@
 // scr/components/IngredientRiskTable.tsx
 import React from "react";
 function badgeDisplay(row: IngredientRow): string {
+  // Combine all possible text into one lowercase string
   const source =
-    normalize(row.badge) ||
-    normalize(row.riskLevel) ||
-    normalize(row.risk) ||
-    "";
+    (
+      (row.badge ?? "") +
+      " " +
+      (row.riskLevel ?? "") +
+      " " +
+      (row.risk ?? "")
+    )
+      .toString()
+      .trim()
+      .toLowerCase();
 
-  const ingredient = normalize(row.ingredient);
+  const ingredient = (row.ingredient ?? "")
+    .toString()
+    .trim()
+    .toLowerCase();
 
-  // 1) If backend explicitly says harmful / high risk
-  if (
-    source.includes("harmful") ||
-    source.includes("high") ||
-    source.includes("danger")
-  ) {
-    return "🔴 Harmful";
-  }
+  if (!source && !ingredient) return "";
 
-  // 2) Ingredient-based auto harmful (frontend helper)
+  // 🔴 Harmful ingredients by name (frontend helper)
   const harmfulKeywords = [
     "sodium nitrite",
     "sodium nitrate",
@@ -26,8 +29,8 @@ function badgeDisplay(row: IngredientRow): string {
     "nitrate",
     "bht",
     "bha",
-    "azeo dye",
     "azo dye",
+    "azeo dye",
     "e102",
     "e110",
     "e122",
@@ -35,11 +38,16 @@ function badgeDisplay(row: IngredientRow): string {
     "e129"
   ];
 
-  if (harmfulKeywords.some((k) => ingredient.includes(k))) {
+  if (
+    source.includes("harmful") ||
+    source.includes("high") ||
+    source.includes("danger") ||
+    harmfulKeywords.some((k) => ingredient.includes(k))
+  ) {
     return "🔴 Harmful";
   }
 
-  // 3) Caution
+  // 🟡 Caution / warning / moderate risk
   if (
     source.includes("caution") ||
     source.includes("warning") ||
@@ -49,7 +57,7 @@ function badgeDisplay(row: IngredientRow): string {
     return "🟡 Caution";
   }
 
-  // 4) Safe / low
+  // 🟢 Safe / low risk
   if (
     source.includes("safe") ||
     source.includes("low") ||
@@ -58,7 +66,7 @@ function badgeDisplay(row: IngredientRow): string {
     return "🟢 Safe";
   }
 
-  // 5) Fallback – just show text if nothing matched
+  // Fallback – just show whatever text we got
   return source || "";
 }
 
