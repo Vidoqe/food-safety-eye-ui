@@ -235,7 +235,7 @@ return (
           </div>
         )}
 
-        <IngredientRiskTable ingredients={ingredientsForTable} />
+        <IngredientRiskTable ingredients={ingredients} />
       </div>
     </div>
   );
