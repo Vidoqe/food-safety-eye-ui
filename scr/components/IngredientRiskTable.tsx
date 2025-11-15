@@ -114,12 +114,45 @@ function riskText(row: IngredientRow): string {
 }
 
 function childRiskText(row: IngredientRow): string {
-  return (
+  // 1. Use backend child risk if provided
+  const explicit =
     normalize(row.childRisk) ||
     normalize(row.childSafe) ||
-    normalize(row.childSafeOverall) ||
-    "Unknown"
-  );
+    normalize(row.childSafeOverall);
+
+  if (explicit) {
+    return explicit;
+  }
+
+  // 2. Derive from badge or risk level
+  const badge = normalize(row.badge);
+  const risk = normalize(row.riskLevel);
+
+  if (
+    badge.includes("harmful") ||
+    badge.includes("avoid") ||
+    risk.includes("high")
+  ) {
+    return "risk";
+  }
+
+  if (
+    badge.includes("caution") ||
+    risk.includes("moderate") ||
+    risk.includes("medium")
+  ) {
+    return "caution";
+  }
+
+  if (
+    badge.includes("safe") ||
+    risk.includes("low") ||
+    risk.includes("healthy")
+  ) {
+    return "low";
+  }
+
+  return "Unknown";
 }
 
 function regulationText(row: IngredientRow): string {
@@ -129,7 +162,7 @@ function regulationText(row: IngredientRow): string {
     normalize(row.twRegulation) ||
     normalize(row.law) ||
     normalize(row.note) ||
-    // 🔽 NEW: fallback to GPT analysis text
+    // NEW: fallback to GPT analysis text
     normalize((row as any).comment);
 
   return source;
