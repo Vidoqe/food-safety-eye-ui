@@ -1,19 +1,35 @@
 // scr/components/IngredientRiskTable.tsx
 import React from "react";
-function badgeDisplay(row: any): string {
-  const raw = (row.badge || "").toString().trim().toLowerCase();
+function badgeDisplay(row: IngredientRow): string {
+  const normalize = (v: any) =>
+    (v ?? "").toString().trim().toLowerCase();
 
-  if (!raw) return "-";
+  const source =
+    normalize(row.badge) ||
+    normalize(row.riskLevel) ||
+    normalize(row.risk);
 
-  // Map common values
-  if (raw.includes("safe")) return "🟢 Safe";
-  if (raw.includes("caution") || raw.includes("warning") || raw.includes("moderate"))
+  if (!source) return "";
+
+  // 🔴 Harmful
+  if (source.includes("harmful") || source.includes("high")) {
+    return "🔴 Harmful";
+  }
+
+  // 🟡 Caution
+  if (source.includes("moderate") || source.includes("caution") || source.includes("yellow")) {
     return "🟡 Caution";
-  if (raw.includes("harmful") || raw.includes("danger")) return "🔴 Harmful";
+  }
 
-  // Fallback: show raw
-  return raw;
+  // 🟢 Safe
+  if (source.includes("low") || source.includes("safe") || source.includes("green")) {
+    return "🟢 Safe";
+  }
+
+  // fallback: show raw text
+  return source;
 }
+
 type IngredientRow = {
   ingredient?: string;
   name?: string;
