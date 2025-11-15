@@ -62,40 +62,39 @@ function sectionTitle(
   return map[lang][key];
 }
 
-// ---------- find ingredient rows in result ----------
-
+// -------- find ingredient rows in result ----------
 function getIngredientRows(result: any): any[] {
-  if (!result || typeof result !== 'object') return [];
+  if (!result || typeof result !== "object") return [];
 
-  // 1) Preferred explicit keys
-  if (Array.isArray(result.ingredients) && result.ingredients.length > 0) {
-    return result.ingredients;
-  }
-  if (Array.isArray(result.table) && result.table.length > 0) {
-    return result.table;
-  }
+  // If backend already sends an array (future-proof)
+  if (Array.isArray(result.ingredients)) return result.ingredients;
+  if (Array.isArray(result.table)) return result.table;
 
-  // 2) Fallback: scan all properties for an array of objects
-  for (const key of Object.keys(result)) {
-    const val = (result as any)[key];
-    if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'object') {
-      const first = val[0] as any;
-      // heuristic: looks like ingredient rows
-      if (
-        'ingredient' in first ||
-        'name' in first ||
-        'item' in first ||
-        'risk' in first
-      ) {
-        return val;
-      }
-    }
+  // CURRENT CASE: backend sends a single object
+  if (
+    typeof result.ingredients === "string" &&
+    result.ingredients.trim().length > 0
+  ) {
+    return [
+      {
+        ingredient: result.ingredients,
+        riskLevel: result.riskLevel ?? "unknown",
+        childRisk:
+          result.childSafe === true
+            ? "low"
+            : result.childSafe === false
+            ? "risk"
+            : "unknown",
+        badge: result.badge ?? "",
+        law: result.law ?? "",
+      },
+    ];
   }
 
   return [];
 }
 
-interface Props {
+}interface Props {
   result: GPTAnalysisResult | null;
   onBack?: () => void;
 }
