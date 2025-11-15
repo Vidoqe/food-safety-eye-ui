@@ -64,25 +64,12 @@ export default function ManualInputScreen({
       console.log("[Analyze] result:", res);
       setDebugResult(res); // <-- show raw JSON below the form
 
-      // if backend uses an ok flag, honor it
-      try {
-    const res = await fetch(EDGE_URL, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "x-shared-secret": SHARED_SECRET ?? "",
-        },
-        body: JSON.stringify({
-            ingredients: payload.ingredients || payload.text || payload.input || "",
-            barcode: payload.barcode || ""
-        }),
-        signal: ac?.signal,
-    });
+      const res = await AnalyzeProduct(payload as any);
+console.log("[Analyze] result:", res);
+setDebugResult(res);
 
-    const data = await res.json();
-
-    return data; // <-- frontend receives the payload directly
-} catch (err) {
+setResult(res);
+onResult?.(res);
     console.error("[AnalyzeProduct] Error calling Edge:", err);
     throw err;
 }
