@@ -1,53 +1,38 @@
-// scr/services/gptImageAnalysis.ts
+export async function AnalyzeProduct(payload: any, ac?: AbortController) {
+  // Read from Vite env vars
+  const edgeUrl = import.meta.env.VITE_SUPABASE_EDGE_URL;
+  const sharedSecret = import.meta.env.VITE_EDGE_SHARED_SECRET;
 
-export type AnalyzeResult = {
-  ingredients: string;
-  riskLevel: string;
-  childSafe: boolean;
-  badge: string;
-  comment: string;
-  analysis: string;
-};
+  console.log("[AnalyzeProduct] edgeUrl from env:", edgeUrl);
 
-export async function AnalyzeProduct(
-  payload: any,
-  ac?: AbortController
-): Promise<AnalyzeResult | { error: string }> {
-  const EDGE_URL = import.meta.env.VITE_SUPABASE_EDGE_URL;
-  const SHARED_SECRET = import.meta.env.VITE_EDGE_SHARED_SECRET;
-
-  console.log("[AnalyzeProduct] EDGE_URL from env:", EDGE_URL);
+  if (!edgeUrl) {
+    throw new Error("VITE_SUPABASE_EDGE_URL is not set");
+  }
 
   try {
-    const res = await fetch(EDGE_URL, {
+    const res = await fetch(edgeUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-shared-secret": SHARED_SECRET ?? "",
+        "x-shared-secret": sharedSecret ?? "",
       },
       body: JSON.stringify({
         ingredients:
-          payload?.ingredients ||
-          payload?.text ||
-          payload?.input ||
-          payload?.ingredians ||
-          "",
-        barcode: payload?.barcode || "",
+          payload.ingredients || payload.text || payload.input || "",
+        barcode: payload.barcode || "",
       }),
       signal: ac?.signal,
     });
 
     if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      console.error("[AnalyzeProduct] Edge HTTP error", res.status, text);
-      return { error: `Edge returned ${res.status}` };
+      throw new Error(`Edge returned ${res.status}`);
     }
 
-    const data = (await res.json()) as AnalyzeResult;
+    const data = await res.json();
     console.log("[AnalyzeProduct] Edge data:", data);
-    return data;
-  } catch (err: any) {
+    return data; // frontend receives the JSON directly
+  } catch (err) {
     console.error("[AnalyzeProduct] Error calling Edge:", err);
-    return { error: err?.message || "Edge call failed" };
+    throw err;
   }
 }
