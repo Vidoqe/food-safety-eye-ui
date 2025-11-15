@@ -109,6 +109,24 @@ interface Props {
 
 const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
   const { language } = useAppContext(); // 'en' | 'zh'
+// Normalize ingredient rows into table format
+const ingredientsForTable =
+  Array.isArray(result?.table) ? result.table :
+  Array.isArray(result?.ingredients) ? result.ingredients :
+  result && typeof result === "object" && result.ingredients ? [
+    {
+      ingredient: result.ingredients,
+      riskLevel: result.riskLevel ?? "unknown",
+      childRisk:
+        result.childSafe === true
+          ? "low"
+          : result.childSafe === false
+          ? "risk"
+          : "unknown",
+      badge: result.badge ?? "",
+      law: result.law ?? "",
+    }
+  ] : [];
 
   // No result yet
   if (!result) {
