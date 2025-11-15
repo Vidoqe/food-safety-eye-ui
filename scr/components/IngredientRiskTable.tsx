@@ -1,5 +1,16 @@
 // scr/components/IngredientRiskTable.tsx
 import React from "react";
+function badgeDisplay(row: any) {
+  if (!row.badge) return "-";
+
+  const badge = String(row.badge).toLowerCase();
+
+  if (badge === "safe") return "🟢 Safe";
+  if (badge === "caution") return "🟡 Caution";
+  if (badge === "harmful") return "🔴 Harmful";
+
+  return row.badge;
+}
 
 type IngredientRow = {
   ingredient?: string;
