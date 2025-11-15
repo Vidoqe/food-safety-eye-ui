@@ -123,14 +123,17 @@ function childRiskText(row: IngredientRow): string {
 }
 
 function regulationText(row: IngredientRow): string {
-  return (
+  const source =
     normalize(row.regulation) ||
     normalize(row.taiwanRegulation) ||
     normalize(row.twRegulation) ||
-    normalize(row.note)
-  );
-}
+    normalize(row.law) ||
+    normalize(row.note) ||
+    // 🔽 NEW: fallback to GPT analysis text
+    normalize((row as any).comment);
 
+  return source;
+}
 
 const IngredientRiskTable: React.FC<Props> = ({ ingredients }) => {
   return (
