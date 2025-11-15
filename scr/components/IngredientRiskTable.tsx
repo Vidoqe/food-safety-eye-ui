@@ -125,7 +125,7 @@ const IngredientRiskTable: React.FC<Props> = ({ ingredients }) => {
           {riskText(row)}
         </td>
         <td className="px-3 py-2 text-gray-800">
-          {childriskText(row)}
+          {childRiskText(row)}
         </td>
         <td className="px-3 py-2 text-gray-800">
           {badgeDisplay(row)}
