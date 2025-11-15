@@ -1,33 +1,65 @@
 // scr/components/IngredientRiskTable.tsx
 import React from "react";
 function badgeDisplay(row: IngredientRow): string {
-  const normalize = (v: any) =>
-    (v ?? "").toString().trim().toLowerCase();
-
   const source =
     normalize(row.badge) ||
     normalize(row.riskLevel) ||
-    normalize(row.risk);
+    normalize(row.risk) ||
+    "";
 
-  if (!source) return "";
+  const ingredient = normalize(row.ingredient);
 
-  // 🔴 Harmful
-  if (source.includes("harmful") || source.includes("high")) {
+  // 1) If backend explicitly says harmful / high risk
+  if (
+    source.includes("harmful") ||
+    source.includes("high") ||
+    source.includes("danger")
+  ) {
     return "🔴 Harmful";
   }
 
-  // 🟡 Caution
-  if (source.includes("moderate") || source.includes("caution") || source.includes("yellow")) {
+  // 2) Ingredient-based auto harmful (frontend helper)
+  const harmfulKeywords = [
+    "sodium nitrite",
+    "sodium nitrate",
+    "nitrite",
+    "nitrate",
+    "bht",
+    "bha",
+    "azeo dye",
+    "azo dye",
+    "e102",
+    "e110",
+    "e122",
+    "e124",
+    "e129"
+  ];
+
+  if (harmfulKeywords.some((k) => ingredient.includes(k))) {
+    return "🔴 Harmful";
+  }
+
+  // 3) Caution
+  if (
+    source.includes("caution") ||
+    source.includes("warning") ||
+    source.includes("moderate") ||
+    source.includes("limit")
+  ) {
     return "🟡 Caution";
   }
 
-  // 🟢 Safe
-  if (source.includes("low") || source.includes("safe") || source.includes("green")) {
+  // 4) Safe / low
+  if (
+    source.includes("safe") ||
+    source.includes("low") ||
+    source.includes("minimal")
+  ) {
     return "🟢 Safe";
   }
 
-  // fallback: show raw text
-  return source;
+  // 5) Fallback – just show text if nothing matched
+  return source || "";
 }
 
 type IngredientRow = {
