@@ -66,6 +66,7 @@ function badgeDisplay(row: IngredientRow): string {
   return "🟡 Caution";
 }
 
+  function regulationText(row: IngredientRow): string {
   const source =
     normalize(row.regulation) ||
     normalize(row.taiwanRegulation) ||
