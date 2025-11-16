@@ -185,7 +185,7 @@ return (
   >
     <button
       type="button"
-      onClick={() => onBack?.()}
+      onClick={() => onBack && onBack()}
       style={{
         padding: "0.3rem 0.8rem",
         borderRadius: "0.5rem",
