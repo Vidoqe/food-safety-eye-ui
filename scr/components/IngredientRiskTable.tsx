@@ -1,99 +1,53 @@
 // scr/components/IngredientRiskTable.tsx
 import React from "react";
+// ---------------------------------------------------------
+// BADGE + RISK LOGIC
+// ---------------------------------------------------------
+
 function badgeDisplay(row: IngredientRow): string {
-  // Combine all possible text into one lowercase string
-  const source =
-    (
-      (row.badge ?? "") +
-      " " +
-      (row.riskLevel ?? "") +
-      " " +
-      (row.risk ?? "")
-    )
-      .toString()
-      .trim()
-      .toLowerCase();
+  const risk = riskText(row).toLowerCase();
 
-  const ingredient = (row.ingredient ?? "")
-    .toString()
-    .trim()
-    .toLowerCase();
-
-  if (!source && !ingredient) return "";
-
-  // 🔴 Harmful ingredients by name (frontend helper)
-  const harmfulKeywords = [
-    "sodium nitrite",
-    "sodium nitrate",
-    "nitrite",
-    "nitrate",
-    "bht",
-    "bha",
-    "azo dye",
-    "azeo dye",
-    "e102",
-    "e110",
-    "e122",
-    "e124",
-    "e129"
-  ];
-
-  if (
-    source.includes("harmful") ||
-    source.includes("high") ||
-    source.includes("danger") ||
-    harmfulKeywords.some((k) => ingredient.includes(k))
-  ) {
-    return "🔴 Harmful";
-  }
-
-  // 🟡 Caution / warning / moderate risk
-  if (
-    source.includes("caution") ||
-    source.includes("warning") ||
-    source.includes("moderate") ||
-    source.includes("limit")
-  ) {
-    return "🟡 Caution";
-  }
-
-  // 🟢 Safe / low risk
-  if (
-    source.includes("safe") ||
-    source.includes("low") ||
-    source.includes("minimal")
-  ) {
+  if (risk === "safe" || risk === "low") {
     return "🟢 Safe";
   }
 
-  // Fallback – just show whatever text we got
-  return source || "";
+  if (risk === "harmful" || risk === "high") {
+    return "🔴 Harmful";
+  }
+
+  // default = caution (medium / moderate / unknown)
+  return "🟡 Caution";
 }
 
-type IngredientRow = {
-  ingredient?: string;
-  name?: string;
-  additive?: string;
-  riskLevel?: string;
-  risk?: string;
-  childRisk?: string;
-  childSafe?: string;
-  childSafeOverall?: string;
-  badge?: string;
-  regulation?: string;
-  taiwanRegulation?: string;
-  twRegulation?: string;
-  note?: string;
-  [key: string]: any;
-};
+function riskText(row: IngredientRow): string {
+  const name = ingredientName(row).toLowerCase();
 
-interface Props {
-  ingredients: IngredientRow[];
+  // Harmful group
+  if (
+    name.includes("sodium nitrate") ||
+    name.includes("sodium nitrite") ||
+    name.includes("nitrite") ||
+    name.includes("nitrate")
+  ) {
+    return "harmful";
+  }
+
+  // Use backend if available
+  const explicit = normalize(row.riskLevel || row.risk).toLowerCase();
+
+  if (explicit === "high" || explicit === "harmful") return "harmful";
+  if (explicit === "low" || explicit === "safe") return "safe";
+  if (explicit) return explicit; // moderate, medium, etc.
+
+  // Safe group
+  if (name.includes("water") || name.includes("aqua")) {
+    return "safe";
+  }
+
+  // Default
+  return "moderate";
 }
-function normalize(value: unknown): string {
-  if (value === undefined || value === null) return "";
-  return value.toString().trim();
-}
+
 // --------------------------------------
 // Ingredient Safety Rules (frontend fallback)
 // --------------------------------------
@@ -130,69 +84,23 @@ function ingredientName(row: IngredientRow): string {
 function riskText(row: IngredientRow): string {
   const name = ingredientName(row).toLowerCase();
 
-  // ❗ 1. Check harmful list
-  if (HARMFUL_INGREDIENTS.some((x) => name.includes(x.toLowerCase()))) {
-    return "harmful";
-  }
-
-  // ❓ 2. Check moderate list
-  if (MODERATE_INGREDIENTS.some((x) => name.includes(x.toLowerCase()))) {
-    return "moderate";
-  }
-
-  // ✅ 3. Check safe list
-  if (SAFE_INGREDIENTS.some((x) => name.includes(x.toLowerCase()))) {
+  // Water = always safe
+  if (SAFE_INGREDIENTS.some(s => name.includes(s))) {
     return "safe";
   }
 
-  // 🔄 4. Otherwise fallback to backend or default
-  return (
-    normalize(row.riskLevel) ||
-    normalize(row.risk) ||
-    "unknown"
-  );
-}
-
-function childRiskText(row: IngredientRow): string {
-  // 1. Use backend child risk if provided
-  const explicit =
-    normalize(row.childRisk) ||
-    normalize(row.childSafe) ||
-    normalize(row.childSafeOverall);
-
-  if (explicit) {
-    return explicit;
+  // Harmful ingredients
+  if (HARMFUL_INGREDIENTS.some(h => name.includes(h))) {
+    return "harmful";
   }
 
-  // 2. Derive from badge or risk level
-  const badge = normalize(row.badge);
-  const risk = normalize(row.riskLevel);
-
-  if (
-    badge.includes("harmful") ||
-    badge.includes("avoid") ||
-    risk.includes("high")
-  ) {
-    return "risk";
+  // Moderate ingredients
+  if (MODERATE_INGREDIENTS.some(m => name.includes(m))) {
+    return "moderate";
   }
 
-  if (
-    badge.includes("caution") ||
-    risk.includes("moderate") ||
-    risk.includes("medium")
-  ) {
-    return "caution";
-  }
-
-  if (
-    badge.includes("safe") ||
-    risk.includes("low") ||
-    risk.includes("healthy")
-  ) {
-    return "low";
-  }
-
-  return "Unknown";
+  // Default fallback
+  return normalize(row.riskLevel) || normalize(row.risk) || "unknown";
 }
 
 function regulationText(row: IngredientRow): string {
