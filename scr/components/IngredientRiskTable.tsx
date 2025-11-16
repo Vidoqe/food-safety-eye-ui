@@ -91,11 +91,30 @@ interface Props {
   ingredients: IngredientRow[];
 }
 
-function normalize(value: unknown): string {
-  if (value === undefined || value === null) return "";
-  return value.toString().trim();
-}
+// --------------------------------------
+// Ingredient Safety Rules (frontend fallback)
+// --------------------------------------
 
+const SAFE_INGREDIENTS = [
+  "water",
+  "aqua",
+];
+
+const MODERATE_INGREDIENTS = [
+  "salt",
+  "sodium chloride",
+  "sugar",
+  "glucose",
+  "fructose",
+  "sucrose",
+];
+
+const HARMFUL_INGREDIENTS = [
+  "sodium nitrate",
+  "sodium nitrite",
+  "nitrate",
+  "nitrite",
+];
 function ingredientName(row: IngredientRow): string {
   return (
     normalize(row.ingredient) ||
@@ -106,10 +125,28 @@ function ingredientName(row: IngredientRow): string {
 }
 
 function riskText(row: IngredientRow): string {
+  const name = ingredientName(row).toLowerCase();
+
+  // ❗ 1. Check harmful list
+  if (HARMFUL_INGREDIENTS.some((x) => name.includes(x.toLowerCase()))) {
+    return "harmful";
+  }
+
+  // ❓ 2. Check moderate list
+  if (MODERATE_INGREDIENTS.some((x) => name.includes(x.toLowerCase()))) {
+    return "moderate";
+  }
+
+  // ✅ 3. Check safe list
+  if (SAFE_INGREDIENTS.some((x) => name.includes(x.toLowerCase()))) {
+    return "safe";
+  }
+
+  // 🔄 4. Otherwise fallback to backend or default
   return (
     normalize(row.riskLevel) ||
     normalize(row.risk) ||
-    "Unknown"
+    "unknown"
   );
 }
 
