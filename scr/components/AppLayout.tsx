@@ -105,22 +105,12 @@ const AppLayout: React.FC = () => {
     setCurrentScreen('result');
   };
 
-  const handleBackToHome = () => {
-    setCurrentScreen('home');
-    setCurrentResult(null);
-    setCurrentError(null);
-  };
-
+  
   const handleBack = () => {
-    if (currentScreen === 'privacy-policy' || currentScreen === 'terms-of-use') {
-      setCurrentScreen('home');
-    } else if (currentScreen === 'result') {
-      setCurrentScreen('home');
-    } else {
-      setCurrentScreen('home');
-    }
-    setCurrentError(null);
-  };
+  setCurrentScreen('home');
+  setCurrentResult(null);
+  setCurrentError(null);
+};
 
   const handleViewScanDetails = (scan: ScanHistoryEntry) => {
     const result: AnalysisResult = {
