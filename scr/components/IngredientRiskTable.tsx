@@ -28,10 +28,17 @@ function normalize(value: unknown): string {
   return value.toString().trim();
 }
 
-// ---------------------------------------------------------------------
-// Ingredient Safety Rules (frontend helper)
-// ---------------------------------------------------------------------
+// Helper to get best name string
+function ingredientName(row: IngredientRow): string {
+  return (
+    normalize(row.ingredient) ||
+    normalize(row.name) ||
+    normalize(row.additive) ||
+    ""
+  );
+}
 
+// Ingredient Safety Rules (frontend helper)
 const SAFE_INGREDIENTS = ["water", "aqua"];
 
 const MODERATE_INGREDIENTS = [
@@ -52,40 +59,35 @@ const HARMFUL_INGREDIENTS = [
 
 // Decide "safe" / "moderate" / "harmful" for one ingredient row
 function riskText(row: IngredientRow): string {
-  // Build a combined ingredient name string from whatever we have
-  const name = (
-    normalize(row.ingredient) ||
-    normalize(row.name) ||
-    normalize(row.additive) ||
-    ""
-  ).toLowerCase();
+  const name = ingredientName(row).toLowerCase();
 
-  // 1. Use explicit backend value if present
+  // 1. Name-based rules OVERRIDE backend
+  if (SAFE_INGREDIENTS.some((s) => name.includes(s))) {
+    // water / aqua etc.
+    return "safe";
+  }
+
+  if (HARMFUL_INGREDIENTS.some((h) => name.includes(h))) {
+    // sodium nitrate / nitrite etc.
+    return "harmful";
+  }
+
+  if (MODERATE_INGREDIENTS.some((m) => name.includes(m))) {
+    // salt / sugar group
+    return "moderate";
+  }
+
+  // 2. If no name rule matched, use backend value if present
   const explicit = (
     normalize(row.riskLevel) ||
     normalize(row.risk)
   ).toLowerCase();
 
+  if (!explicit) return "unknown";
+
   if (explicit === "safe" || explicit === "low") return "safe";
   if (explicit === "high" || explicit === "harmful") return "harmful";
   if (explicit === "moderate" || explicit === "medium") return "moderate";
-
-  // 2. Fallback to simple keyword rules
-
-  // Safe group
-  if (SAFE_INGREDIENTS.some((s) => name.includes(s))) {
-    return "safe";
-  }
-
-  // Harmful group
-  if (HARMFUL_INGREDIENTS.some((h) => name.includes(h))) {
-    return "harmful";
-  }
-
-  // Moderate group
-  if (MODERATE_INGREDIENTS.some((m) => name.includes(m))) {
-    return "moderate";
-  }
 
   // 3. Final fallback
   return "unknown";
@@ -93,19 +95,19 @@ function riskText(row: IngredientRow): string {
 
 // Child risk text
 function childRiskText(row: IngredientRow): string {
-  // 1. Use backend child risk if provided
   const explicit =
     normalize(row.childRisk) ||
     normalize(row.childSafe) ||
     normalize(row.childSafeOverall);
 
-  if (explicit) return explicit;
+  if (explicit) {
+    return explicit;
+  }
 
-  // 2. Derive from overall risk
-  const overall = riskText(row);
-  if (overall === "safe" || overall === "low") return "safe";
+  const adult = riskText(row);
+  if (adult === "safe" || adult === "low") return "safe";
+  if (adult === "harmful" || adult === "high") return "risk";
 
-  // 3. Default: show that there is some risk
   return "risk";
 }
 
@@ -113,15 +115,10 @@ function childRiskText(row: IngredientRow): string {
 function badgeDisplay(row: IngredientRow): string {
   const risk = riskText(row).toLowerCase();
 
-  if (risk === "safe" || risk === "low") {
-    return "🟢 Safe";
-  }
+  if (risk === "safe" || risk === "low") return "🟢 Safe";
+  if (risk === "harmful" || risk === "high") return "🔴 Harmful";
 
-  if (risk === "harmful" || risk === "high") {
-    return "🔴 Harmful";
-  }
-
-  // default = caution (medium / moderate / unknown)
+  // default: caution (medium / moderate / unknown)
   return "🟡 Caution";
 }
 
@@ -136,12 +133,8 @@ function regulationText(row: IngredientRow): string {
     // fallback to GPT comment from backend, if any
     normalize((row as any).comment);
 
-  return source;
+  return source || "";
 }
-
-// ---------------------------------------------------------------------
-// Table Component
-// ---------------------------------------------------------------------
 
 const IngredientRiskTable: React.FC<Props> = ({ ingredients }) => {
   return (
@@ -159,8 +152,7 @@ const IngredientRiskTable: React.FC<Props> = ({ ingredients }) => {
           </tr>
         </thead>
         <tbody>
-          {/* If nothing to show */}
-          {(!ingredients || ingredients.length === 0) && (
+          {(ingredients || []).length === 0 && (
             <tr>
               <td
                 colSpan={5}
@@ -171,39 +163,23 @@ const IngredientRiskTable: React.FC<Props> = ({ ingredients }) => {
             </tr>
           )}
 
-          {/* Ensure ingredients is always an array */}
           {(Array.isArray(ingredients) ? ingredients : [ingredients]).map(
             (row: any, i: number) => (
-              <tr
-                key={i}
-                className="border-b last:border-0 hover:bg-gray-50"
-              >
-                {/* Ingredient name column */}
+              <tr key={i} className="border-b last:border-0 hover:bg-gray-50">
                 <td className="px-3 py-2 text-gray-900">
-                  {normalize(row.ingredient) ||
-                    normalize(row.name) ||
-                    normalize(row.additive) ||
-                    ""}
+                  {ingredientName(row) || "-"}
                 </td>
-
-                {/* Risk level column */}
                 <td className="px-3 py-2 text-gray-800">
-                  {riskText(row)}
+                  {riskText(row) || "-"}
                 </td>
-
-                {/* Child risk column */}
                 <td className="px-3 py-2 text-gray-800">
-                  {childRiskText(row)}
+                  {childRiskText(row) || "-"}
                 </td>
-
-                {/* Badge column */}
                 <td className="px-3 py-2 text-gray-800">
                   {badgeDisplay(row)}
                 </td>
-
-                {/* Taiwan regulation / comment column */}
                 <td className="px-3 py-2 text-gray-800">
-                  {regulationText(row)}
+                  {regulationText(row) || "-"}
                 </td>
               </tr>
             )
