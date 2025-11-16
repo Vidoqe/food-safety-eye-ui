@@ -90,7 +90,10 @@ type IngredientRow = {
 interface Props {
   ingredients: IngredientRow[];
 }
-
+function normalize(value: unknown): string {
+  if (value === undefined || value === null) return "";
+  return value.toString().trim();
+}
 // --------------------------------------
 // Ingredient Safety Rules (frontend fallback)
 // --------------------------------------
