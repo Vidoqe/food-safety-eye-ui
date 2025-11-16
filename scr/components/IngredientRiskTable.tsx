@@ -1,57 +1,11 @@
 // scr/components/IngredientRiskTable.tsx
 import React from "react";
 // ---------------------------------------------------------
+// ---------------------------------------------------------------------
 // BADGE + RISK LOGIC
-// ---------------------------------------------------------
+// ---------------------------------------------------------------------
 
-function badgeDisplay(row: IngredientRow): string {
-  const risk = riskText(row).toLowerCase();
-
-  if (risk === "safe" || risk === "low") {
-    return "🟢 Safe";
-  }
-
-  if (risk === "harmful" || risk === "high") {
-    return "🔴 Harmful";
-  }
-
-  // default = caution (medium / moderate / unknown)
-  return "🟡 Caution";
-}
-
-function riskText(row: IngredientRow): string {
-  const name = ingredientName(row).toLowerCase();
-
-  // Harmful group
-  if (
-    name.includes("sodium nitrate") ||
-    name.includes("sodium nitrite") ||
-    name.includes("nitrite") ||
-    name.includes("nitrate")
-  ) {
-    return "harmful";
-  }
-
-  // Use backend if available
-  const explicit = normalize(row.riskLevel || row.risk).toLowerCase();
-
-  if (explicit === "high" || explicit === "harmful") return "harmful";
-  if (explicit === "low" || explicit === "safe") return "safe";
-  if (explicit) return explicit; // moderate, medium, etc.
-
-  // Safe group
-  if (name.includes("water") || name.includes("aqua")) {
-    return "safe";
-  }
-
-  // Default
-  return "moderate";
-}
-
-// --------------------------------------
-// Ingredient Safety Rules (frontend fallback)
-// --------------------------------------
-
+// Ingredient Safety Rules (frontend helper)
 const SAFE_INGREDIENTS = [
   "water",
   "aqua",
@@ -72,38 +26,46 @@ const HARMFUL_INGREDIENTS = [
   "nitrate",
   "nitrite",
 ];
-function ingredientName(row: IngredientRow): string {
-  return (
-    normalize(row.ingredient) ||
-    normalize(row.name) ||
-    normalize(row.additive) ||
-    ""
-  );
-}
 
+// Decide "safe" / "moderate" / "harmful" for one ingredient row
 function riskText(row: IngredientRow): string {
   const name = ingredientName(row).toLowerCase();
 
-  // Water = always safe
-  if (SAFE_INGREDIENTS.some(s => name.includes(s))) {
+  // Safe group
+  if (SAFE_INGREDIENTS.some((s) => name.includes(s))) {
     return "safe";
   }
 
-  // Harmful ingredients
-  if (HARMFUL_INGREDIENTS.some(h => name.includes(h))) {
+  // Harmful group
+  if (HARMFUL_INGREDIENTS.some((h) => name.includes(h))) {
     return "harmful";
   }
 
-  // Moderate ingredients
-  if (MODERATE_INGREDIENTS.some(m => name.includes(m))) {
+  // Moderate group
+  if (MODERATE_INGREDIENTS.some((m) => name.includes(m))) {
     return "moderate";
   }
 
-  // Default fallback
+  // Fallback: backend text
   return normalize(row.riskLevel) || normalize(row.risk) || "unknown";
 }
 
-function regulationText(row: IngredientRow): string {
+// Turn riskText into coloured badge
+function badgeDisplay(row: IngredientRow): string {
+  const risk = riskText(row).toLowerCase();
+
+  if (risk === "safe" || risk === "low") {
+    return "🟢 Safe";
+  }
+
+  if (risk === "harmful" || risk === "high") {
+    return "🔴 Harmful";
+  }
+
+  // default = caution (medium / moderate / unknown)
+  return "🟡 Caution";
+}
+
   const source =
     normalize(row.regulation) ||
     normalize(row.taiwanRegulation) ||
