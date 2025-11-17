@@ -2,8 +2,7 @@
 import React, { useRef, useState } from "react";
 import { AnalyzeProduct } from "../services/gptImageAnalysis";
 
-export default function ScanScreen() {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+export default function ScanScreen({ type, onBack, onResult }) {  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,7 +96,7 @@ export default function ScanScreen() {
     } catch (err: any) {
       setError(err?.message ?? String(err));
     } finally {
-      setLoading(false);
+      setLoading(false);f
     }
   };
 
