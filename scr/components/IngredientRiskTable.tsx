@@ -94,20 +94,34 @@ function riskText(row: IngredientRow): string {
 }
 
 // Child risk text
+// Child risk text
 function childRiskText(row: IngredientRow): string {
-  const explicit =
-    normalize(row.childRisk) ||
-    normalize(row.childSafe) ||
-    normalize(row.childSafeOverall);
+  const normalizeValue = (value: any) =>
+    (value || "").toString().trim().toLowerCase();
 
-  if (explicit) {
-    return explicit;
+  const explicit =
+    normalizeValue(row.childRisk) ||
+    normalizeValue(row.childSafe) ||
+    normalizeValue(row.childSafeOverall);
+
+  // If backend explicitly says safe → safe
+  if (explicit === "safe" || explicit === "low") return "safe";
+
+  // Always safe ingredients
+  const name =
+    normalizeValue(row.ingredient) ||
+    normalizeValue(row.name) ||
+    normalizeValue(row.additive) ||
+    "";
+
+  if (name.includes("water") || name.includes("aqua")) {
+    return "safe";
   }
 
-  const adult = riskText(row);
-  if (adult === "safe" || adult === "low") return "safe";
-  if (adult === "harmful" || adult === "high") return "risk";
+  // If backend says harmful / high
+  if (explicit === "high" || explicit === "harmful") return "risk";
 
+  // Unknown → risk for children
   return "risk";
 }
 
