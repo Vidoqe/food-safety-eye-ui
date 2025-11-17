@@ -56,6 +56,30 @@ const HARMFUL_INGREDIENTS = [
   "nitrate",
   "nitrite",
 ];
+// Taiwan FDA / law rules (frontend helper)
+// Keys are lowercase fragments that we match inside the ingredient name.
+const TAIWAN_FDA_RULES: Record<string, string> = {
+  "water":
+    "Allowed as a basic ingredient. Must meet general drinking-water safety standards.",
+  "sugar":
+    "Permitted sweetener. No specific legal maximum, but Taiwan health guidance recommends limiting added sugars, especially for children.",
+  "salt":
+    "Permitted. No strict legal cap in ordinary foods, but high sodium intake is linked to hypertension; follow Taiwan dietary guidelines to limit sodium.",
+  "sodium nitrate":
+    "Permitted preservative in processed meats with maximum level around a few hundred ppm depending on product category. Should be limited in children due to nitrosamine risk.",
+  "sodium nitrite":
+    "Permitted curing agent in processed meats with strict maximum levels (ppm range). Use should be minimized in young children; avoid frequent consumption.",
+  "nitrate":
+    "Nitrate-containing additives and natural sources are regulated by maximum residual levels. High intake can convert to nitrite in the body.",
+  "nitrite":
+    "Nitrite in foods is tightly controlled by Taiwan FDA. Excess intake may increase the risk of methemoglobinemia and nitrosamine formation.",
+  "artificial sweetener":
+    "Non-nutritive sweeteners (for example aspartame, acesulfame K, sucralose) each have their own Acceptable Daily Intake (ADI). Taiwan FDA follows Codex-style ADIs; avoid exceeding ADI, especially in children.",
+  "high fructose corn syrup":
+    "Permitted sweetener but contributes to high added sugar intake. Taiwan nutrition policy recommends minimizing sugary drinks and HFCS in children.",
+  "food color":
+    "Food dyes must be on the approved Taiwan list and stay under permitted daily intake. Some synthetic colors are restricted or banned in children’s products.",
+};
 
 // Decide "safe" / "moderate" / "harmful" for one ingredient row
 function riskText(row: IngredientRow): string {
@@ -138,16 +162,27 @@ function badgeDisplay(row: IngredientRow): string {
 
 // Taiwan FDA / law / GPT comment column
 function regulationText(row: IngredientRow): string {
+  const name = ingredientName(row).toLowerCase();
+
+  // 1. Try to find a matching Taiwan FDA rule by keyword
+  const matchedRule =
+    Object.entries(TAIWAN_FDA_RULES).find(([key]) => name.includes(key))?.[1];
+
+  if (matchedRule) {
+    return matchedRule;
+  }
+
+  // 2. Fallback to any text coming from backend / other fields
   const source =
-    normalize(row.regulation) ||
     normalize(row.taiwanRegulation) ||
     normalize(row.twRegulation) ||
+    normalize(row.regulation) ||
     normalize(row.law) ||
     normalize(row.note) ||
-    // fallback to GPT comment from backend, if any
     normalize((row as any).comment);
 
-  return source || "";
+  // 3. Final fallback
+  return source || "-";
 }
 
 const IngredientRiskTable: React.FC<Props> = ({ ingredients }) => {
