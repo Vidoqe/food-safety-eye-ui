@@ -137,9 +137,13 @@ const ingredientsForTable =
         </p>
         {onBack && (
           <button
-            onClick={onBack}
-            className="mt-4 rounded bg-gray-200 px-4 py-2 hover:bg-gray-300"
-          >
+  onClick={() => {
+    if (typeof onBack === "function") {
+      onBack();
+    }
+  }}
+  className="mt-4 rounded bg-gray-200 px-4 py-2 hover:bg-gray-300"
+>
             {language === 'zh' ? '返回' : 'Back'}
           </button>
         )}
@@ -185,7 +189,11 @@ return (
   >
     <button
       type="button"
-      onClick={() => onBack && onBack()}
+      onClick={() => {
+  if (typeof onBack === "function") {
+    onBack();
+  }
+}}
       style={{
         padding: "0.3rem 0.8rem",
         borderRadius: "0.5rem",
