@@ -21,8 +21,8 @@ type IngredientRow = {
 
 interface Props {
   ingredients: IngredientRow[];
+  language?: string;        // <-- add this line
 }
-
 function normalize(value: unknown): string {
   if (value === undefined || value === null) return "";
   return value.toString().trim();
@@ -160,32 +160,37 @@ function badgeDisplay(row: IngredientRow): string {
   return "🟡 Caution";
 }
 
-// Taiwan FDA / law / GPT comment column
-function regulationText(row: IngredientRow): string {
-  const name = ingredientName(row).toLowerCase();
+// Taiwan FDA / Law comment column with EN + ZH support
+function regulationText(row: IngredientRow, language: string = "en"): string {
+  const name = normalize(row.ingredient).toLowerCase();
 
-  // 1. Try to find a matching Taiwan FDA rule by keyword
-  const matchedRule =
-    Object.entries(TAIWAN_FDA_RULES).find(([key]) => name.includes(key))?.[1];
+  // --- Chinese (Taiwan) descriptions ---
+  const zhMap: Record<string, string> = {
+    "water": "作為基本原料允許使用，但必須符合一般飲用水安全標準。",
+    "sugar": "可合法使用的甜味劑。雖無明確法定上限，但台灣健康指引建議減少添加糖攝取，尤其是兒童。",
+    "salt": "允許使用。一般食品無嚴格法定上限，但高鈉攝取與高血壓相關；建議依據台灣飲食指南控制鈉含量。",
+    "sodium nitrate": "在加工肉品中屬合法使用的防腐劑，法定上限依產品類別通常為數百 ppm。因亞硝胺風險，兒童應盡量避免或減量食用。"
+  };
 
-  if (matchedRule) {
-    return matchedRule;
-  }
+  // --- English descriptions ---
+  const enMap: Record<string, string> = {
+    "water": "Allowed as a basic ingredient. Must meet general drinking-water safety standards.",
+    "sugar": "Permitted sweetener. No specific legal maximum, but Taiwan health guidance recommends limiting added sugars, especially for children.",
+    "salt": "Permitted. No strict legal cap in ordinary foods, but high sodium intake is linked to hypertension; follow Taiwan dietary guidelines to limit sodium.",
+    "sodium nitrate": "Permitted preservative in processed meats with maximum levels around a few hundred ppm depending on product category. Should be limited in children due to nitrosamine risk."
+  };
 
-  // 2. Fallback to any text coming from backend / other fields
-  const source =
-    normalize(row.taiwanRegulation) ||
-    normalize(row.twRegulation) ||
-    normalize(row.regulation) ||
-    normalize(row.law) ||
-    normalize(row.note) ||
-    normalize((row as any).comment);
+  // Choose language map
+  const map = language === "zh" ? zhMap : enMap;
 
-  // 3. Final fallback
-  return source || "-";
+  // Return match if found
+  if (map[name]) return map[name];
+
+  // No match → fallback
+  return "-";
 }
 
-const IngredientRiskTable: React.FC<Props> = ({ ingredients }) => {
+const IngredientRiskTable: React.FC<Props> = ({ ingredients, language = "en" }) => {
   return (
     <div className="mt-4 overflow-x-auto">
       <table className="min-w-full text-sm border-collapse">
@@ -215,8 +220,8 @@ const IngredientRiskTable: React.FC<Props> = ({ ingredients }) => {
           {(Array.isArray(ingredients) ? ingredients : [ingredients]).map(
             (row: any, i: number) => (
               <tr key={i} className="border-b last:border-0 hover:bg-gray-50">
-                <td className="px-3 py-2 text-gray-900">
-                  {ingredientName(row) || "-"}
+                <td className="px-3 py-2 text-gray-800">
+               {regulationText(row, language)}
                 </td>
                 <td className="px-3 py-2 text-gray-800">
                   {riskText(row) || "-"}

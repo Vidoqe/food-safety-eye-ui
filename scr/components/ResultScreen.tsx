@@ -254,7 +254,10 @@ return (
           </div>
         )}
 
-        <IngredientRiskTable ingredients={ingredients} />
+       <IngredientRiskTable
+  ingredients={result.ingredients}
+  language={language}
+/>
       </div>
     </div>
   );
