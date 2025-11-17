@@ -104,7 +104,11 @@ const AppLayout: React.FC = () => {
     setCurrentResult(result);
     setCurrentScreen('result');
   };
-
+  const handleBackToHome = () => {
+  setCurrentScreen('home');
+  setCurrentResult(null);
+  setCurrentError(null);
+};
   
   const handleBack = () => {
   setCurrentScreen('home');
