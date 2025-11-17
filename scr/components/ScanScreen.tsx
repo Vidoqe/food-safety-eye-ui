@@ -103,7 +103,9 @@ export default function ScanScreen() {
 
   return (
     <div className="mx-auto max-w-md p-4">
-      <h1 className="text-2xl font-semibold mb-4">Scan Product Label</h1>
+      <h1 className="text-2xl font-bold mb-4">
+  {type === "barcode" ? "Scan Barcode" : "Scan Product Label"}
+</h1>
 
       {/* Hidden input – this is what mobile browsers need */}
       <input
