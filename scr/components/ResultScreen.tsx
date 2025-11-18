@@ -188,22 +188,24 @@ return (
     }}
   >
     <button
-      type="button"
-      onClick={() => {
-  if (typeof onBack === "function") {
-    onBack();
-  }
-}}
-      style={{
-        padding: "0.3rem 0.8rem",
-        borderRadius: "0.5rem",
-        border: "1px solid #ddd",
-        background: "#f9fafb",
-        cursor: "pointer",
-      }}
-    >
-      {language === "zh" ? "返回" : "Back"}
-    </button>
+  type="button"
+  onClick={() => {
+    if (typeof onBack === "function") {
+      onBack();
+    } else {
+      console.warn("onBack is NOT a function:", onBack);
+    }
+  }}
+  style={{
+    padding: "0.3rem 0.8rem",
+    borderRadius: "0.5rem",
+    border: "1px solid #ddd",
+    background: "#f9fafb",
+    cursor: "pointer",
+  }}
+>
+  {language === "zh" ? "返回" : "Back"}
+</button>
   </div>
 )}
 
