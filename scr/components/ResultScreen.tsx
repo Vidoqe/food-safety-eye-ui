@@ -136,17 +136,20 @@ const ingredientsForTable =
           {language === 'zh' ? '尚未產生結果…' : 'No result yet.'}
         </p>
         {onBack && (
-          <button
-  onClick={() => {
-    if (typeof onBack === "function") {
-      onBack();
-    }
-  }}
-  className="mt-4 rounded bg-gray-200 px-4 py-2 hover:bg-gray-300"
->
-            {language === 'zh' ? '返回' : 'Back'}
-          </button>
-        )}
+  <button
+    type="button"
+    onClick={() => {
+      if (typeof onBack === "function") {
+        onBack();
+      } else {
+        console.warn("onBack is NOT a function:", onBack);
+      }
+    }}
+    className="mt-4 rounded bg-gray-200 px-4 py-2 hover:bg-gray-300"
+  >
+    {language === "zh" ? "返回" : "Back"}
+  </button>
+)}
       </div>
     );
   }
