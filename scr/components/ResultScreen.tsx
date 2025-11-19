@@ -108,6 +108,13 @@ interface Props {
 }
 
 const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
+const handleBackClick = () => {
+    if (typeof onBack === "function") {
+      onBack();
+    } else {
+      console.warn("onBack is NOT a function:", onBack);
+    }
+  };
   const { language } = useAppContext(); // 'en' | 'zh'
 // Normalize ingredient rows into table format
 const ingredientsForTable =
@@ -192,14 +199,8 @@ return (
   >
     <button
   type="button"
-  onClick={() => {
-    if (typeof onBack === "function") {
-      onBack();
-    } else {
-      console.warn("onBack is NOT a function:", onBack);
-    }
-  }}
-  style={{
+  onClick={handleBackClick}
+     style={{
     padding: "0.3rem 0.8rem",
     borderRadius: "0.5rem",
     border: "1px solid #ddd",
