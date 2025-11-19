@@ -13,6 +13,7 @@ import { AppProvider } from "@/contexts/AppContext";
 
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import ResultScreen from "./components/ResultScreen";
 
 const queryClient = new QueryClient();
 
@@ -26,10 +27,22 @@ export default function App() {
               <Toaster />
               <BrowserRouter>
   <Routes>
-    <Route path="/" element={<Index />} />
-    <Route path="/manual-input" element={<ManualInputScreen />} />
-    <Route path="*" element={<NotFound />} />
-  </Routes>
+  <Route path="/" element={<Index />} />
+  <Route path="/manual-input" element={<ManualInputScreen />} />
+
+  {/* NEW FIX */}
+  <Route
+    path="/result"
+    element={
+      <ResultScreen
+        result={null}
+        onBack={() => window.history.back()}
+      />
+    }
+  />
+
+  <Route path="*" element={<NotFound />} />
+</Routes>
 </BrowserRouter>
             </AppProvider>
           </UserProvider>
