@@ -205,7 +205,8 @@ export default function ManualInputScreen({
         </pre>
       )}
     </div>
-  {/* Show Result Screen when we have debugResult */}
+
+{/* Show Result Screen when we have debugResult */}
 {debugResult && (
   <ResultScreen
     result={debugResult}
