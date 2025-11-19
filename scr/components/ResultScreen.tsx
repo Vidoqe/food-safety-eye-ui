@@ -224,10 +224,17 @@ return (
       marginBottom: "1.5rem",
     }}
   >
-    <button
+   <button
   type="button"
-  onClick={handleBackClick}
-     style={{
+  onClick={() => {
+    if (typeof onBack === "function") {
+      onBack();
+    } else {
+      console.warn("onBack is NOT a function; using history.back()");
+      window.history.back();
+    }
+  }}
+  style={{
     padding: "0.3rem 0.8rem",
     borderRadius: "0.5rem",
     border: "1px solid #ddd",
@@ -237,8 +244,6 @@ return (
 >
   {language === "zh" ? "返回" : "Back"}
 </button>
-  </div>
-)}
 
 
       {/* Overview card */}
