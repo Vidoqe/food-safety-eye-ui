@@ -117,12 +117,19 @@ const handleBackClick = () => {
   };
   const { language } = useAppContext(); // 'en' | 'zh'
 // Normalize ingredient rows into table format
-const ingredientsForTable =
-  Array.isArray(result?.table) ? result.table :
-  Array.isArray(result?.ingredients) ? result.ingredients :
-  result && typeof result === "object" && result.ingredients ? [
-    {
-      ingredient: result.ingredients,
+// Normalize ingredient rows into table format
+const ingredientsForTable = (() => {
+  if (!result) return [];
+
+  // Case 1: Backend already returned array of structured rows
+  if (Array.isArray(result.ingredients)) {
+    return result.ingredients;
+  }
+
+  // Case 2: Backend returned a comma-separated string
+  if (typeof result.ingredients === "string") {
+    return result.ingredients.split(",").map((item) => ({
+      ingredient: item.trim(),
       riskLevel: result.riskLevel ?? "unknown",
       childRisk:
         result.childSafe === true
@@ -132,12 +139,11 @@ const ingredientsForTable =
           : "unknown",
       badge: result.badge ?? "",
       law: result.law ?? "",
-    }
-  ] : [];
+    }));
+  }
 
-  // No result yet
-  if (!result) {
-    return (
+  return [];
+})();
       <div className="p-4 max-w-3xl mx-auto">
         <p className="text-gray-600">
           {language === 'zh' ? '尚未產生結果…' : 'No result yet.'}
