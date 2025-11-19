@@ -117,46 +117,50 @@ const handleBackClick = () => {
   };
   const { language } = useAppContext(); // 'en' | 'zh'
 // Normalize ingredient rows into table format
+// Normalize ingredient rows into table format
 const ingredientsForTable: IngredientRow[] = (() => {
   if (!result) return [];
 
-  // Case 1: backend already gives an ingredient table
+  // Case 1: backend returns array of rows
   if (Array.isArray((result as any).table)) {
     return (result as any).table as IngredientRow[];
   }
 
-  // Case 2: backend gives an ingredients array
+  // Case 2: backend returns array of ingredient names
   if (Array.isArray((result as any).ingredients)) {
-    return (result as any).ingredients as IngredientRow[];
-  }
-
-  // Case 3: backend gives a single string like "water,sugar,salt"
-  if (
-    typeof (result as any).ingredients === "string" &&
-    (result as any).ingredients.trim() !== ""
-  ) {
-    const names = (result as any).ingredients
-      .split(",")
-      .map((s: string) => s.trim())
-      .filter(Boolean);
-
-    return names.map((name: string) => ({
-      ingredient: name,
-      riskLevel: (result as any).riskLevel ?? "unknown",
+    return (result as any).ingredients.map((item: any) => ({
+      ingredient: item.ingredient ?? item ?? "",
+      riskLevel: item.riskLevel ?? "unknown",
       childRisk:
-        (result as any).childSafe === true
+        item.childSafe === true
           ? "low"
-          : (result as any).childSafe === false
+          : item.childSafe === false
           ? "risk"
           : "unknown",
-      badge: (result as any).badge ?? "",
-      law: (result as any).law ?? "",
+      badge: item.badge ?? "",
+      law: item.law ?? "",
     }));
   }
 
-  // Fallback
+  // Case 3: backend returns "salt,sugar,water" string
+  if (typeof result.ingredients === "string") {
+    return result.ingredients.split(",").map((item) => ({
+      ingredient: item.trim(),
+      riskLevel: result.riskLevel ?? "unknown",
+      childRisk:
+        result.childSafe === true
+          ? "low"
+          : result.childSafe === false
+          ? "risk"
+          : "unknown",
+      badge: result.badge ?? "",
+      law: result.law ?? "",
+    }));
+  }
+
   return [];
 })();
+
 
 // No result yet
 if (!result) {
