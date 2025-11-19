@@ -143,8 +143,12 @@ const ingredientsForTable = (() => {
   }
 
   return [];
-})();
-      <div className="p-4 max-w-3xl mx-auto">
+}
+
+// No result yet
+if (!result) {
+  return (
+    <div className="p-4 max-w-3xl mx-auto">
         <p className="text-gray-600">
           {language === 'zh' ? '尚未產生結果…' : 'No result yet.'}
         </p>
