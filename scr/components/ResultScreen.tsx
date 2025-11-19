@@ -117,33 +117,46 @@ const handleBackClick = () => {
   };
   const { language } = useAppContext(); // 'en' | 'zh'
 // Normalize ingredient rows into table format
-// Normalize ingredient rows into table format
-const ingredientsForTable = (() => {
+const ingredientsForTable: IngredientRow[] = (() => {
   if (!result) return [];
 
-  // Case 1: Backend already returned array of structured rows
-  if (Array.isArray(result.ingredients)) {
-    return result.ingredients;
+  // Case 1: backend already gives an ingredient table
+  if (Array.isArray((result as any).table)) {
+    return (result as any).table as IngredientRow[];
   }
 
-  // Case 2: Backend returned a comma-separated string
-  if (typeof result.ingredients === "string") {
-    return result.ingredients.split(",").map((item) => ({
-      ingredient: item.trim(),
-      riskLevel: result.riskLevel ?? "unknown",
+  // Case 2: backend gives an ingredients array
+  if (Array.isArray((result as any).ingredients)) {
+    return (result as any).ingredients as IngredientRow[];
+  }
+
+  // Case 3: backend gives a single string like "water,sugar,salt"
+  if (
+    typeof (result as any).ingredients === "string" &&
+    (result as any).ingredients.trim() !== ""
+  ) {
+    const names = (result as any).ingredients
+      .split(",")
+      .map((s: string) => s.trim())
+      .filter(Boolean);
+
+    return names.map((name: string) => ({
+      ingredient: name,
+      riskLevel: (result as any).riskLevel ?? "unknown",
       childRisk:
-        result.childSafe === true
+        (result as any).childSafe === true
           ? "low"
-          : result.childSafe === false
+          : (result as any).childSafe === false
           ? "risk"
           : "unknown",
-      badge: result.badge ?? "",
-      law: result.law ?? "",
+      badge: (result as any).badge ?? "",
+      law: (result as any).law ?? "",
     }));
   }
 
+  // Fallback
   return [];
-}
+})();
 
 // No result yet
 if (!result) {
