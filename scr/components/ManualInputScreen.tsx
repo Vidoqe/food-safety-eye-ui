@@ -209,6 +209,6 @@ export default function ManualInputScreen({
 {debugResult && (
   <ResultScreen
     result={debugResult}
-    onBack={() => setDebugResult(null)}  // back = hide results
+    onBack={() => setDebugResult(null)}
   />
 )}
