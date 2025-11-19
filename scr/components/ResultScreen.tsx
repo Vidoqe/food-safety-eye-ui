@@ -117,16 +117,15 @@ const handleBackClick = () => {
   };
   const { language } = useAppContext(); // 'en' | 'zh'
 // Normalize ingredient rows into table format
-// Normalize ingredient rows into table format
 const ingredientsForTable: IngredientRow[] = (() => {
   if (!result) return [];
 
-  // Case 1: backend returns array of rows
+  // Case 1: backend returns a ready-made table array
   if (Array.isArray((result as any).table)) {
     return (result as any).table as IngredientRow[];
   }
 
-  // Case 2: backend returns array of ingredient names
+  // Case 2: backend returns an array of ingredient entries
   if (Array.isArray((result as any).ingredients)) {
     return (result as any).ingredients.map((item: any) => ({
       ingredient: item.ingredient ?? item ?? "",
@@ -142,19 +141,19 @@ const ingredientsForTable: IngredientRow[] = (() => {
     }));
   }
 
-  // Case 3: backend returns "salt,sugar,water" string
-  if (typeof result.ingredients === "string") {
-    return result.ingredients.split(",").map((item) => ({
-      ingredient: item.trim(),
-      riskLevel: result.riskLevel ?? "unknown",
+  // Case 3: backend returns "sugar,water,salt,sodium nitrate" string
+  if (typeof (result as any).ingredients === "string") {
+    return (result as any).ingredients.split(",").map((name: string) => ({
+      ingredient: name.trim(),
+      riskLevel: (result as any).riskLevel ?? "unknown",
       childRisk:
-        result.childSafe === true
+        (result as any).childSafe === true
           ? "low"
-          : result.childSafe === false
+          : (result as any).childSafe === false
           ? "risk"
           : "unknown",
-      badge: result.badge ?? "",
-      law: result.law ?? "",
+      badge: (result as any).badge ?? "",
+      law: (result as any).law ?? "",
     }));
   }
 
@@ -170,19 +169,20 @@ if (!result) {
           {language === 'zh' ? '尚未產生結果…' : 'No result yet.'}
         </p>
         {onBack && (
-  <button
-    type="button"
-    onClick={() => {
-      if (typeof onBack === "function") {
-        onBack();
-      } else {
-        console.warn("onBack is NOT a function:", onBack);
-      }
-    }}
-    className="mt-4 rounded bg-gray-200 px-4 py-2 hover:bg-gray-300"
-  >
-    {language === "zh" ? "返回" : "Back"}
-  </button>
+ <button
+  type="button"
+  onClick={() => {
+    if (typeof onBack === "function") {
+      onBack();
+    } else {
+      console.warn("onBack is NOT a function, falling back to history.back()");
+      window.history.back();
+    }
+  }}
+  className="mt-4 rounded bg-gray-200 px-4 py-2 hover:bg-gray-300"
+>
+  {language === "zh" ? "返回" : "Back"}
+</button>
 )}
       </div>
     );
