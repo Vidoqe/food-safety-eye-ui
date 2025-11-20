@@ -30,17 +30,7 @@ export default function App() {
   <Route path="/" element={<Index />} />
   <Route path="/manual-input" element={<ManualInputScreen />} />
 
-  {/* NEW FIX */}
-  <Route
-    path="/result"
-    element={
-      <ResultScreen
-        result={null}
-        onBack={() => window.history.back()}
-      />
-    }
-  />
-
+  
   <Route path="*" element={<NotFound />} />
 </Routes>
 </BrowserRouter>
