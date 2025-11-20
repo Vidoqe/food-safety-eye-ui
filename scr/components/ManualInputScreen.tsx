@@ -206,10 +206,4 @@ export default function ManualInputScreen({
 )}
     </div>
 
-{/* Show Result Screen when we have debugResult */}
-{debugResult && (
-  <ResultScreen
-    result={debugResult}
-    onBack={() => setDebugResult(null)}
-  />
 )}
