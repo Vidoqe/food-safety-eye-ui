@@ -4,7 +4,7 @@ import { AnalyzeProduct } from "../services/gptImageAnalysis";
 interface ManualInputScreenProps {
   lang: string;
   onBack?: () => void;
-  onResult?: (result: any) => void;
+  
 }
 
 export default function ManualInputScreen({
@@ -43,7 +43,7 @@ export default function ManualInputScreen({
       const result = await AnalyzeProduct(payload);
       console.log("[ManualInputScreen] result:", result);
       setDebugResult(result);
-      onResult?.(result);
+    
     } catch (e: any) {
       console.error("[ManualInputScreen] analyze error:", e);
       setDebugResult(null);
