@@ -185,8 +185,8 @@ export default function ManualInputScreen({
         </button>
       </div>
 
-      {/* RAW JSON for debugging */}
-      {debugResult && (
+    {/* RAW JSON for debugging */}
+{debugResult && (
   <pre
     style={{
       marginTop: "1rem",
