@@ -1,6 +1,6 @@
 // src/components/ResultScreen.tsx
 import React from 'react';
-import IngredientRiskTable from '@/components/IngredientRiskTable';
+import IngredientRiskTable from "../components/IngredientRiskTable";
 import { useAppContext } from '@/contexts/AppContext';
 import type { GPTAnalysisResult, Risk } from '@/services/gptImageAnalysis';
 

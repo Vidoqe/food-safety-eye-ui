@@ -47,6 +47,15 @@ export default function ManualInputScreen({
     } catch (e: any) {
       console.error("[ManualInputScreen] analyze error:", e);
       setDebugResult(null);
+// If we already have a result, show the ResultScreen instead of the form
+if (debugResult) {
+  return (
+    <ResultScreen
+      result={debugResult}
+      onBack={() => setDebugResult(null)}
+    />
+  );
+}
       setError(
         e?.message ||
           (lang === "zh"
@@ -185,22 +194,7 @@ export default function ManualInputScreen({
         </button>
       </div>
 
-    {/* RAW JSON for debugging */}
-{debugResult && (
-  <pre
-    style={{
-      marginTop: "1rem",
-      padding: "0.75rem",
-      borderRadius: "0.75rem",
-      border: "1px solid #e5e7eb",
-      background: "#111827",
-      color: "#e5e7eb",
-      fontSize: "0.75rem",
-      maxHeight: "320px",
-      overflow: "auto",
-      whiteSpace: "pre-wrap",
-    }}
-  >
+     >
     {JSON.stringify(debugResult, null, 2)}
   </pre>
 )}
