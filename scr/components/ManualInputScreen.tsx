@@ -196,26 +196,27 @@ if (debugResult) {
 
   
     {/* RAW JSON for debugging */}
-{debugResult && (
-  <pre
-    style={{
-      marginTop: "1rem",
-      padding: "0.75rem",
-      borderRadius: "0.75rem",
-      border: "1px solid #e5e7eb",
-      background: "#111827",
-      color: "#e5e7eb",
-      fontSize: "0.75rem",
-      maxHeight: "320px",
-      overflow: "auto",
-      whiteSpace: "pre-wrap",
-    }}
-  >
-    {JSON.stringify(debugResult, null, 2)}
-  </pre>
-)}
-</div>  
-);
-   
+      {debugResult && (
+        <pre
+          style={{
+            marginTop: "1rem",
+            padding: "0.75rem",
+            borderRadius: "0.75rem",
+            border: "1px solid #e5e7eb",
+            background: "#111827",
+            color: "#e5e7eb",
+            fontSize: "0.75rem",
+            maxHeight: "320px",
+            overflow: "auto",
+            whiteSpace: "pre-wrap",
+          }}
+        >
+          {JSON.stringify(debugResult, null, 2)}
+        </pre>
+      )}
+    </div>
+  );
+}
+
 
 
