@@ -194,7 +194,7 @@ if (debugResult) {
         </button>
       </div>
 
-     >
+  
     {/* RAW JSON for debugging */}
 {debugResult && (
   <pre
