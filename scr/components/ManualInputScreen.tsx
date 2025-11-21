@@ -214,6 +214,8 @@ if (debugResult) {
     {JSON.stringify(debugResult, null, 2)}
   </pre>
 )}
+</div>  
+);
    
 
 
