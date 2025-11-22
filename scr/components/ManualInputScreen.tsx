@@ -4,14 +4,13 @@ import { AnalyzeProduct } from "../services/gptImageAnalysis";
 interface ManualInputScreenProps {
   lang: string;
   onBack?: () => void;
-  
+  onResult?: (result: any) => void;
 }
-
-export default function ManualInputScreen({
-  lang,
-  onBack,
-  onResult,
-}: ManualInputScreenProps) {
+interface ManualInputScreenProps {
+  lang: string;
+  onBack?: () => void;
+  onResult?: (result: any) => void;
+}
   const [ingredients, setIngredients] = useState("");
   const [barcode, setBarcode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -40,9 +39,11 @@ export default function ManualInputScreen({
     };
 
     try {
-      const result = await AnalyzeProduct(payload);
-      console.log("[ManualInputScreen] result:", result);
-      setDebugResult(result);
+      export default function ManualInputScreen({
+  lang,
+  onBack,
+  onResult,
+}: ManualInputScreenProps) {
     
     } catch (e: any) {
       console.error("[ManualInputScreen] analyze error:", e);
