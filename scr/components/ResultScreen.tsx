@@ -133,21 +133,25 @@ const ingredientsForTable: IngredientRow[] = (() => {
     }));
   }
 
-  // Case 3: backend returns "sugar,water,salt,sodium nitrate" string
-  if (typeof (result as any).ingredients === "string") {
-    return (result as any).ingredients.split(",").map((name: string) => ({
-      ingredient: name.trim(),
-      riskLevel: (result as any).riskLevel ?? "unknown",
-      childRisk:
-        (result as any).childSafe === true
+  // Case 3: backend returns "sugar,salt,sodium nitrate"
+if (typeof result.ingredients === "string") {
+  return result.ingredients
+    .split(/[,;，]/)
+    .map((name: string) => name.trim())
+    .filter((name: string) => name.length > 0)
+    .map((name: string) => ({
+      ingredient: name,
+      risklevel: result.risklevel ?? "unknown",
+      childisk:
+        result.childSafe === true
           ? "low"
-          : (result as any).childSafe === false
+          : result.childSafe === false
           ? "risk"
           : "unknown",
-      badge: (result as any).badge ?? "",
-      law: (result as any).law ?? "",
+      badge: result.badge ?? "",
+      law: result.law ?? "",
     }));
-  }
+}
 
   return [];
 })();
