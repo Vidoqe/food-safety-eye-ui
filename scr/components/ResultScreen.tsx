@@ -75,22 +75,23 @@ function getIngredientRows(result: any): any[] {
   }
 
   // 2) CURRENT CASE: backend sends a single object with a combined string
-  const ingredientsText =
-    typeof result.ingredients === "string" ? result.ingredients : "";
+  // NEW: split ingredients string into array
+const splitIngredients = ingredientsText
+  .split(/[,;，]/)
+  .map(i => i.trim())
+  .filter(i => i.length > 0);
 
-  if (!ingredientsText.trim()) return [];
-
-  const base = {
-    riskLevel: result.riskLevel ?? "unknown",
-    childRisk:
-      result.childSafe === true
-        ? "low"
-        : result.childSafe === false
-        ? "risk"
-        : "unknown",
-    badge: result.badge ?? "",
-    law: result.law ?? "",
-  };
+// If backend returns only a simple object with risk and badge, apply same result to all ingredients.
+return splitIngredients.map(name => ({
+  ingredient: name,
+  risklevel: result.risklevel ?? "unknown",
+  childisk:
+    result.childSafe === true ? "low" :
+    result.childSafe === false ? "risk" :
+    "unknown",
+  badge: result.badge ?? "",
+  law: result.law ?? "",
+}));
 
   // Split "salt,sugar,aspartame" into ["salt","sugar","aspartame"]
   return ingredientsText
