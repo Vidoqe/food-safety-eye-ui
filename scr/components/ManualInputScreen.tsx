@@ -1,21 +1,28 @@
 import React, { useState } from "react";
+import ResultScreen from "./ResultScreen";
 import { AnalyzeProduct } from "../services/gptImageAnalysis";
 
 interface ManualInputScreenProps {
   lang: string;
   onBack?: () => void;
-  onResult?: (result: any) => void;
 }
-interface ManualInputScreenProps {
+
+type EdgePayload = {
+  ingredients?: string;
+  ingredientsText?: string;
+  barcode?: string;
   lang: string;
-  onBack?: () => void;
-  onResult?: (result: any) => void;
-}
+};
+
+export default function ManualInputScreen({
+  lang,
+  onBack,
+}: ManualInputScreenProps) {
   const [ingredients, setIngredients] = useState("");
   const [barcode, setBarcode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [debugResult, setDebugResult] = useState<any | null>(null);
+  const [result, setResult] = useState<any | null>(null);
 
   const handleAnalyze = async () => {
     if (!ingredients.trim() && !barcode.trim()) {
@@ -30,8 +37,7 @@ interface ManualInputScreenProps {
     setError(null);
     setLoading(true);
 
-    const payload = {
-      // main text we want the backend to use
+    const payload: EdgePayload = {
       ingredients: ingredients.trim() || undefined,
       ingredientsText: ingredients.trim() || undefined,
       barcode: barcode.trim() || undefined,
@@ -39,35 +45,33 @@ interface ManualInputScreenProps {
     };
 
     try {
-      export default function ManualInputScreen({
-  lang,
-  onBack,
-  onResult,
-}: ManualInputScreenProps) {
-    
+      const edgeResult = await AnalyzeProduct(payload);
+      console.log("[ManualInputScreen] result:", edgeResult);
+      setResult(edgeResult);
     } catch (e: any) {
       console.error("[ManualInputScreen] analyze error:", e);
-      setDebugResult(null);
-// If we already have a result, show the ResultScreen instead of the form
-if (debugResult) {
-  return (
-    <ResultScreen
-      result={debugResult}
-      onBack={() => setDebugResult(null)}
-    />
-  );
-}
+      setResult(null);
       setError(
-        e?.message ||
-          (lang === "zh"
-            ? "系統錯誤，請稍後再試。"
-            : "Unexpected error. Please try again.")
+        lang === "zh"
+          ? "分析失敗，請再試一次。"
+          : "Analysis failed. Please try again."
       );
     } finally {
       setLoading(false);
     }
   };
 
+  // If we already have a result, show the ResultScreen (with table)
+  if (result) {
+    return (
+      <ResultScreen
+        result={result}
+        onBack={() => setResult(null)}
+      />
+    );
+  }
+
+  // ----- Form view -----
   return (
     <div style={{ padding: "1.5rem", maxWidth: 800, margin: "0 auto" }}>
       {/* Header / Back */}
@@ -96,7 +100,9 @@ if (debugResult) {
         )}
 
         <h1 style={{ fontSize: "1.25rem", fontWeight: 600 }}>
-          {lang === "zh" ? "食安分析（手動輸入）" : "Food Safety Analysis (Manual Input)"}
+          {lang === "zh"
+            ? "食安分析（手動輸入）"
+            : "Food Safety Analysis (Manual Input)"}
         </h1>
       </div>
 
@@ -194,30 +200,6 @@ if (debugResult) {
             : "Analyze"}
         </button>
       </div>
-
-  
-    {/* RAW JSON for debugging */}
-      {debugResult && (
-        <pre
-          style={{
-            marginTop: "1rem",
-            padding: "0.75rem",
-            borderRadius: "0.75rem",
-            border: "1px solid #e5e7eb",
-            background: "#111827",
-            color: "#e5e7eb",
-            fontSize: "0.75rem",
-            maxHeight: "320px",
-            overflow: "auto",
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          {JSON.stringify(debugResult, null, 2)}
-        </pre>
-      )}
     </div>
   );
 }
-
-
-
