@@ -75,11 +75,17 @@ function getIngredientRows(result: any): any[] {
   }
 
   // 2) CURRENT CASE: backend sends a single object with a combined string
- // NEW: split string into ingredient rows for ResultScreen
+// NEW: safely split string into ingredient rows for ResultScreen
+
+const ingredientsText =
+  typeof result.ingredients === "string" ? result.ingredients : "";
+
+if (!ingredientsText.trim()) return [];
+
 const splitIngredients = ingredientsText
-  .split(/[,;，]/)
-  .map((i: string) => i.trim())
-  .filter((i: string) => i.length > 0);
+  .split(/[，,;；]/) // commas, semicolons, Chinese punctuation
+  .map((n: string) => n.trim())
+  .filter((n: string) => n.length > 0);
 
 return splitIngredients.map((name: string) => ({
   ingredient: name,
