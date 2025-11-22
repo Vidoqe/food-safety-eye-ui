@@ -211,7 +211,7 @@ return (
     {sectionTitle("overview", language as "en" | "zh")}
   </h2>
 
- {onBack && (
+ {typeof onBack === "function" && (
   <div
     style={{
       display: "flex",
@@ -235,6 +235,7 @@ return (
     </button>
   </div>
 )}
+
 
 
 
