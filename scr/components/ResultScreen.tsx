@@ -283,11 +283,17 @@ return (
 
       {/* Overview card */}
 <section style={{ width: "100%", marginTop: "1.5rem" }}>
-  <h2 style={{ fontSize: "1.1rem", fontWeight: 600 }}>
-    {sectionTitle("details", language as "en" | "zh")}
-  </h2>
+ <h2 style={{ fontSize: "1.1rem", fontWeight: 600 }}>
+  {sectionTitle("details", language as "en" | "zh")}
+</h2>
 
-  <table style={{ width: "100%", marginTop: "1rem", borderCollapse: "collapse" }}>
+const thStyle = {
+  padding: "0.5rem",
+  borderBottom: "1px solid #ddd",
+  textAlign: "left"
+};
+
+<table style={{ width: "100%", marginTop: "1rem", borderCollapse: "collapse" }}>
     <thead>
       <tr>
         <th style={thStyle}>{language === "zh" ? "成分" : "Ingredient"}</th>
