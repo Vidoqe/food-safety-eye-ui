@@ -190,14 +190,7 @@ if (!result) {
     );
   }
 
-  // ------- overall verdict -------
-  const verdict: Risk =
-    result.verdict === 'low' || result.verdict === 'healthy'
-      ? 'healthy'
-      : result.verdict === 'harmful'
-      ? 'harmful'
-      : 'moderate';
-
+  
  // -------- overall verdict --------
 const verdict: Risk =
   result.verdict === "low" || result.verdict === "healthy"
