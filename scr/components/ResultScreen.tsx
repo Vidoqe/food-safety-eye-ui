@@ -62,7 +62,7 @@ function sectionTitle(
   return map[lang][key];
 }
 
-// -------- find ingredient rows in result ----------
+// -------- find ingredient rows in result --------
 function getIngredientRows(result: any): any[] {
   if (!result || typeof result !== "object") return [];
 
@@ -70,35 +70,36 @@ function getIngredientRows(result: any): any[] {
   if (Array.isArray(result.ingredients) && result.ingredients.length > 0) {
     return result.ingredients;
   }
+
   if (Array.isArray(result.table) && result.table.length > 0) {
     return result.table;
   }
 
-  // 2) CURRENT CASE: backend sends a single object with a combined string
-// NEW: safely split string into ingredient rows for ResultScreen
+  // 2) CURRENT CASE: backend sends a single string with a combined list
+  // e.g. "salt,sugar,sodium nitrate" → split into rows for ResultScreen
+  const ingredientsText: string =
+    typeof result.ingredients === "string" ? result.ingredients : "";
 
-const ingredientsText =
-  typeof result.ingredients === "string" ? result.ingredients : "";
+  if (!ingredientsText.trim()) return [];
 
-if (!ingredientsText.trim()) return [];
+  const splitIngredients = ingredientsText
+    .split(/[,;，、]+/) // commas, semicolons, Chinese punctuation
+    .map((n: string) => n.trim())
+    .filter((n: string) => n.length > 0);
 
-const splitIngredients = ingredientsText
-  .split(/[，,;；]/) // commas, semicolons, Chinese punctuation
-  .map((n: string) => n.trim())
-  .filter((n: string) => n.length > 0);
-
-return splitIngredients.map((name: string) => ({
-  ingredient: name,
-  risklevel: result.risklevel ?? "unknown",
-  childisk:
-    result.childSafe === true
-      ? "low"
-      : result.childSafe === false
-      ? "risk"
-      : "unknown",
-  badge: result.badge ?? "",
-  law: result.law ?? "",
-}));
+  return splitIngredients.map((name: string) => ({
+    ingredient: name,
+    riskLevel: result.riskLevel ?? "unknown",
+    childRisk:
+      result.childSafe === true
+        ? "low"
+        : result.childSafe === false
+        ? "risk"
+        : "unknown",
+    badge: result.badge ?? "Caution",
+    law: result.law || "No specific restriction",
+  }));
+}
 }
 interface Props {
   result: GPTAnalysisResult | null;
