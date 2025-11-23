@@ -237,7 +237,16 @@ const ingredientRows = React.useMemo(() => {
   }));
 }, [result]);
 
+const thStyle = {
+  padding: "0.5rem",
+  borderBottom: "1px solid #ddd",
+  textAlign: "left",
+};
 
+const tdStyle = {
+  padding: "0.5rem",
+  borderBottom: "1px solid #eee",
+};
 
 return (
   <div
@@ -288,10 +297,6 @@ return (
 </h2>
 </section>  //
 
-const thStyle = {
-  padding: "0.5rem",
-  borderBottom: "1px solid #ddd",
-  textAlign: "left",
 };
 
 <table style={{ width: "100%", marginTop: "1rem", borderCollapse: "collapse" }}>
