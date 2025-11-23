@@ -291,10 +291,10 @@ return (
     <thead>
       <tr>
         <th style={thStyle}>{language === "zh" ? "成分" : "Ingredient"}</th>
-        <th style={thStyle}>{language === "zh" ? "風險等級" : "Risk Level"}</th>
-        <th style={thStyle}>{language === "zh" ? "兒童風險" : "Child Risk?"}</th>
-        <th style={thStyle}>{language === "zh" ? "徽章" : "Badge"}</th>
-        <th style={thStyle}>{language === "zh" ? "台灣法規" : "Taiwan FDA Regulation"}</th>
+<th style={thStyle}>{language === "zh" ? "風險等級" : "Risk Level"}</th>
+<th style={thStyle}>{language === "zh" ? "兒童風險" : "Child Risk?"}</th>
+<th style={thStyle}>{language === "zh" ? "標章" : "Badge"}</th>
+<th style={thStyle}>{language === "zh" ? "台灣法規" : "Taiwan FDA Regulation"}</th>
       </tr>
     </thead>
 
