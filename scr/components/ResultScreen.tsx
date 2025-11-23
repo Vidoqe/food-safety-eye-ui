@@ -100,7 +100,7 @@ function getIngredientRows(result: any): any[] {
     law: result.law || "No specific restriction",
   }));
 }
-}
+
 interface Props {
   result: GPTAnalysisResult | null;
   onBack?: () => void;
