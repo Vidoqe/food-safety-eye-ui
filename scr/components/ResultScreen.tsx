@@ -290,7 +290,7 @@ return (
 const thStyle = {
   padding: "0.5rem",
   borderBottom: "1px solid #ddd",
-  textAlign: "left"
+  textAlign: "left",
 };
 
 <table style={{ width: "100%", marginTop: "1rem", borderCollapse: "collapse" }}>
