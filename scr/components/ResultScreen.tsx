@@ -286,6 +286,7 @@ return (
  <h2 style={{ fontSize: "1.1rem", fontWeight: 600 }}>
   {sectionTitle("details", language as "en" | "zh")}
 </h2>
+</section>  //
 
 const thStyle = {
   padding: "0.5rem",
