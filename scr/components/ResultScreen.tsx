@@ -291,6 +291,7 @@ return (
 
 
       {/* Overview card */}
+</div>
 <section style={{ width: "100%", marginTop: "1.5rem" }}>
  <h2 style={{ fontSize: "1.1rem", fontWeight: 600 }}>
   {sectionTitle("details", language as "en" | "zh")}
