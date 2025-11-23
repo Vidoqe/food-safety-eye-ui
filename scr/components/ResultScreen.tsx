@@ -76,14 +76,13 @@ function getIngredientRows(result: any): any[] {
   }
 
   // 2) CURRENT CASE: backend sends a single string with a combined list
-  // e.g. "salt,sugar,sodium nitrate" → split into rows for ResultScreen
   const ingredientsText: string =
     typeof result.ingredients === "string" ? result.ingredients : "";
 
   if (!ingredientsText.trim()) return [];
 
   const splitIngredients = ingredientsText
-    .split(/[,;，、]+/) // commas, semicolons, Chinese punctuation
+    .split(/[,;；、]+/) // commas, semicolons, Chinese punctuation
     .map((n: string) => n.trim())
     .filter((n: string) => n.length > 0);
 
@@ -97,7 +96,7 @@ function getIngredientRows(result: any): any[] {
         ? "risk"
         : "unknown",
     badge: result.badge ?? "Caution",
-    law: result.law || "No specific restriction",
+    law: result.law ?? "No specific restriction",
   }));
 }
 
@@ -199,10 +198,53 @@ if (!result) {
       ? 'harmful'
       : 'moderate';
 
-  const verdictBadge = BADGE_FALLBACK[verdict] ?? '🟡';
+ // -------- overall verdict --------
+const verdict: Risk =
+  result.verdict === "low" || result.verdict === "healthy"
+    ? "healthy"
+    : result.verdict === "harmful"
+    ? "harmful"
+    : "moderate";
 
-  // ------- ingredient rows -------
-const ingredients = getIngredientRows(result);
+const verdictBadge = BADGE_FALLBACK[verdict] ?? "🟡";
+
+// -------- ingredient rows --------
+// Build ingredient rows directly from result
+const ingredientRows = React.useMemo(() => {
+  if (!result) return [];
+
+  // 1) Get ingredients string
+  const raw =
+    typeof result.ingredients === "string"
+      ? result.ingredients
+      : Array.isArray(result.ingredients)
+      ? result.ingredients.join(",")
+      : "";
+
+  if (!raw.trim()) return [];
+
+  // 2) Split text -> array
+  const names = raw
+    .split(/[,;；、]+/) // commas, semicolons, Chinese punctuation
+    .map((n: string) => n.trim())
+    .filter((n: string) => n.length > 0);
+
+  // 3) Map into table rows
+  return names.map((name: string) => ({
+    ingredient: name,
+    riskLevel: result.riskLevel ?? "unknown",
+    childRisk:
+      result.childSafe === true
+        ? "low"
+        : result.childSafe === false
+        ? "risk"
+        : "unknown",
+    badge: result.badge ?? "Caution",
+    law: result.law ?? "No specific restriction",
+  }));
+}, [result]);
+
+
 
 return (
   <div
@@ -247,6 +289,36 @@ return (
 
 
       {/* Overview card */}
+<section style={{ width: "100%", marginTop: "1.5rem" }}>
+  <h2 style={{ fontSize: "1.1rem", fontWeight: 600 }}>
+    {sectionTitle("details", language as "en" | "zh")}
+  </h2>
+
+  <table style={{ width: "100%", marginTop: "1rem", borderCollapse: "collapse" }}>
+    <thead>
+      <tr>
+        <th style={thStyle}>{language === "zh" ? "成分" : "Ingredient"}</th>
+        <th style={thStyle}>{language === "zh" ? "風險等級" : "Risk Level"}</th>
+        <th style={thStyle}>{language === "zh" ? "兒童風險" : "Child Risk?"}</th>
+        <th style={thStyle}>{language === "zh" ? "徽章" : "Badge"}</th>
+        <th style={thStyle}>{language === "zh" ? "台灣法規" : "Taiwan FDA Regulation"}</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {ingredientRows.map((row, index) => (
+        <tr key={index}>
+          <td style={tdStyle}>{row.ingredient}</td>
+          <td style={tdStyle}>{row.riskLevel}</td>
+          <td style={tdStyle}>{row.childRisk}</td>
+          <td style={tdStyle}>{row.badge}</td>
+          <td style={tdStyle}>{row.law}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</section>
+
       <div className="rounded-2xl border p-4 bg-white shadow-sm">
         <p className="text-lg font-semibold mb-1">
           <span className="mr-2">{verdictBadge}</span>
