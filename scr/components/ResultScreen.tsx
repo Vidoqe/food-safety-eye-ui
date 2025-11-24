@@ -124,8 +124,14 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
               : 'Couldn’t detect an ingredient list from the photo. Move closer, keep text in focus with good lighting, or use Manual input.'}
           </div>
         )}
-
-        <IngredientRiskTable ingredients={result.ingredients || []} />
+         // --- Map backend fields to UI fields ---
+const mappedIngredients =
+  (result.ingredients || []).map((ing: any) => ({
+    ...ing,
+    childRisk: ing.child_risk || ing.childSafety || "unknown",
+    taiwanRegulation: ing.fda_regulation || ing.taiwanRegulation || "No info",
+  }));
+        <IngredientRiskTable ingredients={mappedIngredients} />
       </div>
     </div>
   );
