@@ -104,26 +104,30 @@ const AppLayout: React.FC = () => {
     setCurrentScreen('api-test');
   };
 
-  const handleScanResult = (result: AnalysisResult, error?: string) => {
-    if (error) {
-      setCurrentError(error);
-    } else {
-      setCurrentError(null);
-      addScanResult(result);
-      
-      addScan({
-        productName: result.extractedIngredients?.[0] || 'Unknown Product',
-        riskLevel: result.verdict,
-        verdict: result.verdict,
-        ingredients: result.ingredients,
-        tips: result.tips,
-        junkFoodScore: result.junkFoodScore
-      });
-    }
-    
-    setCurrentResult(result);
-    setCurrentScreen('result');
-  };
+  const handleScanResult = (result: AnalysisResult | null, error?: string) => {
+  // If there is an error OR no result object, just show the error and stop
+  if (error || !result) {
+    setCurrentError(error || 'Analysis failed. Please try again.');
+    setCurrentResult(null);
+    // IMPORTANT: do not go to the result screen when we have no result
+    return;
+  }
+
+  // We have a valid result – normal flow
+  setCurrentError(null);
+
+  addScan({
+    productName: result.extractedIngredients?.[0] || 'Unknown Product',
+    riskLevel: result.verdict,
+    verdict: result.verdict,
+    ingredients: result.ingredients || [],
+    tips: result.tips || [],
+    junkFoodScore: result.junkFoodScore,
+  });
+
+  setCurrentResult(result);
+  setCurrentScreen('result');
+};
 
   const handleBackToHome = () => {
     setCurrentScreen('home');
