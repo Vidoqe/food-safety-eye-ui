@@ -16,6 +16,26 @@ import PrivacyPolicyPage from './PrivacyPolicyPage';
 import TermsOfUsePage from './TermsOfUsePage';
 import ApiTestScreen from './ApiTestScreen';
 
+// ---- TEMP SHIM: avoid old GPTImageAnalysisService error in browser ----
+declare global {
+  interface Window {
+    GPTImageAnalysisService?: {
+      analyzeProduct: (...args: any[]) => Promise<any>;
+    };
+  }
+}
+
+if (typeof window !== 'undefined' && !window.GPTImageAnalysisService) {
+  window.GPTImageAnalysisService = {
+    // Old code might call this; we just return null so it does nothing.
+    analyzeProduct: async () => {
+      return null;
+    },
+  };
+}
+// ---- END SHIM ----
+
+
 type Screen = 'splash' | 'home' | 'scan-label' | 'scan-barcode' | 'manual-input' | 'result' | 'settings' | 'junk-food-info' | 'scan-history' | 'upgrade-confirmation' | 'privacy-policy' | 'terms-of-use' | 'api-test';
 
 const AppLayout: React.FC = () => {
