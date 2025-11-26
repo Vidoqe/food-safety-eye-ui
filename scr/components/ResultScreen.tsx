@@ -83,7 +83,9 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
       </div>
     );
   }
-
+// 🔒 Safety guard: ensure ingredients is always an array
+const safeIngredients =
+  Array.isArray(result.ingredients) ? result.ingredients : [];
   const verdict: Risk =
     result.verdict === "low" || result.verdict === "healthy"
       ? "healthy"
@@ -94,7 +96,7 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
   const verdictBadge = BADGE_FALLBACK[verdict] ?? "🟡";
 
   // --- Map backend fields to UI fields (risk, child risk, Taiwan rules) ---
-  const mappedIngredients = (result.ingredients || []).map((ing: any) => {
+  const mappedIngredients = safeIngredients.map((ing: any) => {
     const rawRisk = (ing.risk_level || ing.status || ing.risk || "")
       .toString()
       .toLowerCase();
