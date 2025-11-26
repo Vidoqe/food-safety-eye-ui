@@ -65,23 +65,61 @@ const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult 
           language === 'zh' ? 'zh' : 'en'
         );
       } catch (err) {
-        console.error('GPT analysis failed, using local rules instead:', err);
-        const local = await IngredientAnalysisService.analyzeIngredients(ingredients, plan);
-        // 🔒 SAFETY GUARD: make sure arrays are never null
-if (!local || typeof local !== 'object') {
-  return setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
-}
+    console.error('GPT analysis failed, using local rules instead', err);
 
-local.ingredients = Array.isArray(local.ingredients) ? local.ingredients : [];
-local.extractedIngredients = Array.isArray(local.extractedIngredients) ? local.extractedIngredients : [];
-local.regulatedAdditives = Array.isArray(local.regulatedAdditives) ? local.regulatedAdditives : [];
-local.tips = Array.isArray(local.tips) ? local.tips : [];
-        gpt = {
-          extractedIngredients: local.extractedIngredients ?? [],
-          ingredients: local.ingredients ?? [],
-          verdict: local.verdict ?? 'moderate',
-          isNaturalProduct: local.isNaturalProduct ?? false,
-          regulatedAdditives: local.regulatedAdditives ?? [],
+    // Run local text-only analyzer as fallback
+    const local: any =
+      (await IngredientAnalysisService.analyzeIngredients(ingredients, plan)) || null;
+
+    // If local also fails, show a friendly error and stop
+    if (!local || typeof local !== 'object') {
+      setIsAnalyzing(false);
+      return setError(
+        language === 'zh'
+          ? '分析失敗，請再試一次。'
+          : 'Analysis failed. Please try again.'
+      );
+    }
+
+    // SAFETY GUARD: make sure arrays are never null/undefined
+    const safeIngredients = Array.isArray(local.ingredients)
+      ? local.ingredients
+      : [];
+
+    const safeExtracted = Array.isArray(local.extractedIngredients)
+      ? local.extractedIngredients
+      : [];
+
+    const safeRegulated = Array.isArray(local.regulatedAdditives)
+      ? local.regulatedAdditives
+      : [];
+
+    const safeTips = Array.isArray(local.tips) ? local.tips : [];
+
+    gpt = {
+      extractedIngredients: safeExtracted,
+      ingredients: safeIngredients,
+      verdict: local.verdict ?? 'moderate',
+      isNaturalProduct: local.isNaturalProduct ?? false,
+      regulatedAdditives: safeRegulated,
+      tips: safeTips,
+      junkFoodScore: local.junkFoodScore ?? 0,
+      quickSummary: local.quickSummary ?? local.summary ?? '',
+      overallSafety: mapVerdictToSafety(local.verdict ?? 'moderate') as
+        | 'safe'
+        | 'moderate'
+        | 'harmful',
+      summary: local.summary ?? local.quickSummary ?? '',
+      error: local.errorMessage,
+      productName: local.productName ?? '',
+      barcode: local.barcode ?? '',
+      taiwanRisks: local.taiwanWarnings ?? [],
+      scanIsExt: local.scanIsExt ?? undefined,
+      localVerdict: local.verdict ?? 'moderate',
+      localAllergyFlags: local.allergyFlags ?? [],
+    } as GPTAnalysisResult;
+  }
+
           tips: local.tips ?? [],
           junkFoodScore: local.junkFoodScore ?? 5,
           quickSummary: local.quickSummary ?? local.summary ?? '',
