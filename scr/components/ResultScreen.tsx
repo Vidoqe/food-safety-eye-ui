@@ -86,7 +86,9 @@ if (!result) {
 
   // 🔒 Safety guard: ensure ingredients is always an array
 const safeIngredients =
-  Array.isArray(result.ingredients) ? result.ingredients : [];
+ const safeIngredients = Array.isArray(result?.ingredients)
+  ? (result?.ingredients as any[])
+  : [];
   const verdict: Risk =
     result.verdict === "low" || result.verdict === "healthy"
       ? "healthy"
@@ -191,7 +193,7 @@ const safeIngredients =
           {sectionTitle("details", language)}
         </h3>
 
-       {((result?.ingredients ?? []).length === 0) && (
+       {safeIngredients.length === 0 && (
     <div className="rounded-2xl border p-3 md:p-4 bg-yellow-50 text-yellow-900 text-sm">
       {language === 'zh'
         ? '無法從照片辨識成分表，請靠近成分文字並保持良好光線，或改用手動輸入成分。'
