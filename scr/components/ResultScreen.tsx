@@ -200,13 +200,13 @@ const safeIngredients =
           {sectionTitle("details", language)}
         </h3>
 
-       {((result?.ingredients ?? []).length === 0) && ( (
-          <div className="rounded-xl border p-3 bg-yellow-50 text-yellow-900 mb-3">
-            {language === "zh"
-              ? "無法從照片辨識成分表，請靠近成分文字並保持良好光線，或改用手動輸入。"
-              : "Couldn’t detect an ingredient list from the photo. Move closer, keep text in focus with good lighting, or use Manual input."}
-          </div>
-        )}
+       {((result?.ingredients ?? []).length === 0) && (
+    <div className="rounded-2xl border p-3 md:p-4 bg-yellow-50 text-yellow-900 text-sm">
+      {language === 'zh'
+        ? '無法從照片辨識成分表，請靠近成分文字並保持良好光線，或改用手動輸入成分。'
+        : "Couldn't detect an ingredient list from the photo. Move closer, keep text in focus with good lighting, or use manual input."}
+    </div>
+)}
 
         <IngredientRiskTable ingredients={mappedIngredients} />
       </div>
