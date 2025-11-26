@@ -123,16 +123,6 @@ const handleAnalyze = async () => {
 
     // --- 3) Build the UI result object the rest of the app expects ---
 // SAFETY GUARD: if GPT or local fallback produced no result
-if (!gpt || typeof gpt !== 'object') {
-  console.error('Manual input returned no valid analysis result');
-  setError(
-    language === 'zh'
-      ? '分析失敗，請再試一次。'
-      : 'Analysis failed. Please try again.'
-  );
-  setIsAnalyzing(false);
-  return;
-}
     const result: AnalysisResult = {
       id: Date.now().toString(),
       ingredients: gpt.ingredients ?? [],
