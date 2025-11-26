@@ -105,15 +105,14 @@ const AppLayout: React.FC = () => {
   };
 
   const handleScanResult = (result: AnalysisResult | null, error?: string) => {
-  // If there is an error OR no result object, just show the error and stop
+  // If backend failed or gave no result, just store the error and stop.
   if (error || !result) {
     setCurrentError(error || 'Analysis failed. Please try again.');
     setCurrentResult(null);
-    // IMPORTANT: do not go to the result screen when we have no result
-    return;
+    return; // ⬅ VERY important: do not touch result.ingredients below
   }
 
-  // We have a valid result – normal flow
+  // Happy path: we have a real result
   setCurrentError(null);
 
   addScan({
@@ -128,6 +127,7 @@ const AppLayout: React.FC = () => {
   setCurrentResult(result);
   setCurrentScreen('result');
 };
+
 
   const handleBackToHome = () => {
     setCurrentScreen('home');
