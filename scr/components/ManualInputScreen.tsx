@@ -41,109 +41,109 @@ const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult 
     }
   };
 
-  const handleAnalyze = async () => {
-    if (!ingredients.trim()) {
-      setError(language === 'zh' ? '請輸入成分' : 'Please enter ingredients.');
-      return;
-    }
+const handleAnalyze = async () => {
+  if (!ingredients.trim()) {
+    setError(language === 'zh' ? '請輸入成分。' : 'Please enter ingredients.');
+    return;
+  }
 
-    setIsAnalyzing(true);
-    setError('');
+  setIsAnalyzing(true);
+  setError('');
 
-    // which plan? (kept for display/back-compat with local analyzer)
+  try {
+    // Which plan (free / premium / gold)
     const plan = (user?.plan ?? 'free') as 'free' | 'premium' | 'gold';
 
+    let gpt: GPTAnalysisResult;
+
+    // --- 1) Try GPT text analysis first ---
     try {
-      // Prefer GPT analyzer (text mode), fall back to local if it throws
-      let gpt: GPTAnalysisResult;
-
-      try {
-        gpt = await GPTImageAnalysisService.analyzeProduct(
-          undefined,                // no image (manual input)
-          ingredients,              // typed ingredients
-          undefined,                // no barcode
-          language === 'zh' ? 'zh' : 'en'
-        );
-      } catch (err) {
-    console.error('GPT analysis failed, using local rules instead', err);
-
-    // Run local text-only analyzer as fallback
-    const local: any =
-      (await IngredientAnalysisService.analyzeIngredients(ingredients, plan)) || null;
-
-    // If local also fails, show a friendly error and stop
-    if (!local || typeof local !== 'object') {
-      setIsAnalyzing(false);
-      return setError(
-        language === 'zh'
-          ? '分析失敗，請再試一次。'
-          : 'Analysis failed. Please try again.'
+      gpt = await GPTImageAnalysisService.analyzeProduct(
+        undefined,           // no image (manual input)
+        ingredients,         // typed ingredients
+        undefined,           // no barcode
+        language === 'zh' ? 'zh' : 'en',
+        plan
       );
-    }
-
-    // SAFETY GUARD: make sure arrays are never null/undefined
-    local.ingredients = Array.isArray(local.ingredients)
-      ? local.ingredients
-      : [];
-    local.extractedIngredients = Array.isArray(local.extractedIngredients)
-      ? local.extractedIngredients
-      : [];
-    local.regulatedAdditives = Array.isArray(local.regulatedAdditives)
-      ? local.regulatedAdditives
-      : [];
-   local.tips = Array.isArray(local.tips) ? local.tips : [];
-
-gpt = {
-  extractedIngredients: local.extractedIngredients ?? [],
-  ingredients: local.ingredients ?? [],
-  verdict: local.verdict ?? 'moderate',
-  isNaturalProduct: local.isNaturalProduct ?? false,
-  regulatedAdditives: local.regulatedAdditives ?? [],
-  } as GPTAnalysisResult;
-
-
-         
-      // Build the UI result
-      const result: AnalysisResult = {
-        id: Date.now().toString(),
-        ingredients: gpt.ingredients ?? [],
-        verdict: gpt.verdict ?? 'moderate',
-        tips: gpt.tips ?? [],
-        timestamp: new Date(),
-
-        productType: 'Manual Input Analysis',
-        isEdible: true,
-
-        extractedIngredients: gpt.extractedIngredients ?? [],
-        keyDetectedSubstances: gpt.regulatedAdditives ?? [],
-        isNaturalProduct: gpt.isNaturalProduct ?? false,
-        regulatedAdditives: gpt.regulatedAdditives ?? [],
-        junkFoodScore: gpt.junkFoodScore ?? 5,
-
-        quickSummary: gpt.quickSummary ?? gpt.summary ?? '',
-        overallSafety: mapVerdictToSafety(gpt.verdict ?? 'moderate'),
-        summary: gpt.summary ?? gpt.quickSummary ?? '',
-
-        productName: gpt.productName ?? '',
-        barcode: gpt.barcode ?? '',
-        taiwanWarnings: gpt.taiwanWarnings ?? [],
-
-        // Optional extras (kept if your UI shows them)
-        scansLeft: gpt.scansLeft,
-        creditsExpiry: gpt.creditsExpiry,
-        overall_risk: gpt.overall_risk,
-        child_safe: gpt.child_safe,
-        notes: gpt.notes ?? [],
-      };
-
-      setIsAnalyzing(false);
-      onResult(result);
     } catch (err) {
-      console.error('Analysis error:', err);
-      setIsAnalyzing(false);
-      setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
+      console.error('GPT analysis failed, using local rules instead', err);
+
+      // --- 2) Fallback: local rule-based analyzer ---
+      const local = await IngredientAnalysisService.analyzeIngredients(
+        ingredients,
+        plan
+      );
+
+      // If local analyzer also fails, show friendly error
+      if (!local || typeof local !== 'object') {
+        setError(
+          language === 'zh'
+            ? '分析失敗，請再試一次。'
+            : 'Analysis failed. Please try again.'
+        );
+        return;
+      }
+
+      // SAFETY GUARD: make sure arrays are never null/undefined
+      local.ingredients = Array.isArray(local.ingredients)
+        ? local.ingredients
+        : [];
+      local.extractedIngredients = Array.isArray(local.extractedIngredients)
+        ? local.extractedIngredients
+        : [];
+      local.regulatedAdditives = Array.isArray(local.regulatedAdditives)
+        ? local.regulatedAdditives
+        : [];
+      local.tips = Array.isArray(local.tips) ? local.tips : [];
+
+      // Adapt local result into GPTAnalysisResult shape for the UI
+      gpt = {
+        extractedIngredients: local.extractedIngredients ?? [],
+        ingredients: local.ingredients ?? [],
+        verdict: local.verdict ?? 'moderate',
+        isNaturalProduct: local.isNaturalProduct ?? false,
+        regulatedAdditives: local.regulatedAdditives ?? [],
+        tips: local.tips ?? [],
+        junkFoodScore: local.junkFoodScore ?? 5,
+        quickSummary: local.quickSummary ?? local.summary ?? '',
+        overallSafety: mapVerdictToSafety(local.verdict ?? 'moderate') as
+          | 'safe'
+          | 'moderate'
+          | 'harmful',
+        summary: local.summary ?? local.quickSummary ?? '',
+        error: local.errorMessage,
+        productName: local.productName ?? '',
+        barcode: local.barcode ?? '',
+        taiwanRisks: local.taiwanWarnings ?? [],
+        scanIsExt: local.scanIsExt ?? undefined,
+        localVerdict: local.verdict ?? 'moderate',
+        localAllergyFlags: local.allergyFlags ?? [],
+      } as GPTAnalysisResult;
     }
-  };
+
+    // --- 3) Build the UI result object the rest of the app expects ---
+    const result: AnalysisResult = {
+      id: Date.now().toString(),
+      ingredients: gpt.ingredients ?? [],
+      verdict: gpt.verdict ?? 'moderate',
+      tips: gpt.tips ?? [],
+      timestamp: new Date(),
+      raw: gpt,
+    };
+
+    onResult(result);
+  } catch (err) {
+    console.error('Analysis error:', err);
+    setError(
+      language === 'zh'
+        ? '分析失敗，請再試一次。'
+        : 'Analysis failed. Please try again.'
+    );
+  } finally {
+    setIsAnalyzing(false);
+  }
+};
+
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
