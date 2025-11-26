@@ -67,7 +67,15 @@ const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult 
       } catch (err) {
         console.error('GPT analysis failed, using local rules instead:', err);
         const local = await IngredientAnalysisService.analyzeIngredients(ingredients, plan);
-        // Adapt local result into GPT-like shape for the UI builder below
+        // 🔒 SAFETY GUARD: make sure arrays are never null
+if (!local || typeof local !== 'object') {
+  return setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
+}
+
+local.ingredients = Array.isArray(local.ingredients) ? local.ingredients : [];
+local.extractedIngredients = Array.isArray(local.extractedIngredients) ? local.extractedIngredients : [];
+local.regulatedAdditives = Array.isArray(local.regulatedAdditives) ? local.regulatedAdditives : [];
+local.tips = Array.isArray(local.tips) ? local.tips : [];
         gpt = {
           extractedIngredients: local.extractedIngredients ?? [],
           ingredients: local.ingredients ?? [],
