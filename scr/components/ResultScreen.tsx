@@ -73,6 +73,16 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
   error,
 }) => {
   const { language } = useAppContext(); // 'en' | 'zh'
+// Guard: if result is null, do not crash
+if (!result) {
+  return (
+    <div className="p-4 max-w-3xl mx-auto">
+      <p className="text-gray-600">
+        {language === 'zh' ? '尚未產生結果。' : 'No result yet.'}
+      </p>
+    </div>
+  );
+}
 
   if (!result) {
     return (
