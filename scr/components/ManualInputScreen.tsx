@@ -99,20 +99,7 @@ gpt = {
   verdict: local.verdict ?? 'moderate',
   isNaturalProduct: local.isNaturalProduct ?? false,
   regulatedAdditives: local.regulatedAdditives ?? [],
-  tips: local.tips ?? [],
-  junkFoodScore: local.junkFoodScore ?? 5,
-  quickSummary: local.quickSummary ?? local.summary ?? '',
-  overallSafety: mapVerdictToSafety(local.verdict ?? 'moderate') as
-    'safe' | 'moderate' | 'harmful',
-  summary: local.summary ?? local.quickSummary ?? '',
-  error: local.errorMessage,
-  productName: local.productName ?? '',
-  barcode: local.barcode ?? '',
-  taiwanRisks: local.taiwanWarnings ?? [],
-  scanIsExt: local.scanIsExt ?? undefined,
-  localVerdict: local.verdict ?? 'moderate',
-  localAllergyFlags: local.allergyFlags ?? [],
-} as GPTAnalysisResult;
+  } as GPTAnalysisResult;
 
 
           tips: local.tips ?? [],
