@@ -102,26 +102,7 @@ gpt = {
   } as GPTAnalysisResult;
 
 
-          tips: local.tips ?? [],
-          junkFoodScore: local.junkFoodScore ?? 5,
-          quickSummary: local.quickSummary ?? local.summary ?? '',
-          overallSafety: mapVerdictToSafety(local.verdict ?? 'moderate') as
-            | 'safe'
-            | 'moderate'
-            | 'harmful',
-          summary: local.summary ?? local.quickSummary ?? '',
-          error: local.errorMessage,
-          productName: local.productName ?? '',
-          barcode: local.barcode ?? '',
-          taiwanWarnings: local.taiwanWarnings ?? [],
-          scansLeft: local.scansLeft ?? undefined,
-          creditsExpiry: local.creditsExpiry ?? undefined,
-          overall_risk: local.overall_risk ?? undefined,
-          child_safe: local.child_safe ?? undefined,
-          notes: local.notes ?? [],
-        };
-      }
-
+         
       // Build the UI result
       const result: AnalysisResult = {
         id: Date.now().toString(),
