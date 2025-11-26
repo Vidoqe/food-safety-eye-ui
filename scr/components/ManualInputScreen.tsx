@@ -82,28 +82,25 @@ const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult 
     }
 
     // SAFETY GUARD: make sure arrays are never null/undefined
-    const safeIngredients = Array.isArray(local.ingredients)
+    local.ingredients = Array.isArray(local.ingredients)
       ? local.ingredients
       : [];
-
-    const safeExtracted = Array.isArray(local.extractedIngredients)
+    local.extractedIngredients = Array.isArray(local.extractedIngredients)
       ? local.extractedIngredients
       : [];
-
-    const safeRegulated = Array.isArray(local.regulatedAdditives)
+    local.regulatedAdditives = Array.isArray(local.regulatedAdditives)
       ? local.regulatedAdditives
       : [];
-
-    const safeTips = Array.isArray(local.tips) ? local.tips : [];
+    local.tips = Array.isArray(local.tips) ? local.tips : [];
 
     gpt = {
-      extractedIngredients: safeExtracted,
-      ingredients: safeIngredients,
+      extractedIngredients: local.extractedIngredients ?? [],
+      ingredients: local.ingredients ?? [],
       verdict: local.verdict ?? 'moderate',
       isNaturalProduct: local.isNaturalProduct ?? false,
-      regulatedAdditives: safeRegulated,
-      tips: safeTips,
-      junkFoodScore: local.junkFoodScore ?? 0,
+      regulatedAdditives: local.regulatedAdditives ?? [],
+      tips: local.tips ?? [],
+      junkFoodScore: local.junkFoodScore ?? 5,
       quickSummary: local.quickSummary ?? local.summary ?? '',
       overallSafety: mapVerdictToSafety(local.verdict ?? 'moderate') as
         | 'safe'
