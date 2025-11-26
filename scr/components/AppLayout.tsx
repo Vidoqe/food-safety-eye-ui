@@ -119,7 +119,7 @@ const AppLayout: React.FC = () => {
     productName: result.extractedIngredients?.[0] || 'Unknown Product',
     riskLevel: result.verdict,
     verdict: result.verdict,
-    ingredients: result.ingredients || [],
+    ingredients: result?.ingredients ?? [],
     tips: result.tips || [],
     junkFoodScore: result.junkFoodScore,
   });

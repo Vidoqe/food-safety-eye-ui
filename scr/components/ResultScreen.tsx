@@ -84,16 +84,7 @@ if (!result) {
   );
 }
 
-  if (!result) {
-    return (
-      <div className="p-4 max-w-3xl mx-auto">
-        <p className="text-gray-600">
-          {language === "zh" ? "尚未產生結果。" : "No result yet."}
-        </p>
-      </div>
-    );
-  }
-// 🔒 Safety guard: ensure ingredients is always an array
+  // 🔒 Safety guard: ensure ingredients is always an array
 const safeIngredients =
   Array.isArray(result.ingredients) ? result.ingredients : [];
   const verdict: Risk =
