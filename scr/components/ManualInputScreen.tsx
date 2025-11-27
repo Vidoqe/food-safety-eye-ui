@@ -14,6 +14,9 @@ import IngredientAnalysisService from '../services/ingredientAnalysis.ts';
 // GPT analyzer (image + text). We’ll use it for manual text too.
 import { analyzeProduct }  from '../services/gptImageAnalysis';
 
+const EDGE_FUNCTION_URL =
+  "https://f6c5af1f-food-safety-eye-ui.functions.supabase.co/analyze-product-image";
+
 interface ManualInputScreenProps {
   onBack?: () => void;
   onResult: (result: AnalysisResult) => void;
