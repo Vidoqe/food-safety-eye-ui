@@ -85,8 +85,7 @@ if (!result) {
 }
 
   // 🔒 Safety guard: ensure ingredients is always an array
-const safeIngredients =
- const safeIngredients = Array.isArray(result?.ingredients)
+const safeIngredients = Array.isArray(result?.ingredients)
   ? (result?.ingredients as any[])
   : [];
   const verdict: Risk =
