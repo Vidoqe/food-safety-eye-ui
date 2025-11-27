@@ -51,95 +51,43 @@ const handleAnalyze = async () => {
   setError('');
 
   try {
-    // Which plan (free / premium / gold)
-    const plan = (user?.plan ?? 'free') as 'free' | 'premium' | 'gold';
+    // Use existing edge function URL
+    const response = await fetch(EDGE_FUNCTION_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ingredients: ingredients.trim(),
+        barcode: '',
+      }),
+    });
 
-    let gpt: GPTAnalysisResult;
-
-    // --- 1) Try GPT text analysis first ---
-    try {
-      gpt = await GPTImageAnalysisService.analyzeProduct(
-        undefined,           // no image (manual input)
-        ingredients,         // typed ingredients
-        undefined,           // no barcode
-        language === 'zh' ? 'zh' : 'en',
-        plan
-      );
-    } catch (err) {
-      console.error('GPT analysis failed, using local rules instead', err);
-
-      // --- 2) Fallback: local rule-based analyzer ---
-      const local = await IngredientAnalysisService.analyzeIngredients(
-        ingredients,
-        plan
-      );
-
-      // If local analyzer also fails, show friendly error
-      if (!local || typeof local !== 'object') {
-        setError(
-          language === 'zh'
-            ? '分析失敗，請再試一次。'
-            : 'Analysis failed. Please try again.'
-        );
-        return;
-      }
-
-      // SAFETY GUARD: make sure arrays are never null/undefined
-      local.ingredients = Array.isArray(local.ingredients)
-        ? local.ingredients
-        : [];
-      local.extractedIngredients = Array.isArray(local.extractedIngredients)
-        ? local.extractedIngredients
-        : [];
-      local.regulatedAdditives = Array.isArray(local.regulatedAdditives)
-        ? local.regulatedAdditives
-        : [];
-      local.tips = Array.isArray(local.tips) ? local.tips : [];
-
-      // Adapt local result into GPTAnalysisResult shape for the UI
-      gpt = {
-        extractedIngredients: local.extractedIngredients ?? [],
-        ingredients: local.ingredients ?? [],
-        verdict: local.verdict ?? 'moderate',
-        isNaturalProduct: local.isNaturalProduct ?? false,
-        regulatedAdditives: local.regulatedAdditives ?? [],
-        tips: local.tips ?? [],
-        junkFoodScore: local.junkFoodScore ?? 5,
-        quickSummary: local.quickSummary ?? local.summary ?? '',
-        overallSafety: mapVerdictToSafety(local.verdict ?? 'moderate') as
-          | 'safe'
-          | 'moderate'
-          | 'harmful',
-        summary: local.summary ?? local.quickSummary ?? '',
-        error: local.errorMessage,
-        productName: local.productName ?? '',
-        barcode: local.barcode ?? '',
-        taiwanRisks: local.taiwanWarnings ?? [],
-        scanIsExt: local.scanIsExt ?? undefined,
-        localVerdict: local.verdict ?? 'moderate',
-        localAllergyFlags: local.allergyFlags ?? [],
-      } as GPTAnalysisResult;
+    if (!response.ok) {
+      setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
+      return;
     }
 
-    // --- 3) Build the UI result object the rest of the app expects ---
-// SAFETY GUARD: if GPT or local fallback produced no result
+    const json = await response.json().catch(() => null);
+    if (!json || typeof json !== 'object') {
+      setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
+      return;
+    }
+
+    // support both {result:{...}} and {...}
+    const gpt = (json.result ?? json) || {};
+
     const result: AnalysisResult = {
       id: Date.now().toString(),
-      ingredients: gpt.ingredients ?? [],
+      ingredients: Array.isArray(gpt.ingredients) ? gpt.ingredients : [],
       verdict: gpt.verdict ?? 'moderate',
-      tips: gpt.tips ?? [],
+      tips: Array.isArray(gpt.tips) ? gpt.tips : [],
       timestamp: new Date(),
       raw: gpt,
     };
 
     onResult(result);
   } catch (err) {
-    console.error('Analysis error:', err);
-    setError(
-      language === 'zh'
-        ? '分析失敗，請再試一次。'
-        : 'Analysis failed. Please try again.'
-    );
+    console.error(err);
+    setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
   } finally {
     setIsAnalyzing(false);
   }
