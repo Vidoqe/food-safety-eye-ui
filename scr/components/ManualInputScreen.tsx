@@ -54,12 +54,7 @@ const handleAnalyze = async () => {
 
   try {
     // Use existing edge function URL
-    const result = await GPTImageAnalysisService.analyzeProduct({
-  ingredients: ingredients.trim(),
-  barcode: '',
-  lang: language,
-});
-
+    
     if (!response.ok) {
       setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
       return;
