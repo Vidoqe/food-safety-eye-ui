@@ -12,7 +12,7 @@ import { useUser } from '../contexts/UserContext';
 import IngredientAnalysisService from '../services/ingredientAnalysis.ts';
 
 // GPT analyzer (image + text). We’ll use it for manual text too.
-import GPTImageAnalysisService from '../services/gptImageAnalysis';
+
 const EDGE_FUNCTION_URL =
   "https://f6c5af1f-food-safety-eye-ui.functions.supabase.co/analyze-product-image";
 
@@ -53,20 +53,37 @@ const handleAnalyze = async () => {
   setError('');
 
   try {
-    // Use existing edge function URL
-    
+    // Call existing Supabase edge function directly
+    const response = await fetch(EDGE_FUNCTION_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ingredients: ingredients.trim(),
+        barcode: '',
+        lang: language,
+      }),
+    });
+
     if (!response.ok) {
-      setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
+      setError(
+        language === 'zh'
+          ? '分析失敗，請再試一次。'
+          : 'Analysis failed. Please try again.'
+      );
       return;
     }
 
     const json = await response.json().catch(() => null);
     if (!json || typeof json !== 'object') {
-      setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
+      setError(
+        language === 'zh'
+          ? '分析失敗，請再試一次。'
+          : 'Analysis failed. Please try again.'
+      );
       return;
     }
 
-    // support both {result:{...}} and {...}
+    // support both { result: {...} } and { ... }
     const gpt = (json.result ?? json) || {};
 
     const result: AnalysisResult = {
@@ -81,12 +98,15 @@ const handleAnalyze = async () => {
     onResult(result);
   } catch (err) {
     console.error(err);
-    setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
+    setError(
+      language === 'zh'
+        ? '分析失敗，請再試一次。'
+        : 'Analysis failed. Please try again.'
+    );
   } finally {
     setIsAnalyzing(false);
   }
 };
-
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
