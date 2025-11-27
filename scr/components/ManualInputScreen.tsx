@@ -12,8 +12,7 @@ import { useUser } from '../contexts/UserContext';
 import IngredientAnalysisService from '../services/ingredientAnalysis.ts';
 
 // GPT analyzer (image + text). We’ll use it for manual text too.
-import { analyzeProduct }  from '../services/gptImageAnalysis';
-
+import GPTImageAnalysisService from '../services/gptImageAnalysis';
 const EDGE_FUNCTION_URL =
   "https://f6c5af1f-food-safety-eye-ui.functions.supabase.co/analyze-product-image";
 
@@ -55,14 +54,11 @@ const handleAnalyze = async () => {
 
   try {
     // Use existing edge function URL
-    const response = await fetch(EDGE_FUNCTION_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ingredients: ingredients.trim(),
-        barcode: '',
-      }),
-    });
+    const result = await GPTImageAnalysisService.analyzeProduct({
+  ingredients: ingredients.trim(),
+  barcode: '',
+  lang: language,
+});
 
     if (!response.ok) {
       setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
