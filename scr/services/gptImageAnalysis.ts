@@ -139,3 +139,9 @@ export async function analyzeProduct(params: AnalyzeParams): Promise<AnalysisRes
   }
   return (await resp.json()) as AnalysisResult;
 }
+// Default service wrapper so components can import it as GPTImageAnalysisService
+const GPTImageAnalysisService = {
+  analyzeProduct,
+};
+
+export default GPTImageAnalysisService;
