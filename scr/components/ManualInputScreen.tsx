@@ -52,20 +52,20 @@ const handleAnalyze = async () => {
   setError('');
 
   try {
-    const result = await GPTImageAnalysisService.analyzeProduct({
-      imageBase64: '',
-      ingredients: ingredients.trim(),
-      barcode: '',
-      lang: language === 'zh' ? 'zh' : 'en',
-    });
+    // Use LOCAL analyzer for manual text (no Supabase, no GPT here)
+    const result = IngredientAnalysisService.analyzeText(
+      ingredients.trim(),
+      language === 'zh' ? 'zh' : 'en'
+    );
 
     onResult(result);
-
   } catch (err) {
-    console.error("Manual analyze error:", err);
-    setError(language === 'zh'
-      ? '分析失敗，請再試一次。'
-      : 'Analysis failed. Please try again.');
+    console.error('Manual analyze error:', err);
+    setError(
+      language === 'zh'
+        ? '分析失敗，請再試一次。'
+        : 'Analysis failed. Please try again.'
+    );
   } finally {
     setIsAnalyzing(false);
   }
