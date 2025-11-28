@@ -52,18 +52,20 @@ const handleAnalyze = async () => {
   setError('');
 
   try {
-    // call the shared GPT + Edge Function service
     const result = await GPTImageAnalysisService.analyzeProduct({
-      imageBase64: '',              // manual screen: text only
+      imageBase64: '',
       ingredients: ingredients.trim(),
       barcode: '',
       lang: language === 'zh' ? 'zh' : 'en',
     });
 
     onResult(result);
+
   } catch (err) {
-    console.error('Manual analyze error:', err);
-    setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
+    console.error("Manual analyze error:", err);
+    setError(language === 'zh'
+      ? '分析失敗，請再試一次。'
+      : 'Analysis failed. Please try again.');
   } finally {
     setIsAnalyzing(false);
   }
