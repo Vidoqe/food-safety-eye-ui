@@ -9,7 +9,6 @@ import { useAppContext, type AnalysisResult } from '../contexts/AppContext';
 import { useUser } from '../contexts/UserContext';
 
 // Local, rule-based analyzer (no API/JWT)
-import IngredientAnalysisService from '../services/ingredientAnalysis.ts';
 import GPTImageAnalysisService from '../services/gptImageAnalysis';
 
 
@@ -52,25 +51,24 @@ const handleAnalyze = async () => {
   setError('');
 
   try {
-    // Use LOCAL analyzer for manual text (no Supabase, no GPT here)
-    const result = IngredientAnalysisService.analyzeText(
-      ingredients.trim(),
-      language === 'zh' ? 'zh' : 'en'
-    );
+    const result = await GPTImageAnalysisService.analyzeProduct({
+        imageBase64: '',                     // manual mode, no image
+        ingredients: ingredients.trim(),     // your text input
+        barcode: '',                         // no barcode in manual input
+        lang: language === 'zh' ? 'zh' : 'en',
+    });
 
     onResult(result);
-  } catch (err) {
+} catch (err) {
     console.error('Manual analyze error:', err);
     setError(
-      language === 'zh'
-        ? '分析失敗，請再試一次。'
-        : 'Analysis failed. Please try again.'
+        language === 'zh'
+            ? '分析失敗，請再試一次。'
+            : 'Analysis failed. Please try again.'
     );
-  } finally {
+} finally {
     setIsAnalyzing(false);
-  }
-};
-    
+}
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <Button variant="ghost" onClick={onBack}>
