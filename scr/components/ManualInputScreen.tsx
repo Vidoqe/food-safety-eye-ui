@@ -119,5 +119,6 @@ return (
     </Card>
   </div>
 );
+};
 
 export default ManualInputScreen;
