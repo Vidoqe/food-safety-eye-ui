@@ -70,41 +70,7 @@ const handleAnalyze = async () => {
     setIsAnalyzing(false);
   }
 };
-    const json = await response.json().catch(() => null);
-    if (!json || typeof json !== 'object') {
-      setError(
-        language === 'zh'
-          ? '分析失敗，請再試一次。'
-          : 'Analysis failed. Please try again.'
-      );
-      return;
-    }
-
-    // support both { result: {...} } and { ... }
-    const gpt = (json.result ?? json) || {};
-
-    const result: AnalysisResult = {
-      id: Date.now().toString(),
-      ingredients: Array.isArray(gpt.ingredients) ? gpt.ingredients : [],
-      verdict: gpt.verdict ?? 'moderate',
-      tips: Array.isArray(gpt.tips) ? gpt.tips : [],
-      timestamp: new Date(),
-      raw: gpt,
-    };
-
-    onResult(result);
-  } catch (err) {
-    console.error(err);
-    setError(
-      language === 'zh'
-        ? '分析失敗，請再試一次。'
-        : 'Analysis failed. Please try again.'
-    );
-  } finally {
-    setIsAnalyzing(false);
-  }
-};
-
+    
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <Button variant="ghost" onClick={onBack}>
