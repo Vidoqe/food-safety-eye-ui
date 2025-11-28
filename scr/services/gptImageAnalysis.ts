@@ -26,7 +26,7 @@ export interface AnalysisResult {
 
 // ---- Config (these are UI-side values only) ----
 const SUPABASE_URL =
-  'https://hqgzh...your-project-id....supabase.co/functions/v1/analyze-product-image'; // keep your real URL
+  'https://hqgzhlugkxytionyrnor.supabase.co/functions/v1/analyze-product-image'; // keep your real URL
 const ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....'; // your Supabase ANON KEY
 const SHARED_SECRET = 'foodsafetysecret456'; // must match the Function
