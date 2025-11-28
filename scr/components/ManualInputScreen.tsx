@@ -10,11 +10,10 @@ import { useUser } from '../contexts/UserContext';
 
 // Local, rule-based analyzer (no API/JWT)
 import IngredientAnalysisService from '../services/ingredientAnalysis.ts';
+import GPTImageAnalysisService from '../services/gptImageAnalysis';
+
 
 // GPT analyzer (image + text). We’ll use it for manual text too.
-
-const EDGE_FUNCTION_URL =
-  "https://f6c5af1f-food-safety-eye-ui.functions.supabase.co/analyze-product-image";
 
 interface ManualInputScreenProps {
   onBack?: () => void;
@@ -53,26 +52,22 @@ const handleAnalyze = async () => {
   setError('');
 
   try {
-    // Call existing Supabase edge function directly
-    const response = await fetch(EDGE_FUNCTION_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ingredients: ingredients.trim(),
-        barcode: '',
-        lang: language,
-      }),
+    // call the shared GPT + Edge Function service
+    const result = await GPTImageAnalysisService.analyzeProduct({
+      imageBase64: '',              // manual screen: text only
+      ingredients: ingredients.trim(),
+      barcode: '',
+      lang: language === 'zh' ? 'zh' : 'en',
     });
 
-    if (!response.ok) {
-      setError(
-        language === 'zh'
-          ? '分析失敗，請再試一次。'
-          : 'Analysis failed. Please try again.'
-      );
-      return;
-    }
-
+    onResult(result);
+  } catch (err) {
+    console.error('Manual analyze error:', err);
+    setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
+  } finally {
+    setIsAnalyzing(false);
+  }
+};
     const json = await response.json().catch(() => null);
     if (!json || typeof json !== 'object') {
       setError(
