@@ -127,7 +127,7 @@ export default function ScanScreen() {
       </div>
 
       <h1 className="text-2xl font-semibold mb-4 text-center">
-        {mode === 'barcode' ? 'Scan Product Barcode' : 'Scan Product Label'}
+        Scan Product Barcode
       </h1>
 
       {/* Hidden input – this is what mobile browsers need */}
@@ -146,8 +146,8 @@ export default function ScanScreen() {
         ) : (
           <div className="text-gray-400 text-center">
             <div className="text-5xl mb-2">📷</div>
-            <div>
-              {mode === 'barcode' ? 'Capture barcode' : 'Capture ingredient list'}
+            <div>Capture barcode</div>
+              
             </div>
           </div>
         )}
