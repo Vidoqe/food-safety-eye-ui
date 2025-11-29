@@ -1,5 +1,3 @@
-// scr/components/ScanScreen.tsx
-
 import React, { useRef, useState } from 'react';
 import { analyzeProduct } from '../services/gptImageAnalysis';
 
@@ -8,6 +6,9 @@ export default function ScanScreen() {
   const [preview, setPreview] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // NEW: scan mode – "ingredients" or "barcode"
+  const [mode, setMode] = useState<'ingredients' | 'barcode'>('ingredients');
 
   // --- helpers (same compression we used before) ---
   function fileToDataURL(file: File): Promise<string> {
@@ -72,7 +73,13 @@ export default function ScanScreen() {
   };
 
   const onAnalyze = async () => {
-    if (!preview) return setError('Please capture an ingredient photo first');
+    if (!preview) {
+      return setError(
+        mode === 'barcode'
+          ? 'Please capture a barcode photo first'
+          : 'Please capture an ingredient photo first'
+      );
+    }
 
     setLoading(true);
     setError(null);
@@ -91,7 +98,37 @@ export default function ScanScreen() {
 
   return (
     <div className="mx-auto max-w-md p-4">
-      <h1 className="text-2xl font-semibold mb-4">Scan Barcode</h1>
+      {/* small toggle between modes */}
+      <div className="flex justify-center gap-2 mb-3 text-sm">
+        <button
+          type="button"
+          onClick={() => setMode('ingredients')}
+          className={
+            'px-3 py-1 rounded-full border ' +
+            (mode === 'ingredients'
+              ? 'bg-emerald-600 text-white border-emerald-600'
+              : 'bg-white text-gray-700 border-gray-300')
+          }
+        >
+          Scan ingredients
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode('barcode')}
+          className={
+            'px-3 py-1 rounded-full border ' +
+            (mode === 'barcode'
+              ? 'bg-blue-600 text-white border-blue-600'
+              : 'bg-white text-gray-700 border-gray-300')
+          }
+        >
+          Scan barcode
+        </button>
+      </div>
+
+      <h1 className="text-2xl font-semibold mb-4 text-center">
+        {mode === 'barcode' ? 'Scan Product Barcode' : 'Scan Product Label'}
+      </h1>
 
       {/* Hidden input – this is what mobile browsers need */}
       <input
@@ -109,7 +146,9 @@ export default function ScanScreen() {
         ) : (
           <div className="text-gray-400 text-center">
             <div className="text-5xl mb-2">📷</div>
-            <div>Capture ingredient list</div>
+            <div>
+              {mode === 'barcode' ? 'Capture barcode' : 'Capture ingredient list'}
+            </div>
           </div>
         )}
       </div>
