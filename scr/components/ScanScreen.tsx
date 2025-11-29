@@ -1,9 +1,11 @@
 // scr/components/ScanScreen.tsx
-import React, { useRef, useState } from "react";
-import { AnalyzeProduct } from "../services/gptImageAnalysis";
 
-export default function ScanScreen({ type, onBack, onResult }) {  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [preview, setPreview] = useState<string>("");
+import React, { useRef, useState } from 'react';
+import { analyzeProduct } from '../services/gptImageAnalysis';
+
+export default function ScanScreen() {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [preview, setPreview] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -23,11 +25,11 @@ export default function ScanScreen({ type, onBack, onResult }) {  const fileInpu
     quality = 0.75
   ): Promise<string> {
     const img = new Image();
-    img.crossOrigin = "anonymous";
+    img.crossOrigin = 'anonymous';
 
     await new Promise<void>((res, rej) => {
       img.onload = () => res();
-      img.onerror = () => rej(new Error("Image decode failed"));
+      img.onerror = () => rej(new Error('Image decode failed'));
       img.src = dataUrl;
     });
 
@@ -35,28 +37,24 @@ export default function ScanScreen({ type, onBack, onResult }) {  const fileInpu
     const w = Math.round(img.width * scale);
     const h = Math.round(img.height * scale);
 
-    const canvas = document.createElement("canvas");
+    const canvas = document.createElement('canvas');
     canvas.width = w;
     canvas.height = h;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("Canvas not supported");
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas not supported');
 
     ctx.drawImage(img, 0, 0, w, h);
-    return canvas.toDataURL("image/jpeg", quality);
+    return canvas.toDataURL('image/jpeg', quality);
   }
 
   // --- UI actions ---
   const onClickTakePhoto = () => {
     setError(null);
-    if (fileInputRef.current) {
-      // direct click on the input (safest on mobile)
-      fileInputRef.current.click();
-    }
+    fileInputRef.current?.click(); // direct click on the input (safest on mobile)
   };
 
-  const onFilePicked = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ): Promise<void> => {
+  const onFilePicked = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       const file = e.target.files?.[0];
       if (!file) return;
@@ -64,47 +62,36 @@ export default function ScanScreen({ type, onBack, onResult }) {  const fileInpu
       const dataUrl = await fileToDataURL(file);
       const compressed = await compressDataUrl(dataUrl, 1400, 0.75);
       setPreview(compressed);
-      console.log("[UI] picked image chars:", compressed.length);
+      console.log('[UI] picked image chars:', compressed.length);
     } catch (err: any) {
       setError(err?.message ?? String(err));
     } finally {
       // allow picking the same file twice if user retries
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
   const onAnalyze = async () => {
-    if (!preview) {
-      setError("Please capture an ingredient photo first");
-      return;
-    }
+    if (!preview) return setError('Please capture an ingredient photo first');
 
     setLoading(true);
     setError(null);
 
     try {
-      const res = await AnalyzeProduct({
-        image: preview,
-        ingredients: "",
-        barcode: "",
-        lang: "zh", // or "en" if you prefer
-      });
-
-      console.log("[UI] AnalyzeProduct result:", res);
-      // Same behaviour as before – just an alert + console log
-      alert("Analysis completed. Check console for JSON (temporary).");
+      const res = await analyzeProduct({ imageBase64: preview, lang: 'zh' });
+      console.log('[UI] analyzeProduct result:', res);
+      // TODO: route to Result screen or lift state to parent
+      alert('Analysis completed. Check console for JSON (temporary).');
     } catch (err: any) {
       setError(err?.message ?? String(err));
     } finally {
-      setLoading(false);f
+      setLoading(false);
     }
   };
 
   return (
     <div className="mx-auto max-w-md p-4">
-      <h1 className="text-2xl font-bold mb-4">
-  {type === "barcode" ? "Scan Barcode" : "Scan Product Label"}
-</h1>
+      <h1 className="text-2xl font-semibold mb-4">Scan Barcode</h1>
 
       {/* Hidden input – this is what mobile browsers need */}
       <input
@@ -118,11 +105,7 @@ export default function ScanScreen({ type, onBack, onResult }) {  const fileInpu
 
       <div className="rounded-2xl border-2 border-dashed border-gray-300 bg-white p-6 mb-4 flex items-center justify-center h-64">
         {preview ? (
-          <img
-            src={preview}
-            alt="preview"
-            className="max-h-60 object-contain"
-          />
+          <img src={preview} alt="preview" className="max-h-60 object-contain" />
         ) : (
           <div className="text-gray-400 text-center">
             <div className="text-5xl mb-2">📷</div>
@@ -138,12 +121,13 @@ export default function ScanScreen({ type, onBack, onResult }) {  const fileInpu
         >
           Take Photo
         </button>
+
         <button
           onClick={onAnalyze}
           disabled={!preview || loading}
           className="flex-1 rounded-lg bg-blue-600 px-4 py-3 text-white font-medium hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Analyzing…" : "Analyze"}
+          {loading ? 'Analyzing…' : 'Analyze'}
         </button>
       </div>
 
