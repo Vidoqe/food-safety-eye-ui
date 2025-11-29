@@ -1,14 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { analyzeProduct } from '../services/gptImageAnalysis';
 
+type ScanMode = 'ingredients' | 'barcode';
+
 export default function ScanScreen() {
+  const [mode, setMode] = useState<ScanMode>('ingredients');
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // NEW: scan mode – "ingredients" or "barcode"
-  const [mode, setMode] = useState<'ingredients' | 'barcode'>('ingredients');
 
   // --- helpers (same compression we used before) ---
   function fileToDataURL(file: File): Promise<string> {
@@ -62,6 +63,7 @@ export default function ScanScreen() {
 
       const dataUrl = await fileToDataURL(file);
       const compressed = await compressDataUrl(dataUrl, 1400, 0.75);
+
       setPreview(compressed);
       console.log('[UI] picked image chars:', compressed.length);
     } catch (err: any) {
@@ -74,11 +76,12 @@ export default function ScanScreen() {
 
   const onAnalyze = async () => {
     if (!preview) {
-      return setError(
+      setError(
         mode === 'barcode'
-          ? 'Please capture a barcode photo first'
+          ? 'Please capture a clear photo of the barcode first'
           : 'Please capture an ingredient photo first'
       );
+      return;
     }
 
     setLoading(true);
@@ -96,18 +99,24 @@ export default function ScanScreen() {
     }
   };
 
+  const title =
+    mode === 'barcode' ? 'Scan Product Barcode' : 'Scan Product Label';
+
+  const placeholder =
+    mode === 'barcode' ? 'Capture barcode' : 'Capture ingredient list';
+
   return (
     <div className="mx-auto max-w-md p-4">
-      {/* small toggle between modes */}
-      <div className="flex justify-center gap-2 mb-3 text-sm">
+      {/* Mode toggle */}
+      <div className="flex justify-center gap-2 mb-4">
         <button
           type="button"
           onClick={() => setMode('ingredients')}
           className={
-            'px-3 py-1 rounded-full border ' +
+            'px-4 py-2 rounded-full text-sm font-medium ' +
             (mode === 'ingredients'
-              ? 'bg-emerald-600 text-white border-emerald-600'
-              : 'bg-white text-gray-700 border-gray-300')
+              ? 'bg-emerald-600 text-white'
+              : 'bg-gray-100 text-gray-700')
           }
         >
           Scan ingredients
@@ -116,19 +125,17 @@ export default function ScanScreen() {
           type="button"
           onClick={() => setMode('barcode')}
           className={
-            'px-3 py-1 rounded-full border ' +
+            'px-4 py-2 rounded-full text-sm font-medium ' +
             (mode === 'barcode'
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-gray-700 border-gray-300')
+              ? 'bg-emerald-600 text-white'
+              : 'bg-gray-100 text-gray-700')
           }
         >
           Scan barcode
         </button>
       </div>
 
-      <h1 className="text-2xl font-semibold mb-4 text-center">
-        Scan Product Barcode
-      </h1>
+      <h1 className="text-2xl font-semibold mb-4 text-center">{title}</h1>
 
       {/* Hidden input – this is what mobile browsers need */}
       <input
@@ -142,11 +149,11 @@ export default function ScanScreen() {
 
       <div className="rounded-2xl border-2 border-dashed border-gray-300 bg-white p-6 mb-4 flex items-center justify-center h-64">
         {preview ? (
-          <img scr={preview} alt="preview" className="max-h-60 object-contain" />
+          <img src={preview} alt="preview" className="max-h-60 object-contain" />
         ) : (
           <div className="text-gray-400 text-center">
             <div className="text-5xl mb-2">📷</div>
-            <div>Capture barcode</div>
+            <div>{placeholder}</div>
           </div>
         )}
       </div>
@@ -158,7 +165,6 @@ export default function ScanScreen() {
         >
           Take Photo
         </button>
-
         <button
           onClick={onAnalyze}
           disabled={!preview || loading}
