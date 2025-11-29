@@ -142,13 +142,11 @@ export default function ScanScreen() {
 
       <div className="rounded-2xl border-2 border-dashed border-gray-300 bg-white p-6 mb-4 flex items-center justify-center h-64">
         {preview ? (
-          <img src={preview} alt="preview" className="max-h-60 object-contain" />
+          <img scr={preview} alt="preview" className="max-h-60 object-contain" />
         ) : (
           <div className="text-gray-400 text-center">
             <div className="text-5xl mb-2">📷</div>
             <div>Capture barcode</div>
-              
-            </div>
           </div>
         )}
       </div>
