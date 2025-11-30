@@ -1,15 +1,21 @@
-import React, { useRef, useState } from 'react';
-import { analyzeProduct } from '../services/gptImageAnalysis';
+// scr/components/ScanScreen.tsx
+import React, { useRef, useState } from "react";
+import { analyzeProduct } from "../services/gptImageAnalysis";
 
-type ScanMode = 'ingredients' | 'barcode';
+type ScanScreenProps = {
+  // "label" = ingredients, "barcode" = barcode scan
+  type?: "label" | "barcode";
+  // allow extra props (onBack, onResult, etc.) from AppLayout
+  [key: string]: any;
+};
 
-export default function ScanScreen() {
-  const [mode, setMode] = useState<ScanMode>('ingredients');
-
+export default function ScanScreen({ type = "label" }: ScanScreenProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const [preview, setPreview] = useState<string>('');
+  const [preview, setPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isBarcode = type === "barcode";
 
   // --- helpers (same compression we used before) ---
   function fileToDataURL(file: File): Promise<string> {
@@ -27,11 +33,11 @@ export default function ScanScreen() {
     quality = 0.75
   ): Promise<string> {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    img.crossOrigin = "anonymous";
 
     await new Promise<void>((res, rej) => {
       img.onload = () => res();
-      img.onerror = () => rej(new Error('Image decode failed'));
+      img.onerror = () => rej(new Error("Image decode failed"));
       img.src = dataUrl;
     });
 
@@ -39,15 +45,16 @@ export default function ScanScreen() {
     const w = Math.round(img.width * scale);
     const h = Math.round(img.height * scale);
 
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas not supported');
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas not supported");
 
     ctx.drawImage(img, 0, 0, w, h);
-    return canvas.toDataURL('image/jpeg', quality);
+
+    return canvas.toDataURL("image/jpeg", quality);
   }
 
   // --- UI actions ---
@@ -65,33 +72,33 @@ export default function ScanScreen() {
       const compressed = await compressDataUrl(dataUrl, 1400, 0.75);
 
       setPreview(compressed);
-      console.log('[UI] picked image chars:', compressed.length);
+      console.log("[UI] picked image chars:", compressed.length);
     } catch (err: any) {
       setError(err?.message ?? String(err));
     } finally {
       // allow picking the same file twice if user retries
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   const onAnalyze = async () => {
     if (!preview) {
-      setError(
-        mode === 'barcode'
-          ? 'Please capture a clear photo of the barcode first'
-          : 'Please capture an ingredient photo first'
+      return setError(
+        isBarcode
+          ? "Please capture a barcode photo first"
+          : "Please capture an ingredient photo first"
       );
-      return;
     }
 
     setLoading(true);
     setError(null);
 
     try {
-      const res = await analyzeProduct({ imageBase64: preview, lang: 'zh' });
-      console.log('[UI] analyzeProduct result:', res);
+      const res = await analyzeProduct({ imageBase64: preview, lang: "zh" });
+      console.log("[UI] analyzeProduct result:", res);
+
       // TODO: route to Result screen or lift state to parent
-      alert('Analysis completed. Check console for JSON (temporary).');
+      alert("Analysis completed. Check console for JSON (temporary).");
     } catch (err: any) {
       setError(err?.message ?? String(err));
     } finally {
@@ -99,43 +106,11 @@ export default function ScanScreen() {
     }
   };
 
-  const title =
-    mode === 'barcode' ? 'Scan Product Barcode' : 'Scan Product Label';
-
-  const placeholder =
-    mode === 'barcode' ? 'Capture barcode' : 'Capture ingredient list';
-
   return (
     <div className="mx-auto max-w-md p-4">
-      {/* Mode toggle */}
-      <div className="flex justify-center gap-2 mb-4">
-        <button
-          type="button"
-          onClick={() => setMode('ingredients')}
-          className={
-            'px-4 py-2 rounded-full text-sm font-medium ' +
-            (mode === 'ingredients'
-              ? 'bg-emerald-600 text-white'
-              : 'bg-gray-100 text-gray-700')
-          }
-        >
-          Scan ingredients
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode('barcode')}
-          className={
-            'px-4 py-2 rounded-full text-sm font-medium ' +
-            (mode === 'barcode'
-              ? 'bg-emerald-600 text-white'
-              : 'bg-gray-100 text-gray-700')
-          }
-        >
-          Scan barcode
-        </button>
-      </div>
-
-      <h1 className="text-2xl font-semibold mb-4 text-center">{title}</h1>
+      <h1 className="text-2xl font-semibold mb-4">
+        {isBarcode ? "Scan Product Barcode" : "Scan Product Label"}
+      </h1>
 
       {/* Hidden input – this is what mobile browsers need */}
       <input
@@ -153,7 +128,9 @@ export default function ScanScreen() {
         ) : (
           <div className="text-gray-400 text-center">
             <div className="text-5xl mb-2">📷</div>
-            <div>{placeholder}</div>
+            <div>
+              {isBarcode ? "Capture barcode" : "Capture ingredient list"}
+            </div>
           </div>
         )}
       </div>
@@ -165,12 +142,13 @@ export default function ScanScreen() {
         >
           Take Photo
         </button>
+
         <button
           onClick={onAnalyze}
           disabled={!preview || loading}
           className="flex-1 rounded-lg bg-blue-600 px-4 py-3 text-white font-medium hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? 'Analyzing…' : 'Analyze'}
+          {loading ? "Analyzing…" : "Analyze"}
         </button>
       </div>
 
