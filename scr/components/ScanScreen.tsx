@@ -1,23 +1,20 @@
-// scr/components/ScanScreen.tsx
 import React, { useRef, useState } from "react";
 import { analyzeProduct } from "../services/gptImageAnalysis";
 
 type ScanScreenProps = {
-  // "label" = ingredients, "barcode" = barcode scan
-  type?: "label" | "barcode";
-  // allow extra props (onBack, onResult, etc.) from AppLayout
-  [key: string]: any;
+  type: "label" | "barcode";
+  onBack: () => void;
+  // AppLayout passes this – we call it when scan is done
+  onResult: (result: any | null, error?: string) => void;
 };
 
-export default function ScanScreen({ type = "label" }: ScanScreenProps) {
+export default function ScanScreen({ type, onBack, onResult }: ScanScreenProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isBarcode = type === "barcode";
-
-  // --- helpers (same compression we used before) ---
+  // --- helpers (same compression as before) ---
   function fileToDataURL(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -48,19 +45,17 @@ export default function ScanScreen({ type = "label" }: ScanScreenProps) {
     const canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas not supported");
 
     ctx.drawImage(img, 0, 0, w, h);
-
     return canvas.toDataURL("image/jpeg", quality);
   }
 
   // --- UI actions ---
   const onClickTakePhoto = () => {
     setError(null);
-    fileInputRef.current?.click(); // direct click on the input (safest on mobile)
+    fileInputRef.current?.click(); // open camera / picker
   };
 
   const onFilePicked = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,49 +65,60 @@ export default function ScanScreen({ type = "label" }: ScanScreenProps) {
 
       const dataUrl = await fileToDataURL(file);
       const compressed = await compressDataUrl(dataUrl, 1400, 0.75);
-
       setPreview(compressed);
       console.log("[UI] picked image chars:", compressed.length);
     } catch (err: any) {
       setError(err?.message ?? String(err));
     } finally {
-      // allow picking the same file twice if user retries
+      // allow selecting the same file again
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   const onAnalyze = async () => {
     if (!preview) {
-      return setError(
-        isBarcode
+      setError(
+        type === "barcode"
           ? "Please capture a barcode photo first"
           : "Please capture an ingredient photo first"
       );
+      return;
     }
 
     setLoading(true);
     setError(null);
 
     try {
-      const res = await analyzeProduct({ imageBase64: preview, lang: "zh" });
+      const res = await analyzeProduct({
+        imageBase64: preview,
+        lang: "zh",
+        mode: type, // just a hint, backend can ignore this
+      });
+
       console.log("[UI] analyzeProduct result:", res);
 
-      // TODO: route to Result screen or lift state to parent
-      alert("Analysis completed. Check console for JSON (temporary).");
+      // 🔥 Send result up to AppLayout so it shows the big result screen
+      onResult(res, undefined);
     } catch (err: any) {
-      setError(err?.message ?? String(err));
+      console.error("[UI] analyzeProduct error:", err);
+      const msg = err?.message ?? String(err);
+      setError(msg);
+      onResult(null, msg);
     } finally {
       setLoading(false);
     }
   };
 
+  const title =
+    type === "barcode" ? "Scan Product Barcode" : "Scan Product Label";
+  const placeholder =
+    type === "barcode" ? "Capture barcode" : "Capture ingredient list";
+
   return (
     <div className="mx-auto max-w-md p-4">
-      <h1 className="text-2xl font-semibold mb-4">
-        {isBarcode ? "Scan Product Barcode" : "Scan Product Label"}
-      </h1>
+      <h1 className="text-2xl font-semibold mb-4 text-center">{title}</h1>
 
-      {/* Hidden input – this is what mobile browsers need */}
+      {/* Hidden input – mobile browsers need this */}
       <input
         ref={fileInputRef}
         type="file"
@@ -128,9 +134,7 @@ export default function ScanScreen({ type = "label" }: ScanScreenProps) {
         ) : (
           <div className="text-gray-400 text-center">
             <div className="text-5xl mb-2">📷</div>
-            <div>
-              {isBarcode ? "Capture barcode" : "Capture ingredient list"}
-            </div>
+            <div>{placeholder}</div>
           </div>
         )}
       </div>
@@ -142,13 +146,12 @@ export default function ScanScreen({ type = "label" }: ScanScreenProps) {
         >
           Take Photo
         </button>
-
         <button
           onClick={onAnalyze}
           disabled={!preview || loading}
           className="flex-1 rounded-lg bg-blue-600 px-4 py-3 text-white font-medium hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ? "Analyzing…" : "Analyze"}
+          {loading ? "Analyzing..." : "Analyze"}
         </button>
       </div>
 
