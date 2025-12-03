@@ -122,14 +122,19 @@ const safeIngredients = Array.isArray(result?.ingredients)
       "";
 
     return {
-      ...ing,
-      name: ing.ingredient || ing.name,
-      status: normalized,
-      childRisk: childRiskRaw,
-      badge,
-      taiwanRegulation: taiwanReg || "No info",
-    };
-  });
+    ...ing,
+
+    // original name from label (Chinese or English)
+    name: ing.ingredient || ing.name,
+
+    // NEW: englishName support
+    englishName: ing.englishName || ing.name,
+
+    status: normalized,
+    childRisk: childRiskRaw,
+    badge,
+    taiwanRegulation: taiwanReg || "No info",
+};
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
