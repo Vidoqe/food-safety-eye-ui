@@ -10,6 +10,7 @@ import { useUser } from '../contexts/UserContext';
 
 // Local, rule-based analyzer (no API/JWT)
 import GPTImageAnalysisService from '../services/gptImageAnalysis';
+import IngredientRiskTable from "./IngredientRiskTableCompact";
 
 
 // GPT analyzer (image + text). We’ll use it for manual text too.
