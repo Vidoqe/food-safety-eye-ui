@@ -26,48 +26,35 @@ const IngredientRiskTable: React.FC<IngredientRiskTableProps> = ({
 
   return (
     <div className="overflow-x-auto rounded-2xl border">
-      <table className="min-w-full text-sm">
+      <table className="min-w-full text-xs"> {/* smaller text overall */}
         <thead className="bg-gray-50">
           <tr>
-            <th className="px-3 py-2 text-left font-medium">
-              Ingredient
-            </th>
-            <th className="px-3 py-2 text-left font-medium">
-              Risk Level
-            </th>
-            <th className="px-3 py-2 text-left font-medium">
-              Child Risk?
-            </th>
-            <th className="px-3 py-2 text-left font-medium">
-              Badge
-            </th>
-            <th className="px-3 py-2 text-left font-medium">
-              Taiwan FDA Regulation
+            <th className="px-2 py-1 text-left font-semibold">Ingredient</th>
+            <th className="px-2 py-1 text-left font-semibold">Risk<br />Level</th>
+            <th className="px-2 py-1 text-left font-semibold">Child<br />Risk?</th>
+            <th className="px-2 py-1 text-left font-semibold">Badge</th>
+            <th className="px-2 py-1 text-left font-semibold">
+              Taiwan<br />FDA Regulation
             </th>
           </tr>
         </thead>
-
-        <tbody className="divide-y">
-          {ingredients.map((ing, index) => (
-            <tr key={index}>
-              <td className="px-3 py-2 align-top whitespace-nowrap">
-                {ing.name || "-"}
+        <tbody>
+          {ingredients.map((row, i) => (
+            <tr key={i} className="border-t">
+              <td className="px-2 py-1 align-top whitespace-normal">
+                {row.name}
               </td>
-
-              <td className="px-3 py-2 align-top whitespace-nowrap">
-                {ing.status || "-"}
+              <td className="px-2 py-1 align-top whitespace-nowrap">
+                {row.status}
               </td>
-
-              <td className="px-3 py-2 align-top whitespace-nowrap">
-                {ing.childRisk || "-"}
+              <td className="px-2 py-1 align-top whitespace-nowrap">
+                {row.childRisk}
               </td>
-
-              <td className="px-3 py-2 align-top whitespace-nowrap">
-                {ing.badge || ""}
+              <td className="px-2 py-1 align-top">
+                {row.badge}
               </td>
-
-              <td className="px-3 py-2 align-top">
-                {ing.taiwanRegulation || ""}
+              <td className="px-2 py-1 align-top whitespace-normal">
+                {row.taiwanRegulation || "No info"}
               </td>
             </tr>
           ))}
@@ -75,6 +62,6 @@ const IngredientRiskTable: React.FC<IngredientRiskTableProps> = ({
       </table>
     </div>
   );
-};
+
 
 export default IngredientRiskTable;
