@@ -64,7 +64,7 @@ export default function ScanScreen({ type, onBack, onResult }: ScanScreenProps) 
       if (!file) return;
 
       const dataUrl = await fileToDataURL(file);
-      const compressed = await compressDataUrl(dataUrl, 1400, 0.75);
+      const compressed = await compressDataUrl(dataUrl, 1600, 0.90);
       setPreview(compressed);
       console.log("[UI] picked image chars:", compressed.length);
     } catch (err: any) {

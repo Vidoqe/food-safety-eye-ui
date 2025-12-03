@@ -1,5 +1,5 @@
-// force vercel rebuild 24-11-2025
-// src/pages/Index.tsx
+// force vercel rebuild 24-11-2025F
+// scr/pages/Index.tsx
 import React, { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { AppProvider } from "@/contexts/AppContext";
