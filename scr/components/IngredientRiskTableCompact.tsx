@@ -41,21 +41,21 @@ const IngredientRiskTableCompact: React.FC<IngredientRiskTableProps> = ({
         <tbody>
           {ingredients.map((row, i) => (
             <tr key={i} className="border-t">
-              <td className="px-2 py-1 align-top whitespace-normal">
-                {row.name}
-              </td>
-              <td className="px-2 py-1 align-top whitespace-nowrap">
-                {row.status}
-              </td>
-              <td className="px-2 py-1 align-top whitespace-nowrap">
-                {row.childRisk}
-              </td>
-              <td className="px-2 py-1 align-top">
-                {row.badge}
-              </td>
-              <td className="px-2 py-1 align-top whitespace-normal">
-                {row.taiwanRegulation || "No info"}
-              </td>
+              <td className="px-1 py-1 align-top text-[10px] whitespace-normal">
+  {row.name}
+</td>
+<td className="px-1 py-1 align-top text-[10px] whitespace-nowrap">
+  {row.status}
+</td>
+<td className="px-1 py-1 align-top text-[10px] whitespace-nowrap">
+  {row.childRisk}
+</td>
+<td className="px-1 py-1 align-top">
+  {row.badge}
+</td>
+<td className="px-1 py-1 align-top text-[10px] whitespace-normal leading-tight">
+  {row.taiwanRegulation || "No info"}
+</td>
             </tr>
           ))}
         </tbody>
