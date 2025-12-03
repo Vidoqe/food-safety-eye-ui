@@ -121,19 +121,16 @@ const safeIngredients = Array.isArray(result?.ingredients)
       ing.taiwan_regulation ||
       "";
 
-    return {
-    ...ing,
+   return {
+  ...ing,
 
-    // original name from label (Chinese or English)
-    name: ing.ingredient || ing.name,
+  // Prefer English → fallback to ingredient → fallback to name
+  name: ing.englishName || ing.ingredient || ing.name,
 
-    // NEW: englishName support
-    englishName: ing.englishName || ing.name,
-
-    status: normalized,
-    childRisk: childRiskRaw,
-    badge,
-    taiwanRegulation: taiwanReg || "No info",
+  status: normalized,
+  childRisk: childRiskRaw,
+  badge,
+  taiwanRegulation: taiwanReg || "No info",
 };
 
   return (
