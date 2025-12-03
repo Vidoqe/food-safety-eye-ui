@@ -62,6 +62,8 @@ const IngredientRiskTableCompact: React.FC<IngredientRiskTableProps> = ({
       </table>
     </div>
   );
+  
+  };
 
 
 export default IngredientRiskTableCompact;
