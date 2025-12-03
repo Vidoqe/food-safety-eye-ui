@@ -13,7 +13,7 @@ interface IngredientRiskTableProps {
   ingredients: IngredientRow[];
 }
 
-const IngredientRiskTable: React.FC<IngredientRiskTableProps> = ({
+const IngredientRiskTableCompact: React.FC<IngredientRiskTableProps> = ({
   ingredients,
 }) => {
   if (!ingredients || ingredients.length === 0) {
