@@ -104,23 +104,22 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
   const verdictBadge = BADGE_FALLBACK[verdict] ?? "🟡";
 
   // --- Map backend fields to UI fields (risk, child risk, Taiwan rules, englishName) ---
-  const mappedIngredients = safeIngredients.map((ing: any) => {
-    const rawRisk = (ing.risk_level || ing.status || ing.risk || "")
-      .toString()
-      .toLowerCase();
+ const mappedIngredients = safeIngredients.map((ing: any) => {
+  const rawRisk = (ing.risk_level || ing.status || ing.risk || "")
+    .toString()
+    .toLowerCase();
 
-    let normalized: Risk = "moderate";
-    if (rawRisk === "high" || rawRisk === "harmful") normalized = "harmful";
-    else if (rawRisk === "moderate" || rawRisk === "medium")
-      normalized = "moderate";
-    else if (rawRisk === "healthy" || rawRisk === "low") normalized = "healthy";
+  let normalized: Risk = "moderate";
+  if (rawRisk === "high" || rawRisk === "harmful") normalized = "harmful";
+  else if (rawRisk === "moderate" || rawRisk === "medium") normalized = "moderate";
+  else if (rawRisk === "healthy" || rawRisk === "low") normalized = "healthy";
 
-    const badge = BADGE_FALLBACK[normalized] ?? "🟡";
+  const badge = BADGE_FALLBACK[normalized] ?? "🟡";
 
-    const childRiskRaw =
-      ing.child_risk || ing.childRisk || ing.childSafety || "unknown";
+  const childRiskRaw =
+    ing.child_risk || ing.childRisk || ing.childSafety || "unknown";
 
-    const taiwanReg =
+  const taiwanReg =
     ing.fda_regulation ||
     ing.taiwanRegulation ||
     ing.taiwan_regulation ||
@@ -133,8 +132,37 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
   // what to actually display in the table
   const displayName =
     language === "zh"
-      ? (originalName || englishName)   // Chinese tab → original label text
-      : (englishName || originalName);  // English tab → English name
+      ? (originalName || englishName) // Chinese tab → original label text
+      : (englishName || originalName); // English tab → English name
+
+  // ----- Chinese translations for risk fields -----
+  const zh = language === "zh";
+
+  // risk level translations
+  const riskLevelText = zh
+    ? (
+        normalized === "harmful" ? "高風險" :
+        normalized === "moderate" ? "中等風險" :
+        normalized === "low" ? "低風險" :
+        normalized === "healthy" ? "健康" :
+        normalized
+      )
+    : normalized;
+
+  // child risk translations
+  const childRiskText = zh
+    ? (
+        childRiskRaw === "safe" ? "安全" :
+        childRiskRaw === "limit" ? "限量" :
+        childRiskRaw === "harmful" ? "有害" :
+        childRiskRaw || "未知"
+      )
+    : childRiskRaw;
+
+  // Taiwan FDA note translations
+  const taiwanNoteText = zh
+    ? (taiwanReg === "" || taiwanReg === "No info" ? "無資訊" : taiwanReg)
+    : (taiwanReg === "" ? "No info" : taiwanReg);
 
   return {
     ...ing,
@@ -146,10 +174,11 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
     originalName,
     englishName,
 
-    status: normalized,
-    childRisk: childRiskRaw,
+    // these are what the table uses
+    status: riskLevelText,
+    childRisk: childRiskText,
     badge,
-    taiwanRegulation: taiwanReg || "No info",
+    taiwanRegulation: taiwanNoteText,
   };
 });
 
