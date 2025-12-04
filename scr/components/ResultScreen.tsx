@@ -121,18 +121,37 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
       ing.child_risk || ing.childRisk || ing.childSafety || "unknown";
 
     const taiwanReg =
-      ing.fda_regulation || ing.taiwanRegulation || ing.taiwan_regulation || "";
+    ing.fda_regulation ||
+    ing.taiwanRegulation ||
+    ing.taiwan_regulation ||
+    "";
 
-    return {
-      ...ing,
-      // 👇 Prefer English name if available, otherwise ingredient / name
-      name: ing.englishName || ing.ingredient || ing.name,
-      status: normalized,
-      childRisk: childRiskRaw,
-      badge,
-      taiwanRegulation: taiwanReg || "No info",
-    };
-  });
+  // figure out names
+  const originalName = ing.ingredient || ing.name || "";
+  const englishName = ing.englishName || ing.name || "";
+
+  // what to actually display in the table
+  const displayName =
+    language === "zh"
+      ? (originalName || englishName)   // Chinese tab → original label text
+      : (englishName || originalName);  // English tab → English name
+
+  return {
+    ...ing,
+
+    // Name shown in the table
+    name: displayName,
+
+    // keep both versions (future-proof)
+    originalName,
+    englishName,
+
+    status: normalized,
+    childRisk: childRiskRaw,
+    badge,
+    taiwanRegulation: taiwanReg || "No info",
+  };
+});
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
