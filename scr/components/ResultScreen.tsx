@@ -67,27 +67,33 @@ interface ResultScreenProps {
   error?: string;
 }
 
-
-const ResultScreen: React.FC<ResultScreenProps> = ({  result,
+// Main result screen
+const ResultScreen: React.FC<ResultScreenProps> = ({
+  result,
   onBack,
+  onHome,
+  onJunkFoodInfo,
   error,
 }) => {
   const { language } = useAppContext(); // 'en' | 'zh'
-// Guard: if result is null, do not crash
-if (!result) {
-  return (
-    <div className="p-4 max-w-3xl mx-auto">
-      <p className="text-gray-600">
-        {language === 'zh' ? '尚未產生結果。' : 'No result yet.'}
-      </p>
-    </div>
-  );
-}
 
-  // 🔒 Safety guard: ensure ingredients is always an array
-const safeIngredients = Array.isArray(result?.ingredients)
-  ? (result?.ingredients as any[])
-  : [];
+  // If result is null, show simple message and don't crash
+  if (!result) {
+    return (
+      <div className="p-4 max-w-3xl mx-auto">
+        <p className="text-gray-600">
+          {language === "zh" ? "尚未產生結果⋯" : "No result yet."}
+        </p>
+      </div>
+    );
+  }
+
+  // 🛡️ Safety guard: ensure ingredients is always an array
+  const safeIngredients = Array.isArray(result.ingredients)
+    ? (result.ingredients as any[])
+    : [];
+
+  // Verdict + badge
   const verdict: Risk =
     result.verdict === "low" || result.verdict === "healthy"
       ? "healthy"
@@ -97,7 +103,7 @@ const safeIngredients = Array.isArray(result?.ingredients)
 
   const verdictBadge = BADGE_FALLBACK[verdict] ?? "🟡";
 
-  // --- Map backend fields to UI fields (risk, child risk, Taiwan rules) ---
+  // --- Map backend fields to UI fields (risk, child risk, Taiwan rules, englishName) ---
   const mappedIngredients = safeIngredients.map((ing: any) => {
     const rawRisk = (ing.risk_level || ing.status || ing.risk || "")
       .toString()
@@ -107,8 +113,7 @@ const safeIngredients = Array.isArray(result?.ingredients)
     if (rawRisk === "high" || rawRisk === "harmful") normalized = "harmful";
     else if (rawRisk === "moderate" || rawRisk === "medium")
       normalized = "moderate";
-    else if (rawRisk === "low") normalized = "low";
-    else if (rawRisk === "healthy") normalized = "healthy";
+    else if (rawRisk === "healthy" || rawRisk === "low") normalized = "healthy";
 
     const badge = BADGE_FALLBACK[normalized] ?? "🟡";
 
@@ -116,49 +121,63 @@ const safeIngredients = Array.isArray(result?.ingredients)
       ing.child_risk || ing.childRisk || ing.childSafety || "unknown";
 
     const taiwanReg =
-      ing.fda_regulation ||
-      ing.taiwanRegulation ||
-      ing.taiwan_regulation ||
-      "";
+      ing.fda_regulation || ing.taiwanRegulation || ing.taiwan_regulation || "";
 
-   return {
-  ...ing,
-
-  // Prefer English → fallback to ingredient → fallback to name
-  name: ing.englishName || ing.ingredient || ing.name,
-
-  status: normalized,
-  childRisk: childRiskRaw,
-  badge,
-  taiwanRegulation: taiwanReg || "No info",
-};
+    return {
+      ...ing,
+      // 👇 Prefer English name if available, otherwise ingredient / name
+      name: ing.englishName || ing.ingredient || ing.name,
+      status: normalized,
+      childRisk: childRiskRaw,
+      badge,
+      taiwanRegulation: taiwanReg || "No info",
+    };
+  });
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto space-y-6">
       {/* Top bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-semibold">
           {sectionTitle("overview", language)}
         </h2>
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="rounded bg-gray-100 px-3 py-1.5 text-sm hover:bg-gray-200"
-          >
-            {language === "zh" ? "返回" : "Back"}
-          </button>
-        )}
+        <div className="flex gap-2">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="rounded bg-gray-100 px-3 py-1 text-sm"
+            >
+              {language === "zh" ? "返回" : "Back"}
+            </button>
+          )}
+          {onHome && (
+            <button
+              onClick={onHome}
+              className="rounded bg-gray-100 px-3 py-1 text-sm"
+            >
+              {language === "zh" ? "首頁" : "Home"}
+            </button>
+          )}
+          {onJunkFoodInfo && (
+            <button
+              onClick={onJunkFoodInfo}
+              className="rounded bg-gray-100 px-3 py-1 text-sm"
+            >
+              {language === "zh" ? "說明" : "Info"}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Optional error banner */}
       {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="rounded-md border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-700">
           {error}
         </div>
       )}
 
       {/* Verdict card */}
-      <div className="rounded-2xl border p-4 md:p-5 bg-white shadow-sm">
+      <div className="rounded-2xl border p-4 md:p-6 bg-white shadow-sm space-y-3">
         <div className="flex items-center gap-3">
           <div className="text-2xl">{verdictBadge}</div>
           <div>
@@ -166,7 +185,9 @@ const safeIngredients = Array.isArray(result?.ingredients)
               {verdictText(verdict, language)}
             </div>
             {result.summary && (
-              <div className="text-gray-700 mt-1">{result.summary}</div>
+              <div className="text-gray-700 text-sm md:text-base mt-2">
+                {result.summary}
+              </div>
             )}
           </div>
         </div>
@@ -188,26 +209,24 @@ const safeIngredients = Array.isArray(result?.ingredients)
         </div>
       )}
 
-     {/* Ingredient section */}
-  <div className="rounded-2xl border p-3 md:p-4 bg-white shadow-sm">
-    <h3 className="text-lg font-semibold mb-3">
-      {sectionTitle("details", language)}
-    </h3>
+      {/* Ingredient section */}
+      <div className="rounded-2xl border p-3 md:p-4 bg-white shadow-sm">
+        <h3 className="text-lg font-semibold mb-3">
+          {sectionTitle("details", language)}
+        </h3>
 
-    {safeIngredients.length === 0 && (
-      <div className="rounded-2xl border p-3 md:p-4 bg-yellow-50 text-yellow-900 text-sm">
-        {language === "zh"
-          ? "無法從照片辨識成分表，請靠近成分文字並保持良好光線，或改用手動輸入成分。"
-          : "Couldn't detect an ingredient list from the photo. Move closer, keep good lighting, or use manual input instead."
-        }
+        {safeIngredients.length === 0 && (
+          <div className="rounded-2xl border p-3 md:p-4 bg-yellow-50 text-yellow-900 text-sm">
+            {language === "zh"
+              ? "無法從照片辨識成分表，請靠近成分文字並保持良好光線，或改用手動輸入成分。"
+              : "Couldn't detect an ingredient list from the photo. Move closer, keep good lighting, or use manual input instead."}
+          </div>
+        )}
+
+        <IngredientRiskTable ingredients={mappedIngredients} />
       </div>
-    )}
-
-    <IngredientRiskTable ingredients={mappedIngredients} />
-  </div>
-</div>
-);
+    </div>
+  );
 };
 
 export default ResultScreen;
-
