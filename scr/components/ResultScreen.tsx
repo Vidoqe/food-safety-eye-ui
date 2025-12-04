@@ -242,7 +242,9 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
           </div>
         )}
 
-        <IngredientRiskTable ingredients={mappedIngredients} />
+        <IngredientRiskTable ingredients={mappedIngredients} 
+         language={language}
+       />
       </div>
     </div>
   );
