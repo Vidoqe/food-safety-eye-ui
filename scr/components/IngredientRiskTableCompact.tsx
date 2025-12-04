@@ -3,20 +3,20 @@ import React from "react";
 
 export interface IngredientRow {
   name: string;
-  status: string; // "high" | "moderate" | "low" | "healthy"
+  englishName?: string;       // NEW: English version of name
+  status: string;             // "high" | "moderate" | "low" | "healthy"
   childRisk?: string;
-  badge?: string;            // e.g. 🔴🟡🟢 – already prepared in ResultScreen
-  taiwanRegulation?: string; // Taiwan FDA / regulation note
+  badge?: string;             // e.g. 🔴 🟡 🟢
+  taiwanRegulation?: string;  // Taiwan FDA / regulation note
 }
-
 interface IngredientRiskTableProps {
   ingredients: IngredientRow[];
+  language?: "en" | "zh";
 }
-
 const IngredientRiskTableCompact: React.FC<IngredientRiskTableProps> = ({
   ingredients,
-}) => {
-  if (!ingredients || ingredients.length === 0) {
+  language = "en",
+}) => {  if (!ingredients || ingredients.length === 0) {
     return (
       <p className="text-sm text-gray-500">
         No ingredients detected.
@@ -28,16 +28,24 @@ const IngredientRiskTableCompact: React.FC<IngredientRiskTableProps> = ({
     <div className="overflow-x-auto rounded-2xl border">
       <table className="min-w-full text-xs"> {/* smaller text overall */}
         <thead className="bg-gray-50">
-          <tr>
-            <th className="px-2 py-1 text-left font-semibold">Ingredient</th>
-            <th className="px-2 py-1 text-left font-semibold">Risk<br />Level</th>
-            <th className="px-2 py-1 text-left font-semibold">Child<br />Risk?</th>
-            <th className="px-2 py-1 text-left font-semibold">Badge</th>
-            <th className="px-2 py-1 text-left font-semibold">
-              Taiwan<br />FDA Regulation
-            </th>
-          </tr>
-        </thead>
+  <tr>
+    <th className="px-1 py-1 text-left font-semibold text-xs">
+      {language === "zh" ? "成分" : "Ingredient"}
+    </th>
+    <th className="px-1 py-1 text-left font-semibold text-xs">
+      {language === "zh" ? "風險等級" : "Risk Level"}
+    </th>
+    <th className="px-1 py-1 text-left font-semibold text-xs">
+      {language === "zh" ? "兒童風險" : "Child Risk?"}
+    </th>
+    <th className="px-1 py-1 text-left font-semibold text-xs">
+      {language === "zh" ? "標記" : "Badge"}
+    </th>
+    <th className="px-1 py-1 text-left font-semibold text-xs">
+      {language === "zh" ? "台灣規範" : "Taiwan FDA Regulation"}
+    </th>
+  </tr>
+</thead>
         <tbody>
           {ingredients.map((row, i) => (
             <tr key={i} className="border-t">
