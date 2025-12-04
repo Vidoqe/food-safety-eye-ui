@@ -67,7 +67,8 @@ interface ResultScreenProps {
   error?: string;
 }
 
-const ResultScreen: React.FC<ResultScreenProps> = ({
+
+.FC<ResultScreenProps> = ({
   result,
   onBack,
   error,
@@ -204,9 +205,9 @@ const safeIngredients = Array.isArray(result?.ingredients)
   )}
 
   <IngredientRiskTable ingredients={mappedIngredients} />
+  </div>
 </div>
-</div>
-  );
+);
 };
 
 export default ResultScreen;
