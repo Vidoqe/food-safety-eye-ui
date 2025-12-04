@@ -68,8 +68,7 @@ interface ResultScreenProps {
 }
 
 
-.FC<ResultScreenProps> = ({
-  result,
+const ResultScreen: React.FC<ResultScreenProps> = ({  result,
   onBack,
   error,
 }) => {
