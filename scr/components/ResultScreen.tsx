@@ -195,10 +195,11 @@ const safeIngredients = Array.isArray(result?.ingredients)
         </h3>
 
         {safeIngredients.length === 0 && (
-          <div className="rounded-2xl border p-3 md:p-4 bg-yellow-50 text-yellow-800 text-sm mb-3">
+          <div className="rounded-2xl border p-3 md:p-4 bg-yellow-50 text-yellow-900 text-sm">
             {language === "zh"
               ? "無法從照片辨識成分表，請靠近成分文字並保持良好光線，或改用手動輸入成分。"
-              : "Couldn't detect an ingredient list from the photo. Move closer, ensure good lighting, or use manual input."}
+              : "Couldn't detect an ingredient list from the photo. Move closer, keep good lighting, or use manual input instead."
+            }
           </div>
         )}
 
@@ -209,4 +210,3 @@ const safeIngredients = Array.isArray(result?.ingredients)
 };
 
 export default ResultScreen;
-
