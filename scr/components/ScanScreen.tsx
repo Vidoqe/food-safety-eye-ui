@@ -71,6 +71,7 @@ const compressed = await compressDataUrl(dataUrl, 1600, 0.90);
 const previewUrl = compressed.startsWith("data:")
   ? compressed
   : `data:image/jpeg;base64,${compressed}`;
+console.log("📸 PREVIEW LENGTH:", compressed.length, "PREFIX:", previewUrl.slice(0, 30));
 
 setPreview(previewUrl);
 
