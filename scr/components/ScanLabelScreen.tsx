@@ -1,10 +1,31 @@
 import React, { useCallback, useRef, useState } from "react";
+import { useLanguage } from "../context/LanguageContext"; // if you have this
+// OR get activeTab from props depending on your structure
 
 type Props = {
   onImageSelected?: (file: File) => void;
 };
 
 const ScanLabelScreen: React.FC<Props> = ({ onImageSelected }) => {
+const { activeTab } = useLanguage();
+  const lang = activeTab === "zh" ? "zh" : "en";
+
+  const TEXT = {
+    en: {
+      back: "Back",
+      title: "Scan Product Label",
+      capture: "Capture ingredient list",
+      takePhoto: "Take Photo",
+      gallery: "Choose From Gallery",
+    },
+    zh: {
+      back: "返回",
+      title: "掃描產品成分標籤",
+      capture: "拍攝成分列表",
+      takePhoto: "拍照",
+      gallery: "從相簿選擇",
+    },
+  };
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [log, setLog] = useState<string[]>([]);
@@ -80,49 +101,72 @@ const ScanLabelScreen: React.FC<Props> = ({ onImageSelected }) => {
   }, [addLog]);
 
   return (
-    <div className="px-4 py-6">
-      <h1 className="text-2xl font-bold text-center mb-4">Scan Product Label</h1>
+  <div className="px-4 py-6">
 
-      <div className="mx-auto max-w-md">
-        {/* Hidden file input the buttons will trigger */}
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          capture="environment"
-          onChange={onChange}
-          className="hidden"
-        />
+    {/* Back button */}
+    <button
+      type="button"
+      onClick={() => window.history.back()}
+      className="mb-4 text-sm text-blue-600 hover:underline"
+    >
+      {TEXT[lang].back}
+    </button>
 
-        {/* Preview box */}
-        <div className="border-2 border-dashed rounded-xl p-6 bg-white/70 mb-4 aspect-[4/3] flex items-center justify-center">
-          {previewUrl ? (
-            <img src={previewUrl} alt="preview" className="max-h-full max-w-full object-contain rounded" />
-          ) : (
-            <div className="text-center text-gray-500">
-              <div className="text-5xl mb-2">📷</div>
-              <div>Capture ingredient list</div>
-            </div>
-          )}
-        </div>
+    {/* Title */}
+    <h1 className="text-2xl font-bold text-center mb-4">
+      {TEXT[lang].title}
+    </h1>
 
-        {/* Primary button */}
-        <button
-          onClick={openCamera}
-          className="block w-full text-center rounded-xl bg-green-600 py-3 text-white text-lg font-semibold hover:bg-green-700 active:scale-[0.98] transition"
-        >
-          Take Photo (label)
-        </button>
+    <div className="mx-auto max-w-md">
 
-        {/* Secondary button (gallery) */}
-        <button
-          onClick={() => inputRef.current?.click()}
-          className="mt-3 block w-full text-center rounded-xl bg-gray-100 py-3 text-gray-800 hover:bg-gray-200 active:scale-[0.98] transition"
-        >
-          Choose From Gallery
-        </button>
+      {/* Hidden file input */}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={onChange}
+        className="hidden"
+      />
 
-        {/* Tiny log for diagnosis */}
+      {/* Preview box */}
+      <div className="border-2 border-dashed rounded-xl p-6 bg-white/70 mb-4 aspect-[4/3] flex items-center justify-center">
+        {previewUrl ? (
+          <img
+            src={previewUrl}
+            alt="preview"
+            className="max-h-full max-w-full object-contain rounded"
+          />
+        ) : (
+          <div className="text-center text-gray-500">
+            <div className="text-5xl mb-2">📷</div>
+            <div>{TEXT[lang].capture}</div>
+          </div>
+        )}
+      </div>
+
+      {/* Take Photo button */}
+      <button
+        onClick={openCamera}
+        className="block w-full text-center rounded-xl bg-green-600 py-3 text-white text-lg font-semibold hover:bg-green-700 active:scale-[0.98] transition"
+      >
+        {TEXT[lang].takePhoto}
+      </button>
+
+      {/* Gallery button */}
+      <button
+        onClick={() => inputRef.current?.click()}
+        className="mt-3 block w-full text-center rounded-xl bg-gray-100 py-3 text-gray-800 hover:bg-gray-200 active:scale-[0.98] transition"
+      >
+        {TEXT[lang].gallery}
+      </button>
+
+    </div>
+  </div>
+);
+
+
+                {/* Tiny log for diagnosis */}
         <div className="mt-6">
           <div className="text-sm font-semibold mb-1">Event Log</div>
           <div className="text-xs bg-gray-50 border rounded p-2 h-40 overflow-auto">
