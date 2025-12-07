@@ -148,21 +148,23 @@ const isChinese =
       </div>
 
       <div className="flex gap-3">
-        <button
-         <button
-  onClick={onClickTakePhoto}
-  className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 text-white font-medium"
->
-  {isChinese ? "拍照" : "Take Photo"}
-</button>
+  <button
+    onClick={onClickTakePhoto}
+    className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 text-white font-medium"
+  >
+    {isChinese ? "拍照" : "Take Photo"}
+  </button>
 
-<button
-  onClick={onAnalyze}
-  disabled={!preview || loading}
-  className="flex-1 rounded-lg bg-blue-600 px-4 py-3 text-white font-medium"
->
-  {loading ? (isChinese ? "分析中..." : "Analyzing...") : (isChinese ? "開始分析" : "Analyze")}
-</button>
+  <button
+    onClick={onAnalyze}
+    disabled={!preview || loading}
+    className="flex-1 rounded-lg bg-blue-600 px-4 py-3 text-white font-medium"
+  >
+    {loading
+      ? (isChinese ? "分析中..." : "Analyzing...")
+      : (isChinese ? "開始分析" : "Analyze")}
+  </button>
+</div>
 
       {error && (
         <div className="mt-3 rounded-md border border-red-300 bg-red-50 p-3 text-red-700 text-sm">
