@@ -113,8 +113,7 @@ const { activeTab } = useLanguage();
     </button>
 
     {/* Title */}
-    <h1 className="text-2xl font-bold text-center mb-4">
-      {TEXT[lang].title}
+    <h1>HELLO BUDDY TEST
     </h1>
 
     <div className="mx-auto max-w-md">
