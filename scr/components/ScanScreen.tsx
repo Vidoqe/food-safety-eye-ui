@@ -109,12 +109,8 @@ export default function ScanScreen({ type, onBack, onResult }: ScanScreenProps) 
     }
   };
 // Temporary bilingual support (safe version)
-const isChinese =
-  (typeof navigator !== "undefined" &&
-    navigator.language.toLowerCase().startsWith("zh")) ||
-  (typeof document !== "undefined" &&
-    document.documentElement.lang?.toLowerCase().startsWith("zh"));
-
+const { language } = useAppContext();
+const isChinese = language === "zh";
 // Title text
 const title =
   type === "barcode"
