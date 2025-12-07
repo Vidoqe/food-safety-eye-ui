@@ -108,12 +108,25 @@ export default function ScanScreen({ type, onBack, onResult }: ScanScreenProps) 
       setLoading(false);
     }
   };
+// Temporary bilingual support (safe version)
 const isChinese =
   (typeof navigator !== "undefined" &&
     navigator.language.toLowerCase().startsWith("zh")) ||
   (typeof document !== "undefined" &&
     document.documentElement.lang?.toLowerCase().startsWith("zh"));
- const placeholder =
+
+// Title text
+const title =
+  type === "barcode"
+    ? isChinese
+      ? "掃描產品條碼"
+      : "Scan Product Barcode"
+    : isChinese
+      ? "掃描產品成分標籤"
+      : "Scan Product Label";
+
+// Placeholder text
+const placeholder =
   type === "barcode"
     ? isChinese
       ? "拍攝條碼"
@@ -121,7 +134,6 @@ const isChinese =
     : isChinese
       ? "拍攝成分列表"
       : "Capture ingredient list";
-
   return (
     <div className="mx-auto max-w-md p-4">
       <h1 className="text-2xl font-semibold mb-4 text-center">{title}</h1>
