@@ -133,16 +133,17 @@ const placeholder =
       ? "拍攝成分列表"
       : "Capture ingredient list";
   return (
-<button
-  type="button"
-  onClick={onBack}
-  className="mb-4 text-sm text-blue-600 hover:underline"
->
-  {isChinese ? "返回" : "Back"}
-</button>
-    <div className="mx-auto max-w-md p-4">
-      <h1 className="text-2xl font-semibold mb-4 text-center">{title}</h1>
+  <div className="mx-auto max-w-md p-4">
+    {/* Back button */}
+    <button
+      type="button"
+      onClick={onBack}
+      className="mb-4 text-sm text-blue-600 hover:underline"
+    >
+      {isChinese ? "返回" : "Back"}
+    </button>
 
+    <h1 className="text-2xl font-semibold mb-4 text-center">{title}</h1>
       {/* Hidden input – mobile browsers need this */}
       <input
         ref={fileInputRef}
@@ -155,7 +156,7 @@ const placeholder =
 
       <div className="rounded-2xl border-2 border-dashed border-gray-300 bg-white p-6 mb-4 flex items-center justify-center h-64">
         {preview ? (
-          <img src={preview} alt="preview" className="max-h-60 object-contain" />
+          <img scr={preview} alt="preview" className="max-h-60 object-contain" />
         ) : (
           <div className="text-gray-400 text-center">
             <div className="text-5xl mb-2">📷</div>
