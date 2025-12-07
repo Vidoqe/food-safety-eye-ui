@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { analyzeProduct } from "../services/gptImageAnalysis";
+import { useAppContext } from "../contexts/AppContext";
 
 type ScanScreenProps = {
   type: "label" | "barcode";
@@ -108,9 +109,10 @@ export default function ScanScreen({ type, onBack, onResult }: ScanScreenProps) 
       setLoading(false);
     }
   };
-// Temporary bilingual support (safe version)
+// Use the same language setting as ManualInputScreen
 const { language } = useAppContext();
 const isChinese = language === "zh";
+
 // Title text
 const title =
   type === "barcode"
@@ -118,7 +120,7 @@ const title =
       ? "掃描產品條碼"
       : "Scan Product Barcode"
     : isChinese
-      ? "掃描產品成分標籤"
+      ? "掃描成分標籤"
       : "Scan Product Label";
 
 // Placeholder text
