@@ -149,15 +149,15 @@ const ResultScreen: React.FC<ResultScreenProps> = ({
       )
     : normalized;
 
-  // child risk translations
   const childRiskText = zh
-    ? (
-        childRiskRaw === "safe" ? "安全" :
-        childRiskRaw === "limit" ? "限量" :
-        childRiskRaw === "harmful" ? "有害" :
-        childRiskRaw || "未知"
-      )
-    : childRiskRaw;
+  ? (
+      childRiskRaw === "safe" ? "安全" :
+      childRiskRaw === "limit" ? "限量" :
+      childRiskRaw === "avoid" ? "避免" :
+      childRiskRaw === "harmful" ? "有害" :
+      childRiskRaw || "未知"
+    )
+  : childRiskRaw;
 
   // Taiwan FDA note translations
   const taiwanNoteText = zh
