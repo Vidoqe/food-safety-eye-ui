@@ -67,14 +67,15 @@ export default function ScanScreen({ type, onBack, onResult }: ScanScreenProps) 
       const dataUrl = await fileToDataURL(file);
 const compressed = await compressDataUrl(dataUrl, 1600, 0.90);
 
-// FIX: Ensure valid preview URL for <img>
-// FIX: Ensure valid preview URL for <img>
-const previewUrl = compressed.startsWith("data:")
-  ? compressed
-  : `data:image/jpeg;base64,${compressed}`;
+// --- FIX: ensure <img src> always receives a valid DataURL ---
+let previewUrl = compressed;
 
-console.log("[DEBUG] PREVIEW LENGTH:", compressed.length, "PREFIX:", previewUrl.slice(0, 30));
+// If backend returns bare base64, wrap it properly
+if (!compressed.startsWith("data:")) {
+  previewUrl = `data:image/jpeg;base64,${compressed}`;
+}
 
+console.log("[UI] Preview URL prefix:", previewUrl.slice(0, 40));
 setPreview(previewUrl);
 console.log("[UI] picked image chars:", compressed.length);
     } catch (err: any) {
