@@ -133,6 +133,13 @@ const placeholder =
       ? "拍攝成分列表"
       : "Capture ingredient list";
   return (
+<button
+  type="button"
+  onClick={onBack}
+  className="mb-4 text-sm text-blue-600 hover:underline"
+>
+  {isChinese ? "返回" : "Back"}
+</button>
     <div className="mx-auto max-w-md p-4">
       <h1 className="text-2xl font-semibold mb-4 text-center">{title}</h1>
 
