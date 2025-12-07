@@ -113,11 +113,14 @@ const isChinese =
     navigator.language.toLowerCase().startsWith("zh")) ||
   (typeof document !== "undefined" &&
     document.documentElement.lang?.toLowerCase().startsWith("zh"));
-  const title =
-    type === "barcode" ? "Scan Product Barcode" : "
-";
-  const placeholder =
-    type === "barcode" ? "Capture barcode" : "Capture ingredient list";
+ const placeholder =
+  type === "barcode"
+    ? isChinese
+      ? "拍攝條碼"
+      : "Capture barcode"
+    : isChinese
+      ? "拍攝成分列表"
+      : "Capture ingredient list";
 
   return (
     <div className="mx-auto max-w-md p-4">
