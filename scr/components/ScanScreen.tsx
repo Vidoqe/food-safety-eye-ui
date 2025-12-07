@@ -108,9 +108,14 @@ export default function ScanScreen({ type, onBack, onResult }: ScanScreenProps) 
       setLoading(false);
     }
   };
-
+const isChinese =
+  (typeof navigator !== "undefined" &&
+    navigator.language.toLowerCase().startsWith("zh")) ||
+  (typeof document !== "undefined" &&
+    document.documentElement.lang?.toLowerCase().startsWith("zh"));
   const title =
-    type === "barcode" ? "Scan Product Barcode" : "Scan Product Label";
+    type === "barcode" ? "Scan Product Barcode" : "
+";
   const placeholder =
     type === "barcode" ? "Capture barcode" : "Capture ingredient list";
 
@@ -141,19 +146,20 @@ export default function ScanScreen({ type, onBack, onResult }: ScanScreenProps) 
 
       <div className="flex gap-3">
         <button
-          onClick={onClickTakePhoto}
-          className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 text-white font-medium hover:bg-emerald-700"
-        >
-          Take Photo
-        </button>
-        <button
-          onClick={onAnalyze}
-          disabled={!preview || loading}
-          className="flex-1 rounded-lg bg-blue-600 px-4 py-3 text-white font-medium hover:bg-blue-700 disabled:opacity-50"
-        >
-          {loading ? "Analyzing..." : "Analyze"}
-        </button>
-      </div>
+         <button
+  onClick={onClickTakePhoto}
+  className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 text-white font-medium"
+>
+  {isChinese ? "拍照" : "Take Photo"}
+</button>
+
+<button
+  onClick={onAnalyze}
+  disabled={!preview || loading}
+  className="flex-1 rounded-lg bg-blue-600 px-4 py-3 text-white font-medium"
+>
+  {loading ? (isChinese ? "分析中..." : "Analyzing...") : (isChinese ? "開始分析" : "Analyze")}
+</button>
 
       {error && (
         <div className="mt-3 rounded-md border border-red-300 bg-red-50 p-3 text-red-700 text-sm">
