@@ -82,25 +82,26 @@ console.log("[UI] picked image chars:", compressed.length);
     }
   };
 
-  const onAnalyze = async () => {
-    if (!preview) {
-      setError(
-        type === "barcode"
-          ? "Please capture a barcode photo first"
-          : "Please capture an ingredient photo first"
-      );
-      return;
-    }
+ const onAnalyze = async () => {
+  if (!preview) {
+    setError(
+      safeType === "barcode"
+        ? "Please capture a barcode photo first"
+        : "Please capture an ingredient photo first"
+    );
+    return;
+  }
 
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
 
-    try {
-      const res = await analyzeProduct({
-        imageBase64: preview,
-        lang: "zh",
-        mode: type, // just a hint, backend can ignore this
-      });
+  try {
+    const res = await analyzeProduct({
+      imageBase64: preview,
+      lang: isChinese ? "zh" : "en",
+      mode: safeType, // barcode is effectively disabled
+    });
+    // ... keep the rest of your code the same
 
       console.log("[UI] analyzeProduct result:", res);
 
@@ -119,9 +120,11 @@ console.log("[UI] picked image chars:", compressed.length);
 const { language } = useAppContext();
 const isChinese = language === "zh";
 
+// TEMP: disable barcode mode – always treat as ingredient label
+const safeType = type === "barcode" ? "label" : type;
 // Title text
 const title =
-  type === "barcode"
+  safeType === "barcode"
     ? isChinese
       ? "掃描產品條碼"
       : "Scan Product Barcode"
@@ -131,7 +134,7 @@ const title =
 
 // Placeholder text
 const placeholder =
-  type === "barcode"
+  safeType === "barcode"
     ? isChinese
       ? "拍攝條碼"
       : "Capture barcode"
