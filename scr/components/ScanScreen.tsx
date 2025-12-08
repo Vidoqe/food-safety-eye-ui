@@ -12,6 +12,8 @@ type ScanScreenProps = {
 export default function ScanScreen({ type, onBack, onResult }: ScanScreenProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string>("");
+const isValidPreview =
+  !!preview && (preview.startsWith("data:") || preview.startsWith("blob:"));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -158,16 +160,31 @@ const placeholder =
         className="hidden"
       />
 
-      <div className="rounded-2xl border-2 border-dashed border-gray-300 bg-white p-6 mb-4 flex items-center justify-center h-64">
-        {preview ? (
-          <img scr={preview} alt="preview" className="max-h-60 object-contain" />
-        ) : (
-          <div className="text-gray-400 text-center">
-            <div className="text-5xl mb-2">📷</div>
-            <div>{placeholder}</div>
-          </div>
-        )}
-      </div>
+      {isValidPreview ? (
+  // ✅ Looks like a real image preview
+  <img
+    src={preview}
+    alt="preview"
+    className="max-h-60 object-contain"
+  />
+) : preview ? (
+  // ❗ Preview string exists but is not a valid DataURL — prevent broken icon
+  <div className="text-center text-gray-400">
+    <div className="text-5xl mb-2">✅</div>
+    <div>
+      {isChinese
+        ? "照片已拍攝，請點選「開始分析」"
+        : "Photo captured — tap Analyze"}
+    </div>
+  </div>
+) : (
+  // 📷 No photo yet — show original placeholder
+  <div className="text-center text-gray-400">
+    <div className="text-5xl mb-2">📷</div>
+    <div>{placeholder}</div>
+  </div>
+)}
+
 
       <div className="flex gap-3">
   <button
