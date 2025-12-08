@@ -1,147 +1,67 @@
 // scr/services/gptImageAnalysis.ts
-// UI-side helpers + call to Supabase Edge Function
+// Simple helper to call the Supabase Edge Function without AbortController
+// to avoid "signal is aborted without reason" errors.
 
-// ---- Types (keep minimal) ----
-export type Risk = 'healthy' | 'low' | 'moderate' | 'harmful' | 'unknown';
-
-export interface IngredientRow {
-  name: string;
-  riskLevel: Risk;
-  childSafe?: boolean;
-  badge?: 'green' | 'yellow' | 'red' | 'gray';
-  reason?: string;
-  taiwanRegulation?: string;
+export interface AnalyzeProductPayload {
+  imageBase64?: string;   // for label scans
+  ingredients?: string;   // for manual input
+  barcode?: string;       // (not used right now, but kept for future)
+  lang: "zh" | "en";
+  mode: "label" | "barcode" | string;
 }
 
-export interface AnalysisResult {
-  overallResult: {
-    risk: Risk | 'Low' | 'Moderate' | 'High' | 'Unknown';
-    message: string;
-    childSafeOverall: boolean;
-  };
-  table: IngredientRow[];
-  used: { hasImage: boolean; hasIngredients: boolean; hasBarcode: boolean };
-  raw?: { ingredients?: string; barcode?: string };
+export interface AnalyzeProductResponse {
+  // We keep this loose so backend changes don't break the UI
+  verdict?: any;
+  ingredients?: any[];
+  error?: string | null;
+  [key: string]: any;
 }
 
-// ---- Config (these are UI-side values only) ----
-const SUPABASE_URL =
-  'https://hqgzhlugkxytionyrnor.supabase.co/functions/v1/analyze-product-image'; // keep your real URL
-const ANON_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....'; // your Supabase ANON KEY
-const SHARED_SECRET = 'foodsafetysecret456'; // must match the Function
+const EDGE_URL = import.meta.env.VITE_SUPABASE_EDGE_URL;
 
-// ---- Small helpers ----
-function fileToDataURL(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-async function compressDataUrl(dataUrl: string, maxSide = 1400, quality = 0.75): Promise<string> {
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-
-  await new Promise<void>((res, rej) => {
-    img.onload = () => res();
-    img.onerror = () => rej(new Error('Image decode failed'));
-    img.src = dataUrl;
-  });
-
-  const { width, height } = img;
-  const scale = Math.min(1, maxSide / Math.max(width, height));
-  const outW = Math.round(width * scale);
-  const outH = Math.round(height * scale);
-
-  const canvas = document.createElement('canvas');
-  canvas.width = outW;
-  canvas.height = outH;
-  const ctx = canvas.getContext('2d');
-  if (!ctx) throw new Error('Canvas not supported');
-  ctx.drawImage(img, 0, 0, outW, outH);
-
-  return canvas.toDataURL('image/jpeg', quality);
-}
-
-/** Open camera/gallery, return base64 dataURL (compressed). */
-export async function captureImageFromCamera(): Promise<string> {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  (input as any).capture = 'environment'; // prefer back camera on mobile
-
-  return new Promise<string>((resolve, reject) => {
-    input.onchange = async () => {
-      try {
-        const file = (input as HTMLInputElement).files?.[0];
-        if (!file) return reject(new Error('No file selected'));
-        const raw = await fileToDataURL(file);
-        const compressed = await compressDataUrl(raw, 1400, 0.75);
-        resolve(compressed);
-      } catch (e) {
-        reject(e);
-      }
-    };
-
-    // modern browsers
-    try {
-      (input as any).showPicker ? (input as any).showPicker() : input.click();
-    } catch {
-      input.click();
-    }
-  });
-}
-
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 30000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...init, signal: controller.signal });
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-// ---- Public API used by screens ----
-export interface AnalyzeParams {
-  imageBase64?: string;
-  ingredients?: string;
-  barcode?: string;
-  lang?: 'zh' | 'en';
-}
-
-/** Call Supabase Edge Function */
-export async function analyzeProduct(params: AnalyzeParams): Promise<AnalysisResult> {
-  const { imageBase64 = '', ingredients = '', barcode = '', lang = 'zh' } = params;
-
-  const resp = await fetchWithTimeout(
-    SUPABASE_URL,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // must match Function check exactly
-        Authorization: `Bearer ${SHARED_SECRET}`,
-        // required by Supabase Functions gateway
-        apikey: ANON_KEY,
-      },
-      body: JSON.stringify({ image: imageBase64, ingredients, barcode, lang }),
-    },
-    30000
+if (!EDGE_URL) {
+  console.warn(
+    "[UI] VITE_SUPABASE_EDGE_URL is not set – image / ingredient analysis will fail."
   );
-
-  if (!resp.ok) {
-    const text = await resp.text().catch(() => '');
-    throw new Error(`Server error ${resp.status}: ${text.slice(0, 300)}`);
-  }
-  return (await resp.json()) as AnalysisResult;
 }
-// Default service wrapper so components can import it as GPTImageAnalysisService
-const GPTImageAnalysisService = {
-  analyzeProduct,
-};
 
-export default GPTImageAnalysisService;
+export async function analyzeProduct(
+  payload: AnalyzeProductPayload
+): Promise<AnalyzeProductResponse> {
+  if (!EDGE_URL) {
+    throw new Error("Missing VITE_SUPABASE_EDGE_URL");
+  }
+
+  try {
+    const res = await fetch(EDGE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      // IMPORTANT: no AbortController / signal here,
+      // so we never get "signal is aborted without reason"
+    });
+
+    if (!res.ok) {
+      // Try to read error body for debugging
+      let text = "";
+      try {
+        text = await res.text();
+      } catch {
+        // ignore
+      }
+      console.error("[UI] Edge function HTTP error", res.status, text);
+      throw new Error(`Edge function error: ${res.status}`);
+    }
+
+    const data = (await res.json()) as AnalyzeProductResponse;
+    console.log("[UI] analyzeProduct response:", data);
+    return data;
+  } catch (err: any) {
+    console.error("[UI] analyzeProduct network/error:", err);
+    // Re-throw so ScanScreen can show a friendly message
+    throw err;
+  }
+}
