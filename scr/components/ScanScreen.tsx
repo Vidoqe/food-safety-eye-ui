@@ -67,11 +67,10 @@ const isValidPreview =
       if (!file) return;
 
     const dataUrl = await fileToDataURL(file);
-const compressed = await compressDataUrl(dataUrl, 1600, 0.90);
+const dataUrl = await fileToDataURL(file);
 
-// compressDataUrl already returns a full data:image/jpeg;base64,... URL
-setPreview(compressed);
-
+// ⭐ No compression — this gives BEST OCR accuracy
+setPreview(dataUrl);
 console.log("[UI] preview prefix:", compressed.slice(0, 40));
 console.log("[UI] picked image chars:", compressed.length);
     } catch (err: any) {
