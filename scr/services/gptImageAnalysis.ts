@@ -95,15 +95,6 @@ export async function captureImageFromCamera(): Promise<string> {
   });
 }
 
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 30000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...init, signal: controller.signal });
-  } finally {
-    clearTimeout(timer);
-  }
-}
 
 // ---- Public API used by screens ----
 export interface AnalyzeParams {
@@ -117,22 +108,17 @@ export interface AnalyzeParams {
 export async function analyzeProduct(params: AnalyzeParams): Promise<AnalysisResult> {
   const { imageBase64 = '', ingredients = '', barcode = '', lang = 'zh' } = params;
 
-  const resp = await fetchWithTimeout(
-    SUPABASE_URL,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // must match Function check exactly
-        Authorization: `Bearer ${SHARED_SECRET}`,
-        // required by Supabase Functions gateway
-        apikey: ANON_KEY,
-      },
-      body: JSON.stringify({ image: imageBase64, ingredients, barcode, lang }),
-    },
-    30000
-  );
-
+const resp = await fetch(SUPABASE_URL, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    // must match Function check exactly
+    Authorization: `Bearer ${SHARED_SECRET}`,
+    // required by Supabase Functions gateway
+    apikey: ANON_KEY,
+  },
+  body: JSON.stringify({ image: imageBase64, ingredients, barcode, lang }),
+});
   if (!resp.ok) {
     const text = await resp.text().catch(() => '');
     throw new Error(`Server error ${resp.status}: ${text.slice(0, 300)}`);
