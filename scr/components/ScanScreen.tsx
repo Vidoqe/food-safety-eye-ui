@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { analyzeProduct } from "../services/gptImageAnalysis";
 import { useAppContext } from "../contexts/AppContext";
+import { fileToDataUrl } from "../utils/fileToDataUrl";
 
 type ScanScreenProps = {
   type: "label" | "barcode";
@@ -18,15 +19,7 @@ const isValidPreview =
   const [error, setError] = useState<string | null>(null);
 
   // --- helpers (same compression as before) ---
-  function fileToDataURL(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
+  
   async function compressDataUrl(
     dataUrl: string,
     maxSide = 1400,
