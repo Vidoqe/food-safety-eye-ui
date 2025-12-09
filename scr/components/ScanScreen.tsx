@@ -61,25 +61,22 @@ const isValidPreview =
     fileInputRef.current?.click(); // open camera / picker
   };
 
-  const onFilePicked = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = e.target.files?.[0];
-      if (!file) return;
+ const onFilePicked = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  try {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    const dataUrl = await fileToDataURL(file);
-const dataUrl = await fileToDataURL(file);
+    // Convert to base64 with NO compression for best OCR
+    const dataUrl = await fileToDataUrl(file);
 
-// ⭐ No compression — this gives BEST OCR accuracy
-setPreview(dataUrl);
-console.log("[UI] preview prefix:", compressed.slice(0, 40));
-console.log("[UI] picked image chars:", compressed.length);
-    } catch (err: any) {
-      setError(err?.message ?? String(err));
-    } finally {
-      // allow selecting the same file again
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
+    setPreview(dataUrl);
+
+  } catch (err: any) {
+    setError(err?.message ?? String(err));
+  } finally {
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+};
 
  const onAnalyze = async () => {
   if (!preview) {
