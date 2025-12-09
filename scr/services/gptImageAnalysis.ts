@@ -130,7 +130,7 @@ export async function analyzeProduct(params: AnalyzeParams): Promise<AnalysisRes
       },
       body: JSON.stringify({ image: imageBase64, ingredients, barcode, lang }),
     },
-    30000
+    70000
   );
 
   if (!resp.ok) {
