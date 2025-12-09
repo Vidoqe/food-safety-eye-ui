@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { analyzeProduct } from "../services/gptImageAnalysis";
 import { useAppContext } from "../contexts/AppContext";
-import { fileToDataUrl } from "../utils/fileToDataUrl";
+
 
 type ScanScreenProps = {
   type: "label" | "barcode";
@@ -47,7 +47,15 @@ const isValidPreview =
     ctx.drawImage(img, 0, 0, w, h);
     return canvas.toDataURL("image/jpeg", quality);
   }
-
+// Convert a File to base64 DataURL (no compression)
+async function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
   // --- UI actions ---
   const onClickTakePhoto = () => {
     setError(null);
