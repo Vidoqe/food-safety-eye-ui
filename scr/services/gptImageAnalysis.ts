@@ -95,16 +95,21 @@ export async function captureImageFromCamera(): Promise<string> {
   });
 }
 
-async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs = 30000) {
+// Simple fetch with a LONG timeout so OCR can finish
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit,
+  timeoutMs = 70000 // 70 seconds, default
+): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+
   try {
     return await fetch(url, { ...init, signal: controller.signal });
   } finally {
     clearTimeout(timer);
   }
 }
-
 // ---- Public API used by screens ----
 export interface AnalyzeParams {
   imageBase64?: string;
@@ -118,20 +123,18 @@ export async function analyzeProduct(params: AnalyzeParams): Promise<AnalysisRes
   const { imageBase64 = '', ingredients = '', barcode = '', lang = 'zh' } = params;
 
   const resp = await fetchWithTimeout(
-    SUPABASE_URL,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // must match Function check exactly
-        Authorization: `Bearer ${SHARED_SECRET}`,
-        // required by Supabase Functions gateway
-        apikey: ANON_KEY,
-      },
-      body: JSON.stringify({ image: imageBase64, ingredients, barcode, lang }),
+  SUPABASE_URL,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${SHARED_SECRET}`,
+      apikey: ANON_KEY,
     },
-    70000
-  );
+    body: JSON.stringify({ image: imageBase64, ingredients, barcode, lang }),
+  }
+  // no 3rd argument → uses default 70000 ms
+);
 
   if (!resp.ok) {
     const text = await resp.text().catch(() => '');
