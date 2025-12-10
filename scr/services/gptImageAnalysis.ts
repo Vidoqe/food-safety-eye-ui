@@ -131,19 +131,7 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
     }
 
     // 2) Absolute override: any kind of "water" is always healthy + green
-    if (lowerName.includes('water')) {
-      newTable.push({
-        ...row,
-        name: 'Water',
-        riskLevel: 'healthy',
-        childsafe: true,
-        badge: 'green',
-        taiwanRegulation:
-          '只要符合飲用水水質標準，飲用水被視為安全，沒有額外食品添加物限制。',
-      });
-      continue;
-    }
-
+    
     // 3) Default: keep original row
     newTable.push(row);
   }
