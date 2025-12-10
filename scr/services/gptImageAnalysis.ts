@@ -127,34 +127,34 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
         newTable.push(mapColorAdditiveToIngredientRow(hit));
       });
     } else {
-  // Special override: Water should always be healthy / green / safe
-  const lowerName = row.name.toLowerCase().trim();
-  if (
-    lowerName === 'water' ||
-    lowerName === 'drinking water' ||
-    lowerName === 'potable water'
-  ) {
-    newTable.push({
-      ...row,
-      riskLevel: 'healthy',
-      childsafe: true,
-      badge: 'green',
-      taiwanRegulation: '只要符合飲用水水質標準，飲用水被視為安全，沒有額外食品添加物限制。'
-    });
-  } else {
-    // Keep original row if no colour override and not water
-    newTable.push(row);
+      const lowerName = row.name.toLowerCase().trim();
+
+      // Special override: Water should always be healthy / green / safe
+      if (
+        lowerName === 'water' ||
+        lowerName === 'drinking water' ||
+        lowerName === 'potable water'
+      ) {
+        newTable.push({
+          ...row,
+          riskLevel: 'healthy',
+          childsafe: true,
+          badge: 'green',
+          taiwanRegulation:
+            '只要符合飲用水水質標準，飲用水被視為安全，沒有額外食品添加物限制。',
+        });
+      } else {
+        // Keep original row if no colour override and not water
+        newTable.push(row);
+      }
+    }
   }
-}
 
   return {
     ...result,
     table: newTable,
   };
 }
-
-// ---- Public API used by screens ----
-export interface AnalyzeParams {
   imageBase64?: string;
   ingredients?: string;
   barcode?: string;
