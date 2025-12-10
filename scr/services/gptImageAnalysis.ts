@@ -1,6 +1,20 @@
 // scr/services/gptImageAnalysis.ts
 // UI-side helpers + call to Supabase Edge Function
-
+import { detectColorAdditives } from '../utils/detectColorAdditives';
+import { COLOR_ADDITIVES } from '../data/colorAdditives';
+function mapColorAdditiveToIngredientRow(hit) {
+  return {
+    name: hit.common_name,
+    riskLevel: 
+      hit.risk_level === 'high' ? 'harmful'
+      : hit.risk_level === 'moderate' || hit.risk_level === 'moderate_high' ? 'moderate'
+      : 'low',
+    childsafe: hit.child_risk === 'avoid' ? false : true,
+    badge: hit.badge_color,            // 'red' | 'yellow' | 'green'
+    reason: hit.description,
+    taiwanRegulation: hit.taiwan_rule,
+  };
+}
 // ---- Types (keep minimal) ----
 export type Risk = 'healthy' | 'low' | 'moderate' | 'harmful' | 'unknown';
 
@@ -95,6 +109,34 @@ export async function captureImageFromCamera(): Promise<string> {
   });
 }
 
+// ---- Post-processing: upgrade colour additives in result.table ----
+function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
+  if (!result.table || !Array.isArray(result.table)) {
+    return result;
+  }
+
+  const newTable: IngredientRow[] = [];
+
+  for (const row of result.table) {
+    // Try to match colour additives by ingredient name
+    const colorHits = detectColorAdditives(row.name);
+
+    if (colorHits.length > 0) {
+      // Replace this row with 1+ specific colour rows
+      colorHits.forEach((hit) => {
+        newTable.push(mapColorAdditiveToIngredientRow(hit));
+      });
+    } else {
+      // Keep original row if no colour override
+      newTable.push(row);
+    }
+  }
+
+  return {
+    ...result,
+    table: newTable,
+  };
+}
 
 // ---- Public API used by screens ----
 export interface AnalyzeParams {
@@ -123,7 +165,12 @@ const resp = await fetch(SUPABASE_URL, {
     const text = await resp.text().catch(() => '');
     throw new Error(`Server error ${resp.status}: ${text.slice(0, 300)}`);
   }
-  return (await resp.json()) as AnalysisResult;
+  const data = (await resp.json()) as AnalysisResult;
+
+// upgrade risky color additives (Red 40, Yellow 5, etc.)
+const upgraded = applyColorAdditiveOverrides(data);
+
+return upgraded;
 }
 // Default service wrapper so components can import it as GPTImageAnalysisService
 const GPTImageAnalysisService = {
