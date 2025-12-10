@@ -117,7 +117,7 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
 
   const newTable: IngredientRow[] = [];
 
-for (const row of result.table) {
+  for (const row of result.table) {
     const name = row.name ?? '';
     const lowerName = name.toLowerCase().trim();
 
@@ -147,6 +147,12 @@ for (const row of result.table) {
     // 3) Default: keep original row
     newTable.push(row);
   }
+
+  return {
+    ...result,
+    table: newTable,
+  };
+}
 
 
 // ---- Public API used by screens ----
