@@ -154,7 +154,6 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
   };
 }
 
-
 // ---- Public API used by screens ----
 export interface AnalyzeParams {
   imageBase64?: string;
@@ -163,33 +162,42 @@ export interface AnalyzeParams {
   lang?: 'zh' | 'en';
 }
 
-
 /** Call Supabase Edge Function */
-export async function analyzeProduct(params: AnalyzeParams): Promise<AnalysisResult> {
-  const { imageBase64 = '', ingredients = '', barcode = '', lang = 'zh' } = params;
+export async function analyzeProduct(
+  params: AnalyzeParams
+): Promise<AnalysisResult> {
+  const {
+    imageBase64 = '',
+    ingredients = '',
+    barcode = '',
+    lang = 'zh',
+  } = params;
 
-const resp = await fetch(SUPABASE_URL, {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    // must match Function check exactly
-    Authorization: `Bearer ${SHARED_SECRET}`,
-    // required by Supabase Functions gateway
-    apikey: ANON_KEY,
-  },
-  body: JSON.stringify({ image: imageBase64, ingredients, barcode, lang }),
-});
+  const resp = await fetch(SUPABASE_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      // must match Function check exactly
+      Authorization: `Bearer ${SHARED_SECRET}`,
+      // required by Supabase Functions gateway
+      apikey: ANON_KEY,
+    },
+    body: JSON.stringify({ image: imageBase64, ingredients, barcode, lang }),
+  });
+
   if (!resp.ok) {
     const text = await resp.text().catch(() => '');
     throw new Error(`Server error ${resp.status}: ${text.slice(0, 300)}`);
   }
+
   const data = (await resp.json()) as AnalysisResult;
 
-// upgrade risky color additives (Red 40, Yellow 5, etc.)
-const upgraded = applyColorAdditiveOverrides(data);
+  // upgrade risky colour additives + water override
+  const upgraded = applyColorAdditiveOverrides(data);
 
-return upgraded;
+  return upgraded;
 }
+
 // Default service wrapper so components can import it as GPTImageAnalysisService
 const GPTImageAnalysisService = {
   analyzeProduct,
