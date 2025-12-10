@@ -154,7 +154,7 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
     ...result,
     table: newTable,
   };
-}
+
 
 // ---- Public API used by screens ----
 export interface AnalyzeParams {
@@ -163,6 +163,7 @@ export interface AnalyzeParams {
   barcode?: string;
   lang?: 'zh' | 'en';
 }
+
 
 /** Call Supabase Edge Function */
 export async function analyzeProduct(params: AnalyzeParams): Promise<AnalysisResult> {
