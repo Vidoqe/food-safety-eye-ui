@@ -117,44 +117,37 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
 
   const newTable: IngredientRow[] = [];
 
-  for (const row of result.table) {
-    // Try to match colour additives by ingredient name
-    const colorHits = detectColorAdditives(row.name);
+for (const row of result.table) {
+    const name = row.name ?? '';
+    const lowerName = name.toLowerCase().trim();
 
+    // 1) Colour additives: if we detect dyes, replace row(s) and skip rest
+    const colorHits = detectColorAdditives(name);
     if (colorHits.length > 0) {
-      // Replace this row with 1+ specific colour rows
       colorHits.forEach((hit) => {
         newTable.push(mapColorAdditiveToIngredientRow(hit));
       });
-    } else {
-      const lowerName = row.name.toLowerCase().trim();
-
-      // Special override: Water should always be healthy / green / safe
-      if (
-        lowerName === 'water' ||
-        lowerName === 'drinking water' ||
-        lowerName === 'potable water'
-      ) {
-        newTable.push({
-          ...row,
-          riskLevel: 'healthy',
-          childsafe: true,
-          badge: 'green',
-          taiwanRegulation:
-            '只要符合飲用水水質標準，飲用水被視為安全，沒有額外食品添加物限制。',
-        });
-      } else {
-        // Keep original row if no colour override and not water
-        newTable.push(row);
-      }
+      continue; // go to next ingredient
     }
+
+    // 2) Absolute override: any kind of "water" is always healthy + green
+    if (lowerName.includes('water')) {
+      newTable.push({
+        ...row,
+        name: 'Water',
+        riskLevel: 'healthy',
+        childsafe: true,
+        badge: 'green',
+        taiwanRegulation:
+          '只要符合飲用水水質標準，飲用水被視為安全，沒有額外食品添加物限制。',
+      });
+      continue;
+    }
+
+    // 3) Default: keep original row
+    newTable.push(row);
   }
 
-  return {
-    ...result,
-    table: newTable,
-  };
-}
 
 // ---- Public API used by screens ----
 export interface AnalyzeParams {
