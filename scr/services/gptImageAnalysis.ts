@@ -154,7 +154,7 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
     ...result,
     table: newTable,
   };
-
+}
 
 // ---- Public API used by screens ----
 export interface AnalyzeParams {
