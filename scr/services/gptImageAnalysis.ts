@@ -205,7 +205,7 @@ const withDb = applyAdditiveDatabaseOverrides(data);
 const upgraded = applyColorAdditiveOverrides(withDb);
 
 return upgraded;
-
+}
 // Default service wrapper so components can import it as GPTImageAnalysisService
 const GPTImageAnalysisService = {
   analyzeProduct,
