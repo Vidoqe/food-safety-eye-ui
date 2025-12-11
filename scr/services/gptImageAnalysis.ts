@@ -137,7 +137,7 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
       lowerName === 'water' ||
       lowerName === 'drinking water' ||
       lowerName === 'potable water' ||
-      lowerName.includes(' water')
+      lowerName.includes('water')
     ) {
       newTable.push({
         ...row,
@@ -199,13 +199,9 @@ export async function analyzeProduct(
   const data = (await resp.json()) as AnalysisResult;
 
   // 1) upgrade colour additives + water
-  const withColors = applyColorAdditiveOverrides(data);
+const upgraded = applyColorAdditiveOverrides(data);
 
-  // 2) upgrade other additives (preservatives, sweeteners, emulsifiers, etc.)
-  const upgraded = applyAdditiveDatabaseOverrides(withColors);
-
-  return upgraded;
-}
+return upgraded;
 
 // Default service wrapper so components can import it as GPTImageAnalysisService
 const GPTImageAnalysisService = {
