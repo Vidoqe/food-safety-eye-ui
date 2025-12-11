@@ -160,7 +160,6 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
     table: newTable,
   };
 }
-
   // ---- Public API used by screens ----
 export interface AnalyzeParams {
   imageBase64?: string;
