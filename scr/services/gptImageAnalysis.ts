@@ -160,7 +160,8 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
     table: newTable,
   };
 }
-  // ---- Public API used by screens ----
+
+// ---- Public API used by screens ----
 export interface AnalyzeParams {
   imageBase64?: string;
   ingredients?: string;
@@ -170,7 +171,7 @@ export interface AnalyzeParams {
 
 /** Call Supabase Edge Function */
 export async function analyzeProduct(
-  params: AnalyzeParams
+  params: AnalyzeParams,
 ): Promise<AnalysisResult> {
   const {
     imageBase64 = '',
@@ -198,14 +199,15 @@ export async function analyzeProduct(
 
   const data = (await resp.json()) as AnalysisResult;
 
-// 1) FIRST: upgrade using the additives DB (preservatives, sweeteners, etc.)
-const withDb = applyAdditiveDatabaseOverrides(data);
+  // 1) FIRST: upgrade using the additives DB (preservatives, sweeteners, etc.)
+  const withDb = applyAdditiveDatabaseOverrides(data);
 
-// 2) SECOND: apply colour overrides + water override LAST
-const upgraded = applyColorAdditiveOverrides(withDb);
+  // 2) SECOND: apply colour overrides + water override LAST
+  const upgraded = applyColorAdditiveOverrides(withDb);
 
-return upgraded;
+  return upgraded;
 }
+
 // Default service wrapper so components can import it as GPTImageAnalysisService
 const GPTImageAnalysisService = {
   analyzeProduct,
