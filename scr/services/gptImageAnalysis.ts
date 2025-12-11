@@ -152,6 +152,31 @@ function applyAdditiveDatabaseOverrides(result: AnalysisResult): AnalysisResult 
 
   for (const row of result.table) {
     const name = row.name ?? '';
+    const lowerName = name.toLowerCase().trim();
+    const taiwanText = row.taiwanRegulation ?? '';
+
+    // --- FINAL WATER OVERRIDE: anything that is clearly water is always healthy + green ---
+    const isWater =
+      lowerName === 'water' ||
+      lowerName === 'drinking water' ||
+      lowerName === 'potable water' ||
+      lowerName.includes(' water') ||
+      taiwanText.includes('飲用水水質標準'); // matches the Taiwan water rule text
+
+    if (isWater) {
+      newTable.push({
+        ...row,
+        name: 'water',
+        riskLevel: 'healthy',
+        childsafe: true,
+        badge: 'green',
+        taiwanRegulation:
+          '只要符合飲用水水質標準，一般飲用水被視為安全，沒有額外的食品添加物限制。',
+      });
+      continue; // go to next ingredient
+    }
+
+    // ---- Normal additives DB override ----
     const match = findAdditive(name);
 
     if (match) {
@@ -168,6 +193,12 @@ function applyAdditiveDatabaseOverrides(result: AnalysisResult): AnalysisResult 
       newTable.push(row);
     }
   }
+
+  return {
+    ...result,
+    table: newTable,
+  };
+}
 
   return {
     ...result,
