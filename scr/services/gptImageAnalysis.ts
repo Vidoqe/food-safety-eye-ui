@@ -2,6 +2,7 @@
 // UI-side helpers + call to Supabase Edge Function
 import { detectColorAdditives } from '../utils/detectColorAdditives';
 import { COLOR_ADDITIVES } from '../data/colorAdditives';
+import { findAdditive } from '../data/additives';
 function mapColorAdditiveToIngredientRow(hit) {
   return {
     name: hit.common_name,
@@ -141,7 +142,38 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
     table: newTable,
   };
 }
+// ---- Post-processing: upgrade using full additives database (preservatives, sweeteners, etc.) ----
+function applyAdditiveDatabaseOverrides(result: AnalysisResult): AnalysisResult {
+  if (!result.table || !Array.isArray(result.table)) {
+    return result;
+  }
 
+  const newTable: IngredientRow[] = [];
+
+  for (const row of result.table) {
+    const name = row.name ?? '';
+    const match = findAdditive(name);
+
+    if (match) {
+      // Use master additives DB values
+      newTable.push({
+        ...row,
+        riskLevel: match.risk,
+        childsafe: match.childRisk !== 'avoid',
+        badge: match.badge,
+        taiwanRegulation: match.taiwanRule,
+      });
+    } else {
+      // No match in DB – keep original row
+      newTable.push(row);
+    }
+  }
+
+  return {
+    ...result,
+    table: newTable,
+  };
+}
 // ---- Public API used by screens ----
 export interface AnalyzeParams {
   imageBase64?: string;
@@ -180,11 +212,13 @@ export async function analyzeProduct(
 
   const data = (await resp.json()) as AnalysisResult;
 
-  // upgrade risky colour additives + water override
-  const upgraded = applyColorAdditiveOverrides(data);
+// 1) upgrade colour additives + water
+const withColors = applyColorAdditiveOverrides(data);
 
-  return upgraded;
-}
+// 2) upgrade other additives (preservatives, sweeteners, emulsifiers, etc.)
+const upgraded = applyAdditiveDatabaseOverrides(withColors);
+
+return upgraded;
 
 // Default service wrapper so components can import it as GPTImageAnalysisService
 const GPTImageAnalysisService = {
