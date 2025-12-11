@@ -110,7 +110,8 @@ export async function captureImageFromCamera(): Promise<string> {
   });
 }
 
-// ---- Post-processing: upgrade colour additives in result.table ----
+
+// ---- Post-processing: upgrade colour additives & water in result.table ----
 function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
   if (!result.table || !Array.isArray(result.table)) {
     return result;
@@ -122,7 +123,7 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
     const name = row.name ?? '';
     const lowerName = name.toLowerCase().trim();
 
-    // 1) Colour additives: if we detect dyes, replace row(s) and skip rest
+    // 1) Colour additives: replace generic "food coloring" with specific dyes
     const colorHits = detectColorAdditives(name);
     if (colorHits.length > 0) {
       colorHits.forEach((hit) => {
@@ -131,39 +132,13 @@ function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
       continue; // go to next ingredient
     }
 
-    // 2) Absolute override: any kind of "water" is always healthy + green
-    
-    // 3) Default: keep original row
-    newTable.push(row);
-  }
-
-  return {
-    ...result,
-    table: newTable,
-  };
-}
-// ---- Post-processing: upgrade using full additives database (preservatives, sweeteners, etc.) ----
-function applyAdditiveDatabaseOverrides(result: AnalysisResult): AnalysisResult {
-  if (!result.table || !Array.isArray(result.table)) {
-    return result;
-  }
-
-  const newTable: IngredientRow[] = [];
-
-  for (const row of result.table) {
-    const name = row.name ?? '';
-    const lowerName = name.toLowerCase().trim();
-    const taiwanText = row.taiwanRegulation ?? '';
-
-    // --- FINAL WATER OVERRIDE: anything that is clearly water is always healthy + green ---
-    const isWater =
+    // 2) WATER OVERRIDE – any kind of drinking water is always healthy + green
+    if (
       lowerName === 'water' ||
       lowerName === 'drinking water' ||
       lowerName === 'potable water' ||
-      lowerName.includes(' water') ||
-      taiwanText.includes('飲用水水質標準'); // matches the Taiwan water rule text
-
-    if (isWater) {
+      lowerName.includes(' water')
+    ) {
       newTable.push({
         ...row,
         name: 'water',
@@ -176,22 +151,8 @@ function applyAdditiveDatabaseOverrides(result: AnalysisResult): AnalysisResult 
       continue; // go to next ingredient
     }
 
-    // ---- Normal additives DB override ----
-    const match = findAdditive(name);
-
-    if (match) {
-      // Use master additives DB values
-      newTable.push({
-        ...row,
-        riskLevel: match.risk,
-        childsafe: match.childRisk !== 'avoid',
-        badge: match.badge,
-        taiwanRegulation: match.taiwanRule,
-      });
-    } else {
-      // No match in DB – keep original row
-      newTable.push(row);
-    }
+    // 3) Default: keep original row
+    newTable.push(row);
   }
 
   return {
