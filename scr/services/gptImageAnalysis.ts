@@ -200,12 +200,7 @@ function applyAdditiveDatabaseOverrides(result: AnalysisResult): AnalysisResult 
   };
 }
 
-  return {
-    ...result,
-    table: newTable,
-  };
-}
-// ---- Public API used by screens ----
+  // ---- Public API used by screens ----
 export interface AnalyzeParams {
   imageBase64?: string;
   ingredients?: string;
