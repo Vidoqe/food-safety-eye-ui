@@ -198,8 +198,11 @@ export async function analyzeProduct(
 
   const data = (await resp.json()) as AnalysisResult;
 
-  // 1) upgrade colour additives + water
-const upgraded = applyColorAdditiveOverrides(data);
+// 1) FIRST: upgrade using the additives DB (preservatives, sweeteners, etc.)
+const withDb = applyAdditiveDatabaseOverrides(data);
+
+// 2) SECOND: apply colour overrides + water override LAST
+const upgraded = applyColorAdditiveOverrides(withDb);
 
 return upgraded;
 
