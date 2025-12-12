@@ -1,6 +1,21 @@
 // scr/services/gptImageAnalysis.ts
 // UI-side helpers + call to Supabase Edge Function
-
+import { detectColorAdditives } from '../utils/detectColorAdditives';
+import { COLOR_ADDITIVES } from '../data/colorAdditives';
+import { findAdditive } from '../data/additives';
+function mapColorAdditiveToIngredientRow(hit) {
+  return {
+    name: hit.common_name,
+    riskLevel: 
+      hit.risk_level === 'high' ? 'harmful'
+      : hit.risk_level === 'moderate' || hit.risk_level === 'moderate_high' ? 'moderate'
+      : 'low',
+    childsafe: hit.child_risk === 'avoid' ? false : true,
+    badge: hit.badge_color,            // 'red' | 'yellow' | 'green'
+    reason: hit.description,
+    taiwanRegulation: hit.taiwan_rule,
+  };
+}
 // ---- Types (keep minimal) ----
 export type Risk = 'healthy' | 'low' | 'moderate' | 'harmful' | 'unknown';
 
@@ -95,6 +110,7 @@ export async function captureImageFromCamera(): Promise<string> {
   });
 }
 
+<<<<<<< HEAD
 // Simple fetch with a LONG timeout so OCR can finish
 async function fetchWithTimeout(
   url: string,
@@ -110,6 +126,12 @@ async function fetchWithTimeout(
     clearTimeout(timer);
   }
 }
+=======
+
+
+
+ 
+>>>>>>> dev-work
 // ---- Public API used by screens ----
 export interface AnalyzeParams {
   imageBase64?: string;
@@ -119,28 +141,37 @@ export interface AnalyzeParams {
 }
 
 /** Call Supabase Edge Function */
-export async function analyzeProduct(params: AnalyzeParams): Promise<AnalysisResult> {
-  const { imageBase64 = '', ingredients = '', barcode = '', lang = 'zh' } = params;
+export async function analyzeProduct(
+  params: AnalyzeParams,
+): Promise<AnalysisResult> {
+  const {
+    imageBase64 = '',
+    ingredients = '',
+    barcode = '',
+    lang = 'zh',
+  } = params;
 
-  const resp = await fetchWithTimeout(
-  SUPABASE_URL,
-  {
-    method: "POST",
+  const resp = await fetch(SUPABASE_URL, {
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
+      // must match Function check exactly
       Authorization: `Bearer ${SHARED_SECRET}`,
+      // required by Supabase Functions gateway
       apikey: ANON_KEY,
     },
     body: JSON.stringify({ image: imageBase64, ingredients, barcode, lang }),
-  }
-  // no 3rd argument → uses default 70000 ms
-);
+  });
 
   if (!resp.ok) {
     const text = await resp.text().catch(() => '');
     throw new Error(`Server error ${resp.status}: ${text.slice(0, 300)}`);
   }
-  return (await resp.json()) as AnalysisResult;
+
+  const data = (await resp.json()) as AnalysisResult;
+
+  // 👉 TEMP: no extra overrides here, just return exactly what Supabase sends
+  return data;
 }
 // Default service wrapper so components can import it as GPTImageAnalysisService
 const GPTImageAnalysisService = {
