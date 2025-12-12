@@ -110,7 +110,6 @@ export async function captureImageFromCamera(): Promise<string> {
   });
 }
 
-<<<<<<< HEAD
 // Simple fetch with a LONG timeout so OCR can finish
 async function fetchWithTimeout(
   url: string,
@@ -126,12 +125,12 @@ async function fetchWithTimeout(
     clearTimeout(timer);
   }
 }
-=======
+
 
 
 
  
->>>>>>> dev-work
+
 // ---- Public API used by screens ----
 export interface AnalyzeParams {
   imageBase64?: string;
