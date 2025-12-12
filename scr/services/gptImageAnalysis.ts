@@ -111,11 +111,7 @@ export async function captureImageFromCamera(): Promise<string> {
 }
 
 
-// ---- Post-processing: upgrade colour additives & water in result.table ----
-function applyColorAdditiveOverrides(result: AnalysisResult): AnalysisResult {
-  if (!result.table || !Array.isArray(result.table)) {
-    return result;
-  }
+
 
   const newTable: IngredientRow[] = [];
 
@@ -199,14 +195,10 @@ export async function analyzeProduct(
 
   const data = (await resp.json()) as AnalysisResult;
 
-  // 1) FIRST: upgrade using the additives DB (preservatives, sweeteners, etc.)
-  const withDb = applyAdditiveDatabaseOverrides(data);
+// Apply only color overrides + water override
+const upgraded = applyColorAdditiveOverrides(data);
 
-  // 2) SECOND: apply colour overrides + water override LAST
-  const upgraded = applyColorAdditiveOverrides(withDb);
-
-  return upgraded;
-}
+return upgraded;
 
 // Default service wrapper so components can import it as GPTImageAnalysisService
 const GPTImageAnalysisService = {
