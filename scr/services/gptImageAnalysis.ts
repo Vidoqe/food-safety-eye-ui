@@ -113,50 +113,7 @@ export async function captureImageFromCamera(): Promise<string> {
 
 
 
-  const newTable: IngredientRow[] = [];
-
-  for (const row of result.table) {
-    const name = row.name ?? '';
-    const lowerName = name.toLowerCase().trim();
-
-    // 1) Colour additives: replace generic "food coloring" with specific dyes
-    const colorHits = detectColorAdditives(name);
-    if (colorHits.length > 0) {
-      colorHits.forEach((hit) => {
-        newTable.push(mapColorAdditiveToIngredientRow(hit));
-      });
-      continue; // go to next ingredient
-    }
-
-    // 2) WATER OVERRIDE – any kind of drinking water is always healthy + green
-    if (
-      lowerName === 'water' ||
-      lowerName === 'drinking water' ||
-      lowerName === 'potable water' ||
-      lowerName.includes('water')
-    ) {
-      newTable.push({
-        ...row,
-        name: 'water',
-        riskLevel: 'healthy',
-        childsafe: true,
-        badge: 'green',
-        taiwanRegulation:
-          '只要符合飲用水水質標準，一般飲用水被視為安全，沒有額外的食品添加物限制。',
-      });
-      continue; // go to next ingredient
-    }
-
-    // 3) Default: keep original row
-    newTable.push(row);
-  }
-
-  return {
-    ...result,
-    table: newTable,
-  };
-}
-
+ 
 // ---- Public API used by screens ----
 export interface AnalyzeParams {
   imageBase64?: string;
