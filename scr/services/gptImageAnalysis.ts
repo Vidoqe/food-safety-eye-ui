@@ -152,10 +152,8 @@ export async function analyzeProduct(
 
   const data = (await resp.json()) as AnalysisResult;
 
-// Apply only color overrides + water override
-const upgraded = applyColorAdditiveOverrides(data);
-
-return upgraded;
+  // 👉 TEMP: no extra overrides here, just return exactly what Supabase sends
+  return data;
 }
 // Default service wrapper so components can import it as GPTImageAnalysisService
 const GPTImageAnalysisService = {
