@@ -156,7 +156,7 @@ export async function analyzeProduct(
 const upgraded = applyColorAdditiveOverrides(data);
 
 return upgraded;
-
+}
 // Default service wrapper so components can import it as GPTImageAnalysisService
 const GPTImageAnalysisService = {
   analyzeProduct,
