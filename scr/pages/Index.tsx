@@ -1,3 +1,4 @@
+// DEPLOY_MARKER: ui-refresh-2025-02-13
 // force vercel rebuild 24-11-2025F
 // scr/pages/Index.tsx
 import React, { useState } from "react";
