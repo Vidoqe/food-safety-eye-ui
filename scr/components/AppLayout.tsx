@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import InstructionsScreen from './InstructionsScreen';
 import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
 import { useUser } from '@/contexts/UserContext';
 import { useScanHistory, ScanHistoryEntry } from '@/hooks/useScanHistory';
@@ -36,8 +37,20 @@ if (typeof window !== 'undefined' && !window.GPTImageAnalysisService) {
 // ---- END SHIM ----
 
 
-type Screen = 'splash' | 'home' | 'scan-label' | 'scan-barcode' | 'manual-input' | 'result' | 'settings' | 'junk-food-info' | 'scan-history' | 'upgrade-confirmation' | 'privacy-policy' | 'terms-of-use' | 'api-test';
-
+type Screen =
+  | 'splash'
+  | 'home'
+  | 'scan-label'
+  | 'manual-input'
+  | 'result'
+  | 'settings'
+  | 'junk-food-info'
+  | 'scan-history'
+  | 'upgrade-confirmation'
+  | 'privacy-policy'
+  | 'terms-of-use'
+  | 'api-test'
+  | 'instructions';
 const AppLayout: React.FC = () => {
   const { addScanResult } = useAppContext();
   const { user, showUpgradeConfirmation, setShowUpgradeConfirmation, upgradedPlan } = useUser();
@@ -80,10 +93,7 @@ const AppLayout: React.FC = () => {
     setCurrentScreen('scan-label');
   };
 
-  const handleScanBarcode = () => {
-    setCurrentScreen('scan-barcode');
-  };
-
+ 
   const handleManualInput = () => {
     setCurrentScreen('manual-input');
   };
@@ -119,7 +129,7 @@ const AppLayout: React.FC = () => {
     productName: result.extractedIngredients?.[0] || 'Unknown Product',
     riskLevel: result.verdict,
     verdict: result.verdict,
-    ingredients: result?.ingredients ?? [],
+    ingredients: result?.ingredients ?? [], 
     tips: result.tips || [],
     junkFoodScore: result.junkFoodScore,
   });
@@ -176,7 +186,7 @@ const AppLayout: React.FC = () => {
           <>
             <HomeScreen
               onScanLabel={handleScanLabel}
-              onScanBarcode={handleScanBarcode}
+              
               onManualInput={handleManualInput}
               onSettings={handleSettings}
               onScanHistory={handleScanHistory}
@@ -190,6 +200,12 @@ const AppLayout: React.FC = () => {
             />
           </>
         );
+case 'instructions':
+  return (
+    <InstructionsScreen
+      onBack={() => setCurrentScreen('home')}
+    />
+  );
       case 'scan-label':
         return (
           <ScanScreen
@@ -198,14 +214,8 @@ const AppLayout: React.FC = () => {
             onResult={handleScanResult}
           />
         );
-      case 'scan-barcode':
-        return (
-          <ScanScreen
-            type="barcode"
-            onBack={handleBack}
-            onResult={handleScanResult}
-          />
-        );
+             
+       
       case 'manual-input':
         return (
           <ManualInputScreen
