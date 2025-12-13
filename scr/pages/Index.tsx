@@ -30,6 +30,7 @@ const Index: React.FC = () => {
   };
 
   return (
+
     <AppProvider>
       <AppLayout onScan={handleScan} additives={ingredients} />
     </AppProvider>
