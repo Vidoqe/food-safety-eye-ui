@@ -29,8 +29,12 @@ const Index: React.FC = () => {
     }
   };
 
-  return (
-
+ 
+return (
+  <div style={{ padding: 10, fontSize: 12, opacity: 0.8 }}>
+    DEV MARKER: ec50f65 / {new Date().toISOString()}
+  </div>
+);
     <AppProvider>
       <AppLayout onScan={handleScan} additives={ingredients} />
     </AppProvider>
