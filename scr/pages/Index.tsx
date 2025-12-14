@@ -1,3 +1,4 @@
+// scr/pages/Index.tsx
 import React, { useState } from "react";
 import { AppProvider } from "@/contexts/AppContext";
 import HomeScreen from "@/components/HomeScreen";
@@ -24,8 +25,6 @@ const Index: React.FC = () => {
 
   return (
     <AppProvider>
-      {/* If HomeScreen doesn’t use these props, that’s OK for build.
-          If it DOES use them, it now has access. */}
       <HomeScreen onScan={handleScan} additives={ingredients} />
     </AppProvider>
   );
