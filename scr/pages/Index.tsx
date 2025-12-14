@@ -1,14 +1,10 @@
-// DEPLOY_MARKER: ui-refresh-2025-02-13
-// force vercel rebuild 24-11-2025F
-// scr/pages/Index.tsx
 import React, { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { AppProvider } from "@/contexts/AppContext";
 
 const Index: React.FC = () => {
-  const [ingredients, setIngredients] = useState([]);
+  const [ingredients, setIngredients] = useState<any[]>([]);
 
-  // ---- Scan Handler ----
   const handleScan = async (payload: any) => {
     try {
       const response = await fetch(import.meta.env.VITE_SUPABASE_EDGE_URL, {
@@ -18,21 +14,19 @@ const Index: React.FC = () => {
       });
 
       const data = await response.json();
-
       console.log("Scan result:", data);
 
-      // Store only what your UI needs
-      setIngredients(data.ingredients || []);
-
+      setIngredients(data?.ingredients ?? []);
     } catch (err) {
       console.error("Scan failed:", err);
     }
   };
 
- 
-return (
-  <AppProvider>
-    <AppLayout onScan={handleScan} additives={ingredients} />
-  </AppProvider>
-);
+  return (
+    <AppProvider>
+      <AppLayout onScan={handleScan} additives={ingredients} />
+    </AppProvider>
+  );
+};
+
 export default Index;
