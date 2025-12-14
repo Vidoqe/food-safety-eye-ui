@@ -43,7 +43,8 @@ export default function HomeScreen({
           <div className="mt-1 text-xl font-semibold text-emerald-700">食安眼</div>
 
           <div className="mt-3 flex items-center justify-center gap-2 text-emerald-700">
-            <Shield className="h-4 w-4" />
+            <Eye className="h-10 w-10 text-emerald-600" />
+
             <Heart className="h-4 w-4" />
           </div>
 
