@@ -1,5 +1,5 @@
 import React from "react";
-import { Camera, Scan } from "lucide-react";
+import { Camera, Scan, Shield, Heart, Leaf, AlertTriangle } from "lucide-react";
 
 import AppLogo from "./AppLogo";
 import TrustIcons from "./TrustIcons";
