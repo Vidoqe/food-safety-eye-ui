@@ -27,7 +27,9 @@ const AppLogo: React.FC<AppLogoProps> = ({
     <div className={`text-center mt-6 md:mt-8 ${className}`}>
       <div className="flex justify-center mb-4">
         <div className={`${sizeClasses[size]} bg-green-100 rounded-full flex items-center justify-center border-4 border-green-500 shadow-lg`}>
-          <div className="text-green-700 font-bold text-2xl md:text-3xl">
+ <Shield className="w-10 h-10 text-green-700" strokeWidth={2.5} />
+</div>
+          import { Shield } from "lucide-react";
             👁️
           </div>
         </div>
