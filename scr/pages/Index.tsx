@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import AppLayout from "@/components/AppLayout";
 import { AppProvider } from "@/contexts/AppContext";
+ import HomeScreen from "@/components/HomeScreen";
 
 const Index: React.FC = () => {
   const [ingredients, setIngredients] = useState<any[]>([]);
@@ -22,11 +23,12 @@ const Index: React.FC = () => {
     }
   };
 
-  return (
-    <AppProvider>
-      <AppLayout onScan={handleScan} additives={ingredients} />
-    </AppProvider>
-  );
-};
+ 
+
+return (
+  <AppProvider>
+    <HomeScreen />
+  </AppProvider>
+);
 
 export default Index;
