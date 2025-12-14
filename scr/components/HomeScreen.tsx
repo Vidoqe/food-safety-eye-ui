@@ -1,5 +1,5 @@
 import React from "react";
-import { Camera, Scan, Shield, Heart, Leaf, AlertTriangle } from "lucide-react";
+import { Camera, Scan, Eye, Heart, Leaf, AlertTriangle } from "lucide-react";
 
 type Props = {
   // Optional callbacks (use whichever your app already passes)
@@ -36,7 +36,7 @@ export default function HomeScreen({
         {/* Header */}
         <div className="pt-6 text-center">
           <div className="mx-auto mb-4 h-24 w-24 rounded-full bg-white/80 shadow-sm flex items-center justify-center">
-            <Shield className="h-10 w-10 text-emerald-600" />
+            <Eye className="h-10 w-10 text-emerald-600" />
           </div>
 
           <h1 className="text-3xl font-bold text-emerald-800">Food Safety Eye</h1>
