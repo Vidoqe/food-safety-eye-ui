@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import AppLayout from "@/components/AppLayout";
 import { AppProvider } from "@/contexts/AppContext";
- import HomeScreen from "@/components/HomeScreen";
+import HomeScreen from "@/components/HomeScreen";
 
 const Index: React.FC = () => {
   const [ingredients, setIngredients] = useState<any[]>([]);
@@ -23,12 +22,13 @@ const Index: React.FC = () => {
     }
   };
 
- 
-
-return (
-  <AppProvider>
-    <HomeScreen />
-  </AppProvider>
-);
+  return (
+    <AppProvider>
+      {/* If HomeScreen doesn’t use these props, that’s OK for build.
+          If it DOES use them, it now has access. */}
+      <HomeScreen onScan={handleScan} additives={ingredients} />
+    </AppProvider>
+  );
+};
 
 export default Index;
