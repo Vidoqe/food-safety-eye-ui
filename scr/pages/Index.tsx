@@ -16,7 +16,7 @@ const Index: React.FC = () => {
       const data = await response.json();
       console.log("Scan result:", data);
 
-      setIngredients(data?.ingredients ?? []);
+      setIngredients(data.ingredients || []);
     } catch (err) {
       console.error("Scan failed:", err);
     }
