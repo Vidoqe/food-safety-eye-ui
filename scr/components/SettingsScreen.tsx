@@ -10,7 +10,6 @@ import PlanComparisonTable from './PlanComparisonTable';
 import ExtraCreditsSection from './ExtraCreditsSection';
 import PaymentModal from './PaymentModal';
 import { UpgradePrompt } from './UpgradePrompt';
-import AppLogo from './AppLogo';
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -76,16 +75,26 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onPrivacyPolicy
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
       <div className="max-w-md mx-auto">
-        {/* Header with Logo */}
-        <div className="mb-6">
-          <AppLogo size="medium" showText={true} className="mt-6 mb-6" />
-          <div className="flex items-center justify-center">
-            <Button variant="ghost" onClick={onBack} className="absolute left-4 top-8">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-xl font-bold text-green-800">{t.settings}</h1>
-          </div>
-        </div>
+       {/* Header */}
+<div className="relative flex flex-col items-center pt-6 pb-2">
+  <Button
+    variant="ghost"
+    onClick={onBack}
+    className="absolute left-2 top-2"
+    aria-label="Back"
+  >
+    <ArrowLeft className="w-5 h-5" />
+  </Button>
+
+  {/* Circle around the eye only (no text in the logo component) */}
+  <AppLogo size="large" showText={false} className="mb-4" />
+
+  <h1 className="text-2xl font-bold text-green-800">Food Safety Eye</h1>
+  <div className="text-lg font-semibold text-green-700 mt-1">食安眼</div>
+
+  <div className="text-3xl font-bold text-green-800 mt-4">{t.settings}</div>
+</div>
+
 
         <div className="space-y-4 mt-8">
           {/* Current Plan */}
