@@ -35,19 +35,14 @@ export default function HomeScreen({
       <div className="mx-auto max-w-md">
         {/* Header */}
         <div className="pt-6 text-center">
-          <div className="mx-auto mb-4 h-24 w-24 rounded-full bg-white/80 shadow-sm flex items-center justify-center">
-            <span className="text-emerald-600 text-[44px] leading-none">👁️</span>
-          </div>
+          <div className="mx-auto mb-4 h-24 w-24 rounded-full bg-emerald-700 shadow-sm flex items-center justify-center">
+  <Eye className="h-12 w-12 text-white" />
+</div>
 
           <h1 className="text-3xl font-bold text-emerald-800">Food Safety Eye</h1>
           <div className="mt-1 text-xl font-semibold text-emerald-700">食安眼</div>
 
-          <div className="mt-3 flex items-center justify-center gap-2 text-emerald-700">
-            <Eye className="h-10 w-10 text-emerald-600" />
-
-            <Heart className="h-4 w-4" />
-          </div>
-
+          
           <h2 className="mt-3 text-base font-semibold text-emerald-800">
             守護孩子健康，從食品安全開始
           </h2>
