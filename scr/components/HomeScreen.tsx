@@ -35,8 +35,8 @@ export default function HomeScreen({
       <div className="mx-auto max-w-md">
         {/* Header */}
         <div className="pt-6 text-center">
-          <div className="mx-auto mb-4 h-24 w-24 rounded-full bg-emerald-500 shadow-sm flex items-center justify-center">
-  <span className="text-emerald-50 text-[44px] leading-none">👁️</span>
+        <div className="mx-auto mb-6 h-28 w-28 rounded-full border-4 border-emerald-500 flex items-center justify-center">
+  <span className="text-emerald-700 text-[40px] leading-none">👁️</span>
 </div>
           <h1 className="text-3xl font-bold text-emerald-800">Food Safety Eye</h1>
           <div className="mt-1 text-xl font-semibold text-emerald-700">食安眼</div>
