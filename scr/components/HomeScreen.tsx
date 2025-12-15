@@ -87,7 +87,7 @@ export default function HomeScreen({
 
           <div className="rounded-2xl bg-white/70 p-3 shadow-sm">
             <div className="mx-auto mb-2 h-9 w-9 rounded-full bg-blue-50 flex items-center justify-center">
-              <Eye className="h-5 w-5 text-blue-600" />
+              <Eye className="h-10 w-10 text-emerald-600" />
             </div>
             <div className="text-[10px] font-semibold text-emerald-800">Taiwan</div>
             <div className="text-[10px] text-emerald-700">台灣法規</div>
