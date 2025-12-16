@@ -4,41 +4,32 @@ import { Eye } from "lucide-react";
 
 
 type Props = {
-  // Optional callbacks (use whichever your app already passes)
+  
   onScanLabel?: () => void;
-  onScanBarcode?: () => void;
   onManualInput?: () => void;
   onSettings?: () => void;
-
-  // If your Index.tsx currently uses onScan(payload), we accept it too
-  onScan?: (payload: any) => void | Promise<void>;
 };
 
 export default function HomeScreen({
   onScanLabel,
-  onScanBarcode,
   onManualInput,
   onSettings,
-  onScan,
+ 
  
 }: Props) {
 
-  const handleScanLabel = () => {
-    if (onScanLabel) return onScanLabel();
-    if (onScan) return onScan({ type: "label" });
-    if (onManualInput) return onManualInput();
-    console.log("Scan label clicked");
-  };
+ const handleScanLabel = () => {
+  console.log("Scan label clicked");
+  
+  
+};
+
 const handleSettings = () => {
+  console.log("Settings clicked");
   onSettings?.();
 };
 
-  const handleScanBarcode = () => {
-    if (onScanBarcode) return onScanBarcode();
-    if (onScan) return onScan({ type: "barcode" });
-    console.log("Scan barcode clicked");
-  };
-
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
       <div className="mx-auto max-w-md">
