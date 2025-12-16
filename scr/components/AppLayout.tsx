@@ -55,8 +55,8 @@ const AppLayout: React.FC = () => {
   const { addScanResult } = useAppContext();
   const { user, showUpgradeConfirmation, setShowUpgradeConfirmation, upgradedPlan } = useUser();
   const { addScan } = useScanHistory();
-  const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
-  const [currentResult, setCurrentResult] = useState<AnalysisResult | null>(null);
+
+const [currentResult, setCurrentResult] = useState<AnalysisResult | null>(null);
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [showFirstLaunch, setShowFirstLaunch] = useState(false);
 
@@ -185,13 +185,11 @@ const AppLayout: React.FC = () => {
         return (
           <>
             <HomeScreen
-              onScanLabel={handleScanLabel}
-              
-              onManualInput={handleManualInput}
-              onSettings={handleSettings}
-              onScanHistory={handleScanHistory}
-              onApiTest={handleApiTest}
-            />
+  onScanLabel={handleScanLabel}
+  onManualInput={handleManualInput}
+  onSettings={handleSettings}
+  onScan={handleScan}
+/>
             <FirstLaunchPrompt
               isOpen={showFirstLaunch}
               onClose={handleFirstLaunchClose}
