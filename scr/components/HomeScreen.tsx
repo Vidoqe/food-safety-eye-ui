@@ -108,14 +108,7 @@ const handleSettings = () => {
             <span className="text-base font-semibold">掃描產品標籤</span>
           </button>
 
-          <button
-            onClick={handleScanBarcode}
-            className="w-full rounded-2xl bg-blue-600 px-4 py-4 text-white shadow-md hover:bg-blue-700 active:scale-[0.99] flex items-center justify-center gap-3"
-          >
-            <Scan className="h-6 w-6" />
-            <span className="text-base font-semibold">掃描條碼</span>
-          </button>
-
+          
           <div className="pt-2 text-center text-xs text-emerald-700">
             先做介面 ✅ 下一步再接掃描流程與 API
           </div>
