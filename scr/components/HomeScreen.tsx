@@ -57,16 +57,16 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
 
         {/* Actions */}
         <div className="mt-8 space-y-4">
-          {/* Scan label button (GREEN) */}
-          <Button
-              type="button"
+         {/* Scan label button (GREEN) */}
+<Button
+  type="button"
   onClick={handleScanLabel}
   className="w-full h-14 text-lg font-semibold shadow bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
 >
   <Camera className="w-6 h-6" />
   <span>掃描產品標籤</span>
 </Button>
-          >
+          
             
           {/* Manual input button (NOT PINK) */}
          <Button
