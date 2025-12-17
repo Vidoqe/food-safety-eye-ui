@@ -18,7 +18,7 @@ import TermsOfUsePage from './TermsOfUsePage';
 import ApiTestScreen from './ApiTestScreen';
 
 // ---- TEMP SHIM: avoid old GPTImageAnalysisService error in browser ----
-declare global {
+declare global { 
   interface Window {
     GPTImageAnalysisService?: {
       analyzeProduct: (...args: any[]) => Promise<any>;
@@ -188,8 +188,7 @@ const [currentResult, setCurrentResult] = useState<AnalysisResult | null>(null);
   onScanLabel={handleScanLabel}
   onManualInput={handleManualInput}
   onSettings={handleSettings}
-  onScan={handleScan}
-/>
+ />
             <FirstLaunchPrompt
               isOpen={showFirstLaunch}
               onClose={handleFirstLaunchClose}
