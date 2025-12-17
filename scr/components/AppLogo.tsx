@@ -1,46 +1,46 @@
-import React from "react";
-import { Eye } from "lucide-react";
+import React from 'react';
 
-type LogoSize = "small" | "medium" | "large";
-
-type AppLogoProps = {
-  size?: LogoSize;
+interface AppLogoProps {
+  size?: 'small' | 'medium' | 'large';
   showText?: boolean;
   className?: string;
-};
+}
 
-export default function AppLogo({
-  size = "large",
-  showText = true,
-  className = "",
-}: AppLogoProps) {
-  const ringSize =
-    size === "small" ? "w-14 h-14" : size === "medium" ? "w-20 h-20" : "w-24 h-24";
-  const eyeSize =
-    size === "small" ? "w-6 h-6" : size === "medium" ? "w-8 h-8" : "w-10 h-10";
+const AppLogo: React.FC<AppLogoProps> = ({ 
+  size = 'medium', 
+  showText = true, 
+  className = '' 
+}) => {
+  const sizeClasses = {
+    small: 'w-24 h-24',
+    medium: 'w-32 h-32 md:w-36 md:h-36',
+    large: 'w-36 h-36 md:w-40 md:h-40 lg:w-44 lg:h-44'
+  };
 
-  const titleSize =
-    size === "small" ? "text-lg" : size === "medium" ? "text-2xl" : "text-3xl";
-  const subtitleSize =
-    size === "small" ? "text-sm" : size === "medium" ? "text-base" : "text-lg";
+  const textSizeClasses = {
+    small: 'text-base',
+    medium: 'text-lg md:text-xl',
+    large: 'text-xl md:text-2xl'
+  };
 
   return (
-    <div className={`flex flex-col items-center ${className}`}>
-      {/* Eye + circle */}
-      <div className={`${ringSize} rounded-full border-4 border-emerald-600 flex items-center justify-center bg-white/70`}>
-        <Eye className={`${eyeSize} text-emerald-700`} />
+    <div className={`text-center mt-6 md:mt-8 ${className}`}>
+      <div className="flex justify-center mb-4">
+        <div className={`${sizeClasses[size]} bg-green-100 rounded-full flex items-center justify-center border-4 border-green-500 shadow-lg`}>
+          <div className="text-green-700 font-bold text-2xl md:text-3xl">
+            👁️
+          </div>
+        </div>
       </div>
-
       {showText && (
-        <div className="mt-4 text-center px-4 space-y-1">
-          <div className={`${titleSize} font-bold text-emerald-800 leading-tight`}>
-            Food Safety Eye
-          </div>
-          <div className={`${subtitleSize} font-semibold text-emerald-700`}>
-            食安眼
-          </div>
+        <div className={`${textSizeClasses[size]} font-bold text-green-800 leading-tight px-4 space-y-1`}>
+          <div>Food Safety Eye</div>
+          <div>食安眼</div>
         </div>
       )}
     </div>
   );
-}
+};
+
+export { AppLogo };
+export default AppLogo;
