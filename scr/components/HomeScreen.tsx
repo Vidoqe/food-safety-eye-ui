@@ -73,7 +73,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   type="button"
   onClick={handleManualInput}
   variant="outline"
-  className="w-full h-14 text-lg font-semibold shadow bg-sky-100 hover:bg-sky-200 border border-sky-300 text-sky-900"
+  className="w-full h-14 text-lg font-semibold shadow
+bg-sky-300 hover:bg-sky-400
+border border-sky-500
+text-sky-900"
 >
   手動輸入成分
 </Button>
