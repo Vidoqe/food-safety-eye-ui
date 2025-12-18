@@ -33,11 +33,17 @@ const AppLogo: React.FC<AppLogoProps> = ({
         </div>
       </div>
       {showText && (
-        <div className={`${textSizeClasses[size]} font-bold text-green-800 leading-tight px-4 space-y-1`}>
-          <div>Food Safety Eye</div>
-          <div>食安眼</div>
-        </div>
-      )}
+  <div className={`${textSizeClasses[size]} font-bold text-green-800 leading-tight px-4 space-y-2`}>
+    <div>Food Safety Eye</div>
+    <div>食安眼</div>
+    <div className="text-sm font-normal text-green-700">
+      守護孩子健康，從食品安全開始
+    </div>
+    <div className="text-xs font-normal text-green-600">
+      食安眼幫助你快速辨識可能有害成分，為孩子和家人提供更安心的飲食選擇。
+    </div>
+  </div>
+)}
     </div>
   );
 };
