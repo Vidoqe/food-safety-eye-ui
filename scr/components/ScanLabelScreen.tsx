@@ -165,16 +165,21 @@ const { activeTab } = useLanguage();
 );
 
 
-                {/* Tiny log for diagnosis */}
-        <div className="mt-6">
-          <div className="text-sm font-semibold mb-1">Event Log</div>
-          <div className="text-xs bg-gray-50 border rounded p-2 h-40 overflow-auto">
-            {log.length === 0 ? <div className="text-gray-400">No events yet.</div> : log.map((l, i) => <div key={i}>{l}</div>)}
-          </div>
-          <div className="text-[11px] text-gray-500 mt-2">
-            If nothing opens: make sure the site has camera permission (Chrome → lock icon → Site settings → Camera → Allow), then try again.
-          </div>
+      {/* Tiny log for diagnosis */}
+      <div className="mt-6">
+        <div className="text-sm font-semibold mb-1">Event Log</div>
+
+        <div className="text-xs bg-gray-50 border rounded p-2 h-40 overflow-auto">
+          {log.length === 0 ? (
+            <div className="text-gray-400">No events yet.</div>
+          ) : (
+            log.map((l, i) => <div key={i}>{l}</div>)
+          )}
         </div>
+
+        <div className="text-[11px] text-gray-500 mt-2">
+          If nothing opens: make sure the site has camera permission (Chrome &gt; lock icon &gt; Site settings &gt; Camera &gt; Allow), then try again.
+      
       </div>
     </div>
   );
