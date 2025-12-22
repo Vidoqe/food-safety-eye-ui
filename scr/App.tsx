@@ -1,4 +1,5 @@
 
+// scr/App.tsx
 import React, { useState } from "react";
 
 import { AppProvider } from "./contexts/AppContext";
@@ -25,11 +26,18 @@ export default function App() {
           />
         )}
 
-        {screen === "scanLabel" && <ScanLabelScreen />}
+        {/* DO NOT change ScanLabel UI — we only add a safe back handler prop */}
+        {screen === "scanLabel" && (
+          <ScanLabelScreen onBack={() => setScreen("home")} />
+        )}
 
-        {screen === "manualInput" && <ManualInputScreen />}
+        {screen === "manualInput" && (
+          <ManualInputScreen onBack={() => setScreen("home")} />
+        )}
 
-        {screen === "settings" && <SettingsScreen />}
+        {screen === "settings" && (
+          <SettingsScreen onBack={() => setScreen("home")} />
+        )}
       </AppProvider>
     </UserProvider>
   );
