@@ -1,6 +1,6 @@
 import React from 'react';
-
-interface AppLogoProps {
+import { useAppContext } from "../contexts/AppContext";
+import { useTranslation } from "../utils/translations";interface AppLogoProps {
   size?: 'small' | 'medium' | 'large';
   showText?: boolean;
   className?: string;
@@ -11,6 +11,10 @@ const AppLogo: React.FC<AppLogoProps> = ({
   showText = true, 
   className = '' 
 }) => {
+const { language } = useAppContext();
+const t = useTranslation(language);
+const isZh = language === "zh"
+
   const sizeClasses = {
     small: 'w-24 h-24',
     medium: 'w-32 h-32 md:w-36 md:h-36',
@@ -34,14 +38,15 @@ const AppLogo: React.FC<AppLogoProps> = ({
       </div>
       {showText && (
   <div className={`${textSizeClasses[size]} font-bold text-green-800 leading-tight px-4 space-y-2`}>
-    <div>Food Safety Eye</div>
-    <div>食安眼</div>
-    <div className="text-sm font-normal text-green-700">
-      守護孩子健康，從食品安全開始
-    </div>
-    <div className="text-xs font-normal text-green-600">
-      食安眼幫助你快速辨識可能有害成分，為孩子和家人提供更安心的飲食選擇。
-    </div>
+    <div>{t.appTitle}</div>
+
+<div className="text-sm font-normal text-green-700">
+  {t.tagline}
+</div>
+
+<div className="text-xs font-normal text-green-600">
+  {t.appSubtitle}
+</div>
   </div>
 )}
     </div>
