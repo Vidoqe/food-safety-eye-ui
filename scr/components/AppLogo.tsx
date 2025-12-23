@@ -1,11 +1,13 @@
 import React from 'react';
+import React from "react";
 import { useAppContext } from "../contexts/AppContext";
-import { useTranslation } from "../utils/translations";interface AppLogoProps {
-  size?: 'small' | 'medium' | 'large';
+import { useTranslation } from "../utils/translations";
+
+interface AppLogoProps {
+  size?: "small" | "medium" | "large";
   showText?: boolean;
   className?: string;
 }
-
 const AppLogo: React.FC<AppLogoProps> = ({ 
   size = 'medium', 
   showText = true, 
@@ -13,7 +15,7 @@ const AppLogo: React.FC<AppLogoProps> = ({
 }) => {
 const { language } = useAppContext();
 const t = useTranslation(language);
-const isZh = language === "zh"
+
 
   const sizeClasses = {
     small: 'w-24 h-24',
@@ -37,21 +39,20 @@ const isZh = language === "zh"
         </div>
       </div>
       {showText && (
-  <div className={`${textSizeClasses[size]} font-bold text-green-800 leading-tight px-4 space-y-2`}>
+  <div
+    className={`${textSizeClasses[size]} font-bold text-green-800 leading-tight px-4 space-y-2`}
+  >
     <div>{t.appTitle}</div>
 
-<div className="text-sm font-normal text-green-700">
-  {t.tagline}
-</div>
-
-<div className="text-xs font-normal text-green-600">
-  {t.appSubtitle}
-</div>
-  </div>
-)}
+    <div className="text-sm font-normal text-green-700">
+      {t.tagline}
     </div>
-  );
-};
 
+    <div className="text-xs font-normal text-green-600">
+      {t.appSubtitle}
+    </div>
+  </div>
+)
+ 
 export { AppLogo };
 export default AppLogo;
