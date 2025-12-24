@@ -64,7 +64,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   className="w-full h-14 text-lg font-semibold shadow bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
 >
   <Camera className="w-6 h-6" />
-  <span>掃描產品標籤</span>
+  <span>{t.scanIngredients}</span>
 </Button>
           
             
@@ -78,7 +78,7 @@ bg-sky-300 hover:bg-sky-400
 border border-sky-500
 text-sky-900"
 >
-  手動輸入成分
+  {t.manualInput}
 </Button>
 
           {/* helper line (optional, harmless) */}
