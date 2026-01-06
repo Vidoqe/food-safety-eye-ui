@@ -113,8 +113,8 @@ const isValidPreview =
     }
   };
 // Use the same language setting as ManualInputScreen
-const { language } = useAppContext();
-const isChinese = language === "zh";
+const { Language } = useAppContext();
+const isChinese = Language === "zh";
 
 // TEMP: disable barcode mode – always treat as ingredient label
 const safeType = type === "barcode" ? "label" : type;
