@@ -10,6 +10,12 @@ type ScanScreenProps = {
 };
 
 export default function ScanScreen({ type, onBack, onResult }: ScanScreenProps) {
+const { language } = useAppContext();
+  const isChinese = language === "zh";
+const title = isChinese ? "掃描成分" : "Scan Ingredients";
+  const takePhotoText = isChinese ? "拍照" : "Take Photo";
+  const galleryText = isChinese ? "相簿" : "Gallery";
+  const hintText = isChinese ? "點擊拍照或相簿" : "Tap Take Photo or Gallery";
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string>("");
 const isValidPreview =
@@ -113,30 +119,14 @@ const isValidPreview =
     }
   };
 // Use the same language setting as ManualInputScreen
-const { Language } = useAppContext();
-const isChinese = Language === "zh";
+const { language } = useAppContext();
+const isChinese = language === "zh";
 
-// TEMP: disable barcode mode – always treat as ingredient label
-const safeType = type === "barcode" ? "label" : type;
-// Title text
-const title =
-  safeType === "barcode"
-    ? isChinese
-      ? "掃描產品條碼"
-      : "Scan Product Barcode"
-    : isChinese
-      ? "掃描成分標籤"
-      : "Scan Product Label";
+const title = isChinese
+  ? "掃描成分標籤"
+  : "Scan Ingredient Label";
 
 // Placeholder text
-const placeholder =
-  safeType === "barcode"
-    ? isChinese
-      ? "拍攝條碼"
-      : "Capture barcode"
-    : isChinese
-      ? "拍攝成分列表"
-      : "Capture ingredient list";
   return (
   <div className="mx-auto max-w-md p-4">
     {/* Back button */}
