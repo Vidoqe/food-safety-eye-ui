@@ -125,6 +125,7 @@ const isChinese = language === "zh";
 const title = isChinese
   ? "掃描成分標籤"
   : "Scan Ingredient Label";
+console.log("SCANSREEN LANGUAGE VALUE", language);
 console.log("SCANSCREEN TITLE ACTIVE", title);
 
 // Placeholder text
