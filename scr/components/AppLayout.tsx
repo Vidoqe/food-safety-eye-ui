@@ -178,6 +178,15 @@ const [currentResult, setCurrentResult] = useState<AnalysisResult | null>(null);
   };
 
   const renderScreen = () => {
+const { language } = useAppContext();
+const isChinese = language === "zh";
+
+const title =
+  currentScreen === "scan-label"
+    ? (isChinese ? "掃描成分標籤" : "Scan Ingredient Label")
+    : currentScreen === "manual-input"
+    ? (isChinese ? "手動輸入" : "Manual Input")
+    : "";
     switch (currentScreen) {
       case 'splash':
         return <SplashScreen onComplete={handleSplashComplete} />;
@@ -204,6 +213,7 @@ case 'instructions':
     />
   );
 const { language } = useAppContext();
+const isChinese = language === "zh";
 console.log("[AppLayout] language =", language, "currentScreen =", currentScreen);
 
       case 'scan-label':
