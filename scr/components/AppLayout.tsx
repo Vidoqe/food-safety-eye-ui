@@ -52,6 +52,9 @@ type Screen =
   | 'api-test'
   | 'instructions';
 const AppLayout: React.FC = () => {
+// 🔴 CANARY TEST — DO NOT REMOVE
+const BUILD_TAG = "CANARY_2026_01_07_B";
+console.log("🚨 CANARY BUILD ACTIVE:", BUILD_TAG, new Date().toISOString());
   const { addScanResult } = useAppContext();
   const { user, showUpgradeConfirmation, setShowUpgradeConfirmation, upgradedPlan } = useUser();
   const { addScan } = useScanHistory();
@@ -191,7 +194,21 @@ const title =
       case 'splash':
         return <SplashScreen onComplete={handleSplashComplete} />;
       case 'home':
-        return (
+        <div
+  style={{
+    position: "fixed",
+    top: 8,
+    left: 8,
+    zIndex: 99999,
+    background: "red",
+    color: "white",
+    padding: "6px 10px",
+    fontWeight: 900,
+    fontSize: "14px",
+  }}
+>
+  🚨 BUILD {BUILD_TAG}
+</div>
           <>
             <HomeScreen
   onScanLabel={handleScanLabel}
