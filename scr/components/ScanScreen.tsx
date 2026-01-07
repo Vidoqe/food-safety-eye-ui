@@ -1,3 +1,4 @@
+console.log("🔥🔥🔥 SCANSCREEN FILE LOADED 🔥🔥🔥");
 import React, { useRef, useState } from "react";
 import { analyzeProduct } from "../services/gptImageAnalysis";
 import { useAppContext } from "../contexts/AppContext";
