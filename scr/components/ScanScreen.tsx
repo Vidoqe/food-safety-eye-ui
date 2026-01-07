@@ -121,7 +121,6 @@ const isValidPreview =
 // Use the same language setting as ManualInputScreen
 const { language } = useAppContext();
 const isChinese = language === "zh";
-const title = isChinese ? "掃描成分標籤" : "Scan Ingredient Label";
 
 const title = isChinese
   ? "掃描成分標籤"
