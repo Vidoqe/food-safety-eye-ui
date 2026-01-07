@@ -203,6 +203,9 @@ case 'instructions':
       onBack={() => setCurrentScreen('home')}
     />
   );
+const { language } = useAppContext();
+console.log("[AppLayout] language =", language, "currentScreen =", currentScreen);
+
       case 'scan-label':
         return (
           <ScanScreen
