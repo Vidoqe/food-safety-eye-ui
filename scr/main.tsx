@@ -7,8 +7,21 @@ import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        zIndex: 999999,
+        background: "black",
+        color: "lime",
+        padding: "8px",
+        fontWeight: 900,
+      }}
+    >
+      🚨 ROOT ENTRY ACTIVE
+    </div>
+
+    <App />
   </React.StrictMode>
 );
