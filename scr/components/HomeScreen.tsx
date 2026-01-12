@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import AppLogo from "./AppLogo";
 import TrustIcons from "./TrustIcons";
 import { Camera, Settings } from "lucide-react";
+import { useAppContext } from "../context/AppContext";
 
 type HomeScreenProps = {
   onScanLabel: () => void;
@@ -15,6 +16,9 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onManualInput,
   onSettings,
 }) => {
+const { language } = useAppContext();
+  const isZh = language === "zh";
+
   const handleScanLabel = () => {
     console.log("[HomeScreen] Scan Label clicked");
     onScanLabel();
@@ -64,7 +68,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   className="w-full h-14 text-lg font-semibold shadow bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
 >
   <Camera className="w-6 h-6" />
-  <span>掃描產品標籤</span>
+  <span>{isZh ? "掃描產品標籤" : "Scan Label"}</span>
 </Button>
           
             
@@ -78,7 +82,7 @@ bg-sky-300 hover:bg-sky-400
 border border-sky-500
 text-sky-900"
 >
-  手動輸入成分
+  {isZh ? "手動輸入成分" : "Manual Input"}
 </Button>
 
           {/* helper line (optional, harmless) */}
