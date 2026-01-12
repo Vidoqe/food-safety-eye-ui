@@ -56,7 +56,7 @@ const { language } = useAppContext();
 
         {/* Trust icons row */}
         <div className="mt-6">
-          <TrustIcons language={"zh"} />
+          <TrustIcons language={language} />
         </div>
 
         {/* Actions */}
