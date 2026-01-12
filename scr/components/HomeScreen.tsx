@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import AppLogo from "./AppLogo";
 import TrustIcons from "./TrustIcons";
 import { Camera, Settings } from "lucide-react";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../contexts/AppContext";
 
 type HomeScreenProps = {
   onScanLabel: () => void;
