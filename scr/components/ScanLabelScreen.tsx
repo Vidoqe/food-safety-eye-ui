@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useAppContext } from "../context/AppContext";
 type Props = {
   onBack: () => void;
 };
@@ -12,8 +13,8 @@ const TEXT: any = {
 };
 
 export default function ScanLabelScreen({ onBack }: Props ) { 
-  const [lang] = useState<"en" | "zh">("en");
-
+  const { language } = useAppContext();
+const lang: "en" | "zh" = language === "zh" ? "zh" : "en";
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [previewUrl, setPreviewUrl] = useState<string>("");
