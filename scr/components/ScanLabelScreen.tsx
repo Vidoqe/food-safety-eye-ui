@@ -2,16 +2,28 @@ import React, { useEffect, useRef, useState } from "react";
 import { useAppContext } from "../contexts/AppContext";
 type Props = {
   onBack: () => void;
+title: string;
 };
 
 
 // If you already have TEXT + lang coming from props/context, you can rewire it later.
 // This file is a "known-good compile" version to stop Vite errors first.
 const TEXT: any = {
-  en: { back: "Back", takePhoto: "Take Photo", gallery: "Gallery", capture: "Tap Take Photo or Gallery" },
-  zh: { back: "返回", takePhoto: "拍照", gallery: "相簿", capture: "請按「拍照」或「相簿」" },
+  en: {
+    title: "Scan Ingredients",
+    back: "Back",
+    takePhoto: "Take Photo",
+    gallery: "Gallery",
+    capture: "Tap Take Photo or Gallery",
+  },
+  zh: {
+    title: "掃描成分標籤",
+    back: "返回",
+    takePhoto: "拍照",
+    gallery: "相簿",
+    capture: "請按「拍照」或「相簿」",
+  },
 };
-
 export default function ScanLabelScreen({ onBack }: Props ) { 
   const { language } = useAppContext();
 const lang: "en" | "zh" = language === "zh" ? "zh" : "en";
@@ -67,7 +79,9 @@ const lang: "en" | "zh" = language === "zh" ? "zh" : "en";
       </button>
 
       {/* Title */}
-      <h1 className="text-lg font-semibold mb-3">Scan Label</h1>
+     <h1 className="text-lg font-semibold mb-3">
+  {TEXT[lang].title}
+</h1>
 
       <div className="mx-auto max-w-md">
         {/* Hidden file input */}
