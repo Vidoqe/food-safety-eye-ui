@@ -68,7 +68,7 @@ const { language } = useAppContext();
   className="w-full h-14 text-lg font-semibold shadow bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
 >
   <Camera className="w-6 h-6" />
-  <span>{isZh ? "掃描產品標籤" : "Scan Label"}</span>
+  <span>{isZh ? "掃描成分" : "Scan Ingredients"}</span>
 </Button>
           
             
