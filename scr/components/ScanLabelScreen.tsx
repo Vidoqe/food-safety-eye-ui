@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useAppContext } from "../context/AppContext";
+import { useAppContext } from "../contexts/AppContext";
 type Props = {
   onBack: () => void;
 };
