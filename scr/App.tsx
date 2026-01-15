@@ -14,13 +14,21 @@ type Screen = "home" | "scanLabel" | "manualInput" | "settings";
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>("home");
+const [freeScansLeft, setFreeScansLeft] = useState(3);
 
   return (
     <UserProvider>
       <AppProvider>
         {screen === "home" && (
           <HomeScreen
-            onScanLabel={() => setScreen("scanLabel")}
+            onScanLabel={() => {
+  if (freeScansLeft <= 0) {
+    setScreen("settings"); // later this becomes pricing
+  } else {
+    setFreeScansLeft(v => v - 1);
+    setScreen("scanLabel");
+  }
+}}
             onManualInput={() => setScreen("manualInput")}
             onSettings={() => setScreen("settings")}
           />
