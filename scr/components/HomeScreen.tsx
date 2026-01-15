@@ -67,10 +67,11 @@ const { language } = useAppContext();
   onClick={handleScanLabel}
   className="w-full h-14 text-lg font-semibold shadow bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
 >
-<p className="text-center text-sm text-green-700 mt-2">
-  {isZh ? "3 次免費掃描" : "3 Free Scans"}
-</p>
-  <Camera className="w-6 h-6" />
+<div className="flex justify-center mt-2">
+  <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
+    {isZh ? "🎁 3 次免費掃描" : "🎁 3 Free Scans"}
+  </span>
+</div>  <Camera className="w-6 h-6" />
   <span>{isZh ? "掃描成分" : "Scan Ingredients"}</span>
 </Button>
           
