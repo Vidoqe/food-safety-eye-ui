@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import InstructionsScreen from './InstructionsScreen';
 import { useAppContext, AnalysisResult } from '@/contexts/AppContext';
 import { useUser } from '@/contexts/UserContext';
 import { useScanHistory, ScanHistoryEntry } from '@/hooks/useScanHistory';
@@ -16,14 +17,49 @@ import PrivacyPolicyPage from './PrivacyPolicyPage';
 import TermsOfUsePage from './TermsOfUsePage';
 import ApiTestScreen from './ApiTestScreen';
 
-type Screen = 'splash' | 'home' | 'scan-label' | 'scan-barcode' | 'manual-input' | 'result' | 'settings' | 'junk-food-info' | 'scan-history' | 'upgrade-confirmation' | 'privacy-policy' | 'terms-of-use' | 'api-test';
+// ---- TEMP SHIM: avoid old GPTImageAnalysisService error in browser ----
+declare global { 
+  interface Window {
+    GPTImageAnalysisService?: {
+      analyzeProduct: (...args: any[]) => Promise<any>;
+    };
+  }
+}
 
+if (typeof window !== 'undefined' && !window.GPTImageAnalysisService) {
+  window.GPTImageAnalysisService = {
+    // Old code might call this; we just return null so it does nothing.
+    analyzeProduct: async () => {
+      return null;
+    },
+  };
+}
+// ---- END SHIM ----
+
+
+type Screen =
+  | 'splash'
+  | 'home'
+  | 'scan-label'
+  | 'manual-input'
+  | 'result'
+  | 'settings'
+  | 'junk-food-info'
+  | 'scan-history'
+  | 'upgrade-confirmation'
+  | 'privacy-policy'
+  | 'terms-of-use'
+  | 'api-test'
+  | 'instructions';
 const AppLayout: React.FC = () => {
+// 🔴 CANARY TEST — DO NOT REMOVE
+const BUILD_TAG = "CANARY_2026_01_07_B";
+console.log("🚨 CANARY BUILD ACTIVE:", BUILD_TAG, new Date().toISOString());
   const { addScanResult } = useAppContext();
   const { user, showUpgradeConfirmation, setShowUpgradeConfirmation, upgradedPlan } = useUser();
   const { addScan } = useScanHistory();
-  const [currentScreen, setCurrentScreen] = useState<Screen>('splash');
-  const [currentResult, setCurrentResult] = useState<AnalysisResult | null>(null);
+
+const [currentResult, setCurrentResult] = useState<AnalysisResult | null>(null);
   const [currentError, setCurrentError] = useState<string | null>(null);
   const [showFirstLaunch, setShowFirstLaunch] = useState(false);
 
@@ -60,10 +96,7 @@ const AppLayout: React.FC = () => {
     setCurrentScreen('scan-label');
   };
 
-  const handleScanBarcode = () => {
-    setCurrentScreen('scan-barcode');
-  };
-
+ 
   const handleManualInput = () => {
     setCurrentScreen('manual-input');
   };
@@ -84,26 +117,30 @@ const AppLayout: React.FC = () => {
     setCurrentScreen('api-test');
   };
 
-  const handleScanResult = (result: AnalysisResult, error?: string) => {
-    if (error) {
-      setCurrentError(error);
-    } else {
-      setCurrentError(null);
-      addScanResult(result);
-      
-      addScan({
-        productName: result.extractedIngredients?.[0] || 'Unknown Product',
-        riskLevel: result.verdict,
-        verdict: result.verdict,
-        ingredients: result.ingredients,
-        tips: result.tips,
-        junkFoodScore: result.junkFoodScore
-      });
-    }
-    
-    setCurrentResult(result);
-    setCurrentScreen('result');
-  };
+  const handleScanResult = (result: AnalysisResult | null, error?: string) => {
+  // If backend failed or gave no result, just store the error and stop.
+  if (error || !result) {
+    setCurrentError(error || 'Analysis failed. Please try again.');
+    setCurrentResult(null);
+    return; // ⬅ VERY important: do not touch result.ingredients below
+  }
+
+  // Happy path: we have a real result
+  setCurrentError(null);
+
+  addScan({
+    productName: result.extractedIngredients?.[0] || 'Unknown Product',
+    riskLevel: result.verdict,
+    verdict: result.verdict,
+    ingredients: result?.ingredients ?? [], 
+    tips: result.tips || [],
+    junkFoodScore: result.junkFoodScore,
+  });
+
+  setCurrentResult(result);
+  setCurrentScreen('result');
+};
+
 
   const handleBackToHome = () => {
     setCurrentScreen('home');
@@ -144,20 +181,40 @@ const AppLayout: React.FC = () => {
   };
 
   const renderScreen = () => {
+const { language } = useAppContext();
+const isChinese = language === "zh";
+
+const title =
+  currentScreen === "scan-label"
+    ? (isChinese ? "掃描成分標籤" : "Scan Ingredient Label")
+    : currentScreen === "manual-input"
+    ? (isChinese ? "手動輸入" : "Manual Input")
+    : "";
     switch (currentScreen) {
       case 'splash':
         return <SplashScreen onComplete={handleSplashComplete} />;
       case 'home':
-        return (
+        <div
+  style={{
+    position: "fixed",
+    top: 8,
+    left: 8,
+    zIndex: 99999,
+    background: "red",
+    color: "white",
+    padding: "6px 10px",
+    fontWeight: 900,
+    fontSize: "14px",
+  }}
+>
+  🚨 BUILD {BUILD_TAG}
+</div>
           <>
             <HomeScreen
-              onScanLabel={handleScanLabel}
-              onScanBarcode={handleScanBarcode}
-              onManualInput={handleManualInput}
-              onSettings={handleSettings}
-              onScanHistory={handleScanHistory}
-              onApiTest={handleApiTest}
-            />
+  onScanLabel={handleScanLabel}
+  onManualInput={handleManualInput}
+  onSettings={handleSettings}
+ />
             <FirstLaunchPrompt
               isOpen={showFirstLaunch}
               onClose={handleFirstLaunchClose}
@@ -166,6 +223,16 @@ const AppLayout: React.FC = () => {
             />
           </>
         );
+case 'instructions':
+  return (
+    <InstructionsScreen
+      onBack={() => setCurrentScreen('home')}
+    />
+  );
+const { language } = useAppContext();
+const isChinese = language === "zh";
+console.log("[AppLayout] language =", language, "currentScreen =", currentScreen);
+
       case 'scan-label':
         return (
           <ScanScreen
@@ -174,14 +241,8 @@ const AppLayout: React.FC = () => {
             onResult={handleScanResult}
           />
         );
-      case 'scan-barcode':
-        return (
-          <ScanScreen
-            type="barcode"
-            onBack={handleBack}
-            onResult={handleScanResult}
-          />
-        );
+             
+       
       case 'manual-input':
         return (
           <ManualInputScreen

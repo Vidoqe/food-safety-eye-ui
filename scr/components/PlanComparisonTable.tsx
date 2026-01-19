@@ -13,15 +13,7 @@ const PlanComparisonTable: React.FC<PlanComparisonTableProps> = ({ onUpgrade }) 
   const isZh = language === 'zh';
 
   const plans = [
-    {
-      id: 'free',
-      name: isZh ? '免費' : 'Free',
-      scans: 5,
-      records: 5,
-      price: 'NT$0',
-      icon: <CheckCircle className="w-5 h-5 text-green-500" />
-    },
-    {
+        {
       id: 'premium',
       name: isZh ? '高級' : 'Premium',
       scans: 30,
@@ -66,8 +58,7 @@ const PlanComparisonTable: React.FC<PlanComparisonTableProps> = ({ onUpgrade }) 
                 <div className="flex-1">
                   <h3 className="font-semibold text-base">{planItem.name}</h3>
                   <div className="text-xs text-gray-600 space-y-0.5">
-                    <p>{planItem.scans} {isZh ? '次掃描/月' : 'scans/month'}</p>
-                    <p>{planItem.records} {isZh ? '個保存記錄' : 'saved records'}</p>
+                                        <p>{planItem.records} {isZh ? '個保存記錄' : 'saved records'}</p>
                   </div>
                 </div>
               </div>

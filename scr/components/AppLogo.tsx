@@ -1,16 +1,22 @@
-import React from 'react';
+
+import React from "react";
+import { useAppContext } from "../contexts/AppContext";
+import { useTranslation } from "../utils/translations";
 
 interface AppLogoProps {
-  size?: 'small' | 'medium' | 'large';
+  size?: "small" | "medium" | "large";
   showText?: boolean;
   className?: string;
 }
-
 const AppLogo: React.FC<AppLogoProps> = ({ 
   size = 'medium', 
   showText = true, 
   className = '' 
 }) => {
+const { language } = useAppContext();
+const t = useTranslation(language);
+
+
   const sizeClasses = {
     small: 'w-24 h-24',
     medium: 'w-32 h-32 md:w-36 md:h-36',
@@ -32,15 +38,22 @@ const AppLogo: React.FC<AppLogoProps> = ({
           </div>
         </div>
       </div>
-      {showText && (
-        <div className={`${textSizeClasses[size]} font-bold text-green-800 leading-tight px-4 space-y-1`}>
-          <div>Food Safety Eye</div>
-          <div>食安眼</div>
-        </div>
-      )}
-    </div>
-  );
-};
+     {showText && (
+      <div className={`${textSizeClasses[size]} font-bold text-green-800 leading-tight px-4 space-y-2`}>
+        <div>{t.appTitle}</div>
 
+        <div className="text-sm font-normal text-green-700">
+          {t.tagline}
+        </div>
+
+        <div className="text-xs font-normal text-green-600">
+          {t.appSubtitle}
+        </div>
+      </div>
+    )}
+  </div>
+);
+};
+ 
 export { AppLogo };
 export default AppLogo;
