@@ -1,76 +1,140 @@
-import React, { useRef, useState } from "react";
+import React, { useCallback, useRef, useState } from "react";
 
 type Props = {
-  onNavigate: (screen: string) => void;
+  onImageSelected?: (file: File) => void;
 };
 
-export default function ScanLabelScreen({ onNavigate }: Props) {
+const ScanLabelScreen: React.FC<Props> = ({ onImageSelected }) => {
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [log, setLog] = useState<string[]>([]);
 
-  // Try to explicitly request camera; if that fails, click the file input as fallback.
-  const handleScan = async () => {
-    setError(null);
-    // Attempt to trigger the permission prompt via getUserMedia
-    try {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: { ideal: "environment" } },
-          audio: false,
-        });
-        // We don’t actually render the stream here (no design change).
-        // Immediately stop it and let the user use the file picker fallback.
-        stream.getTracks().forEach((t) => t.stop());
+  const addLog = useCallback((m: string) => {
+    setLog((l) => [`${new Date().toLocaleTimeString()}  ${m}`, ...l].slice(0, 30));
+  }, []);
+
+  const handleFiles = useCallback(
+    (files: FileList | null) => {
+      if (!files || files.length === 0) {
+        addLog("No file selected.");
+        return;
       }
-    } catch (e) {
-      // ignore — we’ll fallback to file input
-    }
-    // Always trigger the reliable fallback so the user can pick or capture a photo
-    inputRef.current?.click();
-  };
+      const file = files[0];
+      setPreviewUrl(URL.createObjectURL(file));
+      addLog(`Got file: ${file.name} (${Math.round(file.size / 1024)} KB)`);
+      onImageSelected?.(file);
+    },
+    [addLog, onImageSelected]
+  );
 
-  const onFilePicked = (e: React.ChangeEvent<HTMLInputElement>) => {
-     const file = e.target.files?.[0];
-     if (!file) return;
-     // TODO: plug into your existing processing flow if needed.
-     // For now we just navigate to result (keeps current app flow intact).
-     onNavigate("result");
-  };
+  const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFiles(e.target.files);
+    // allow picking the same file again later
+    e.target.value = "";
+  }, [handleFiles]);
+
+  const openCamera = useCallback(async () => {
+    addLog("Open camera requested (user gesture).");
+
+    const input = inputRef.current;
+    if (!input) {
+      addLog("ERROR: inputRef is null.");
+      return;
+    }
+
+    // 1) Modern Chrome on Android: showPicker opens the chooser/camera directly
+    // Needs a user gesture (the button click)
+    // @ts-ignore - showPicker is not in TS lib yet on all channels
+    if (typeof input.showPicker === "function") {
+      try {
+        // @ts-ignore
+        input.showPicker();
+        addLog("Used input.showPicker().");
+        return;
+      } catch (e: any) {
+        addLog("showPicker failed: " + e?.message);
+      }
+    }
+
+    // 2) Fallback: regular click()
+    try {
+      input.click();
+      addLog("Used input.click() fallback.");
+      return;
+    } catch (e: any) {
+      addLog("input.click() failed: " + e?.message);
+    }
+
+    // 3) Last resort: nudge permission so the next attempt works
+    try {
+      if (navigator.mediaDevices?.getUserMedia) {
+        const s = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" }
+        });
+        s.getTracks().forEach((t) => t.stop());
+        addLog("Permission nudged via getUserMedia; try again.");
+      }
+    } catch (e: any) {
+      addLog("getUserMedia failed: " + e?.message);
+    }
+  }, [addLog]);
 
   return (
-    <div className="p-6 text-center">
-      <h1 className="text-xl font-bold mb-4">Scan Product Label</h1>
-      <p className="text-gray-600 mb-6">
-        Take a photo of the ingredients panel or select an existing image.
-      </p>
+    <div className="px-4 py-6">
+      <h1 className="text-2xl font-bold text-center mb-4">Scan Product Label</h1>
 
-      <button
-        onClick={handleScan}
-        className="px-4 py-2 bg-green-600 text-white rounded-lg"
-      >
-        Open Camera / Gallery
-      </button>
+      <div className="mx-auto max-w-md">
+        {/* Hidden file input the buttons will trigger */}
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={onChange}
+          className="hidden"
+        />
 
-      <div className="mt-4">
+        {/* Preview box */}
+        <div className="border-2 border-dashed rounded-xl p-6 bg-white/70 mb-4 aspect-[4/3] flex items-center justify-center">
+          {previewUrl ? (
+            <img src={previewUrl} alt="preview" className="max-h-full max-w-full object-contain rounded" />
+          ) : (
+            <div className="text-center text-gray-500">
+              <div className="text-5xl mb-2">📷</div>
+              <div>Capture ingredient list</div>
+            </div>
+          )}
+        </div>
+
+        {/* Primary button */}
         <button
-          onClick={() => onNavigate("home")}
-          className="px-4 py-2 bg-gray-200 rounded-lg"
+          onClick={openCamera}
+          className="block w-full text-center rounded-xl bg-green-600 py-3 text-white text-lg font-semibold hover:bg-green-700 active:scale-[0.98] transition"
         >
-          Back to Home
+          Take Photo (label)
         </button>
+
+        {/* Secondary button (gallery) */}
+        <button
+          onClick={() => inputRef.current?.click()}
+          className="mt-3 block w-full text-center rounded-xl bg-gray-100 py-3 text-gray-800 hover:bg-gray-200 active:scale-[0.98] transition"
+        >
+          Choose From Gallery
+        </button>
+
+        {/* Tiny log for diagnosis */}
+        <div className="mt-6">
+          <div className="text-sm font-semibold mb-1">Event Log</div>
+          <div className="text-xs bg-gray-50 border rounded p-2 h-40 overflow-auto">
+            {log.length === 0 ? <div className="text-gray-400">No events yet.</div> : log.map((l, i) => <div key={i}>{l}</div>)}
+          </div>
+          <div className="text-[11px] text-gray-500 mt-2">
+            If nothing opens: make sure the site has camera permission (Chrome → lock icon → Site settings → Camera → Allow), then try again.
+          </div>
+        </div>
       </div>
-
-      {/* Fallback input – opens camera on most Android devices because of capture="environment" */}
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        capture="environment"
-        className="hidden"
-        onChange={onFilePicked}
-      />
-
-      {error && <p className="text-red-600 mt-4">{error}</p>}
     </div>
   );
-}
+};
+
+export default ScanLabelScreen;
