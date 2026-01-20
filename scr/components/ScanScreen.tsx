@@ -1,6 +1,6 @@
 // scr/components/ScanScreen.tsx
 import React, { useRef, useState } from "react";
-import { AnalyzeProduct } from "../services/gptImageAnalysis";
+import  GPTImageAnalysisService  from "../services/gptImageAnalysis";
 
 export default function ScanScreen({ type, onBack, onResult }) {  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [preview, setPreview] = useState<string>("");
@@ -83,7 +83,7 @@ export default function ScanScreen({ type, onBack, onResult }) {  const fileInpu
     setError(null);
 
     try {
-      const res = await AnalyzeProduct({
+      const res = await GPTImageAnalysisService.analyzeProduct({
         image: preview,
         ingredients: "",
         barcode: "",
