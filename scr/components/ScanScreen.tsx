@@ -92,7 +92,7 @@ export default function ScanScreen({ type, onBack, onResult }) {  const fileInpu
 
       console.log("[UI] AnalyzeProduct result:", res);
       // Same behaviour as before – just an alert + console log
-      alert("Analysis completed. Check console for JSON (temporary).");
+      onResult(res);
     } catch (err: any) {
       setError(err?.message ?? String(err));
     } finally {

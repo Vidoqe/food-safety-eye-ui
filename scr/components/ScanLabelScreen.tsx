@@ -1,10 +1,13 @@
 import React, { useCallback, useRef, useState } from "react";
+import  GPTAnalysisResult  from "../services/gptImageAnalysis";
+const ScanLabelScreen: React.FC<Props> = ({ onImageSelected }) => {
+const [result, setResult] = useState<GPTAnalysisResult | null>(null);
 
 type Props = {
   onImageSelected?: (file: File) => void;
 };
 
-const ScanLabelScreen: React.FC<Props> = ({ onImageSelected }) => {
+
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [log, setLog] = useState<string[]>([]);
@@ -121,6 +124,12 @@ const ScanLabelScreen: React.FC<Props> = ({ onImageSelected }) => {
         >
           Choose From Gallery
         </button>
+{/* TEMP DEBUG OUTPUT */}
+{result && (
+  <pre className="mt-4 text-xs bg-gray-100 p-2 rounded overflow-x-auto">
+    {JSON.stringify(result, null, 2)}
+  </pre>
+)}
 
         {/* Tiny log for diagnosis */}
         <div className="mt-6">
