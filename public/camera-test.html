@@ -1,53 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Camera Test</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-    video, canvas { width: 90%; max-width: 400px; margin: 10px 0; border: 1px solid #ccc; }
-    button { padding: 10px 20px; margin: 10px; font-size: 16px; }
-  </style>
-</head>
-<body>
-  <h1>Camera Test Page</h1>
-  <p>This page tests if your phone camera permissions work.</p>
-  
-  <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" style="display:none;"></canvas>
-  <br />
-  
-  <button id="startBtn">Start Camera</button>
-  <button id="stopBtn">Stop Camera</button>
-  <br />
-  
-  <input type="file" accept="image/*" capture="environment" id="fileInput" />
-  
-  <script>
-    const video = document.getElementById('video');
-    const startBtn = document.getElementById('startBtn');
-    const stopBtn = document.getElementById('stopBtn');
-    let stream;
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Camera Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body { font-family: system-ui, sans-serif; padding: 16px; }
+      #video { width: 100%; max-width: 420px; background:#000; }
+      #log { white-space: pre-wrap; color:#444; font-size:14px; }
+      button { padding:10px 14px; margin-right:8px; }
+    </style>
+  </head>
+  <body>
+    <h1>Camera Test</h1>
+    <p>Tap <b>Start</b>, then choose <b>Allow</b> if prompted.</p>
+    <p>
+      <button id="start">Start</button>
+      <button id="stop" disabled>Stop</button>
+    </p>
+    <video id="video" playsinline muted></video>
+    <div id="log"></div>
 
-    async function startCamera() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        video.srcObject = stream;
-      } catch (err) {
-        alert("Camera error: " + err.message);
+    <script>
+      const v = document.getElementById('video');
+      const startBtn = document.getElementById('start');
+      const stopBtn  = document.getElementById('stop');
+      const log = (m)=>{ document.getElementById('log').textContent = m; };
+
+      let stream;
+
+      async function startCam(){
+        try {
+          log('Requesting camera…');
+          const constraints = {
+            video: { facingMode: { ideal: 'environment' } },  // rear cam if available
+            audio: false
+          };
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+          v.srcObject = stream;
+          await v.play();
+          startBtn.disabled = true;
+          stopBtn.disabled  = false;
+          log('✅ Camera started');
+        } catch (e) {
+          log('❌ getUserMedia error:\n' + e.name + ': ' + e.message);
+        }
       }
-    }
 
-    function stopCamera() {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        video.srcObject = null;
+      function stopCam(){
+        if (stream) {
+          stream.getTracks().forEach(t => t.stop());
+          stream = null;
+        }
+        v.srcObject = null;
+        startBtn.disabled = false;
+        stopBtn.disabled  = true;
+        log('⏹️ Camera stopped');
       }
-    }
 
-    startBtn.addEventListener('click', startCamera);
-    stopBtn.addEventListener('click', stopCamera);
-  </script>
-</body>
+      startBtn.onclick = startCam;
+      stopBtn.onclick  = stopCam;
+    </script>
+  </body>
 </html>
