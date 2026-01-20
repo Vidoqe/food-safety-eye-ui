@@ -19,7 +19,7 @@ interface SettingsScreenProps {
 }
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onPrivacyPolicy, onTermsOfUse }) => {
-  const { language, setLanguage, clearHistory } = useAppContext();
+  const { language, setLanguage, } = useAppContext();
   const { user, language: userLanguage, setLanguage: setUserLanguage } = useUser();
   const t = useTranslation(language);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -36,14 +36,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onPrivacyPolicy
     });
   };
 
-  const handleClearHistory = () => {
-    clearHistory();
-    toast({
-      title: t.historyCleared,
-      duration: 2000,
-    });
-  };
-
+ 
   const getPlanDisplayName = () => {
     if (!user) return language === 'zh' ? '免費版' : 'Free';
     
@@ -171,18 +164,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onPrivacyPolicy
             </div>
           </Card>
 
-          {/* Clear History */}
-          <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <Button
-              onClick={handleClearHistory}
-              variant="outline"
-              className="w-full justify-start border-red-300 text-red-700 hover:bg-red-50"
-            >
-              <Trash2 className="w-5 h-5 mr-3" />
-              {t.clearHistory}
-            </Button>
-          </Card>
-
+          
           {/* App Info */}
           <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
             <div className="flex items-center mb-4">
