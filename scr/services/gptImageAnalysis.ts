@@ -29,7 +29,7 @@ export default class GPTImageAnalysisService {
     }
 
     const res = await fetch(
-      "https://hqgzh1ugkxyt1ionyrnor.supabase.co/functions/v1/analyze-product-image",
+      "https://hqgzh1ugkxytionyrnor.supabase.co/functions/v1/analyze-product-image",
       {
         method: "POST",
         headers: {
