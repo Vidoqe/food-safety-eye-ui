@@ -1,7 +1,18 @@
 import React, { useCallback, useRef, useState } from "react";
-import  GPTAnalysisResult  from "../services/gptImageAnalysis";
+import GPTImageAnalysisService, { type GPTAnalysisResult } from "../services/gptImageAnalysis";
 const ScanLabelScreen: React.FC<Props> = ({ onImageSelected }) => {
 const [result, setResult] = useState<GPTAnalysisResult | null>(null);
+const [selectedFile, setSelectedFile] = useState<File | null>(null);
+const [loading, setLoading] = useState(false);
+const [error, setError] = useState<string | null>(null);
+const res = await GPTImageAnalysisService.analyzeProduct(base64);
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
 type Props = {
   onImageSelected?: (file: File) => void;
@@ -22,10 +33,15 @@ type Props = {
         addLog("No file selected.");
         return;
       }
-      const file = files[0];
-      setPreviewUrl(URL.createObjectURL(file));
-      addLog(`Got file: ${file.name} (${Math.round(file.size / 1024)} KB)`);
-      onImageSelected?.(file);
+     const file = files[0];
+
+setSelectedFile(file);
+setError(null);
+setResult(null);
+
+setPreviewUrl(URL.createObjectURL(file));
+addLog(`Got file: ${file.name} (${Math.round(file.size / 1024)} KB)`);
+onImageSelected?.(file);
     },
     [addLog, onImageSelected]
   );
@@ -81,6 +97,39 @@ type Props = {
       addLog("getUserMedia failed: " + e?.message);
     }
   }, [addLog]);
+const fileToBase64 = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
+const onAnalyze = useCallback(async () => {
+  if (!selectedFile) {
+    addLog("No image selected — take a photo first.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setError(null);
+    addLog("Analyzing image...");
+
+    const base64 = await fileToBase64(selectedFile);
+    const res = await GPTImageAnalysisService.analyzeProduct(base64);
+
+    setResult(res);
+    addLog("Analysis done ✅");
+  } catch (e: any) {
+    const msg = e?.message || String(e);
+    setError(msg);
+    addLog("Analysis failed: " + msg);
+  } finally {
+    setLoading(false);
+  }
+}, [selectedFile, addLog]);
+
 
   return (
     <div className="px-4 py-6">
@@ -123,7 +172,15 @@ type Props = {
           className="mt-3 block w-full text-center rounded-xl bg-gray-100 py-3 text-gray-800 hover:bg-gray-200 active:scale-[0.98] transition"
         >
           Choose From Gallery
-        </button>
+        <button
+  onClick={onAnalyze}
+  disabled={loading || !selectedFile}
+  className="mt-3 block w-full text-center rounded-xl bg-blue-600 py-3 text-white text-lg font-semibold disabled:opacity-50"
+>
+  {loading ? "Analyzing..." : "Analyze"}
+</button>
+
+{error && <div className="mt-3 text-sm text-red-600">{error}</div>}
 {/* TEMP DEBUG OUTPUT */}
 {result && (
   <pre className="mt-4 text-xs bg-gray-100 p-2 rounded overflow-x-auto">
