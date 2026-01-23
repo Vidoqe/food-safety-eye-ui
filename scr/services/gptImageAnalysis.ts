@@ -18,10 +18,9 @@ export type GPTAnalysisResult = {
 
 export default class GPTImageAnalysisService {
   static async analyzeProduct(
-    imageBase64: string,
-    overrideText?: string,
-    overrideBarcode?: string
-  ): Promise<GPTAnalysisResult> {
+  imageBase64: string,
+  ingredients?: string
+): Promise<GPTAnalysisResult> {
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
     if (!anonKey) {
@@ -39,11 +38,10 @@ export default class GPTImageAnalysisService {
           apikey: anonKey,
         },
         body: JSON.stringify({
-          imageBase64,
-          overrideText,
-          overrideBarcode,
-          user_id: "96882bc1-7a4f-4123-9314-058368d989f4",
-        }),
+  imageBase64, // string base64
+  ingredients: ingredients || "", // IMPORTANT: edge function expects "ingredients"
+  user_id: "96882bc1-7a4f-4123-9314-058368d989f4",
+}),
       }
     );
 
