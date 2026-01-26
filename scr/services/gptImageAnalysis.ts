@@ -37,9 +37,11 @@ export default class GPTImageAnalysisService {
           Authorization: `Bearer ${anonKey}`,
           apikey: anonKey,
         },
-        body: JSON.stringify({
-  imageBase64, // string base64
-  ingredients: ingredients || "", // IMPORTANT: edge function expects "ingredients"
+      body: JSON.stringify({
+  imageBase64:
+    typeof imageBase64 === "string"
+      ? imageBase64.replace(/^data:image\/\w+;base64,/, "")
+      : imageBase64?.image?.replace(/^data:image\/\w+;base64,/, "") ?? "",
   user_id: "96882bc1-7a4f-4123-9314-058368d989f4",
 }),
       }
