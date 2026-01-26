@@ -55,35 +55,35 @@ export default class GPTImageAnalysisService {
   const data = await res.json();
 const backend = data?.result ?? {};
 
+// backend arrays
 const rawIngredients = Array.isArray(backend.ingredients) ? backend.ingredients : [];
 const rawAllergens = Array.isArray(backend.potential_allergens) ? backend.potential_allergens : [];
 const rawAdditives = Array.isArray(backend.additives) ? backend.additives : [];
 
 const norm = (v: any) => String(v ?? "").trim();
 
-// Make one big allergen text blob for “includes” checks
+// ---- Allergens blob (robust matching) ----
 const allergenText = rawAllergens.map((a: any) => norm(a)).join(" ").toLowerCase();
-
-// Also keep cleaned allergen names list
 const allergenNames = rawAllergens
-  .map((s: any) => norm(s).replace(/\s*\(.*?\)\s*/g, "")) // remove (wheat) etc
+  .map((s: any) => norm(s).replace(/\s*\(.*?\)\s*/g, ""))
   .filter(Boolean);
 
+// ---- Additives list ----
 const additiveNames = rawAdditives
   .map((a: any) => (typeof a === "string" ? norm(a) : norm(a?.name)))
   .filter(Boolean);
 
+// ---- Map ingredients into YOUR UI contract ----
 const mapped = rawIngredients.map((x: any) => {
   const name_zh = norm(x?.name);
-  const notes = norm(x?.notes);
-  const chem = norm(x?.chemical_name);
-  const func = norm(x?.function);
+  const notes = norm(x?.notes || x?.description || "");
+  const category = norm(x?.category || "");
+  const chem = norm(x?.chemical_name || "");
+  const func = norm(x?.function || category || "");
 
-  // ✅ Robust allergen detection (works even if formatting differs)
   const isAllergen =
     (!!name_zh && allergenText.includes(name_zh.toLowerCase())) ||
     allergenNames.some((a) => a === name_zh || name_zh.includes(a) || a.includes(name_zh)) ||
-    // fallback keyword matches (wheat/fish) if backend only gave English
     (/麵粉|小麥|wheat/i.test(name_zh) && /wheat|小麥|麵粉/i.test(allergenText)) ||
     (/魚|fish/i.test(name_zh) && /fish|魚/i.test(allergenText));
 
@@ -92,32 +92,38 @@ const mapped = rawIngredients.map((x: any) => {
     !!func ||
     (!!name_zh && additiveNames.some((a) => a === name_zh));
 
-  const status: "low" | "moderate" | "harmful" =
+  const status: "healthy" | "low" | "moderate" | "harmful" =
     isAllergen ? "harmful" : isAdditive ? "moderate" : "low";
 
   const badge = isAllergen ? "Allergen" : isAdditive ? "Additive" : "";
 
-  // ✅ Give the UI multiple child fields so it doesn’t show Unknown
+  // Provide multiple child fields (because your UI might use any of them)
   const childSafe = !isAllergen;
   const childRisk = childSafe ? "Safe" : "Avoid";
 
-  return {
-    name: name_zh || "",
-    name_en: notes || chem || func || "",
-    name_zh: name_zh || "",
-    status,
-    badge,
+  // Provide multiple Taiwan regulation fields (UI might use any of them)
+  const taiwanText = "No specific restriction";
 
-    // try all common field names the UI might be using:
+  return {
+    name: name_zh, // UI currently shows this
+    name_zh: name_zh,
+    name_en: notes || func || "", // gives English column something to show
+    status, // UI uses this for Risk Level
+    badge, // UI badge column
     childSafe,
     childRisk,
     child_risk: childRisk,
 
-    reason: notes || func || chem || "",
+    taiwanFdaRegulation: taiwanText,
+    taiwan_fda_regulation: taiwanText,
+    taiwanFDARegulation: taiwanText,
+
+    reason: notes || func || "",
     matchedKey: "",
   };
 });
 
+// verdict based on worst item
 const verdict: "healthy" | "moderate" | "harmful" =
   mapped.some((i) => i.status === "harmful")
     ? "harmful"
@@ -125,18 +131,12 @@ const verdict: "healthy" | "moderate" | "harmful" =
     ? "moderate"
     : "healthy";
 
-const tips: string[] = [];
-if (backend.notes) tips.push(String(backend.notes));
-if (allergenNames.length) tips.push(`Potential allergens: ${allergenNames.join(", ")}`);
-
-const result: GPTAnalysisResult = {
+return {
   verdict,
   ingredients: mapped,
-  tips,
+  tips: backend.notes ? [String(backend.notes)] : [],
   summary: backend.notes ? String(backend.notes) : "",
-};
-
-return result;
+} as GPTAnalysisResult;
 
 
 
