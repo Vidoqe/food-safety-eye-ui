@@ -93,7 +93,7 @@ const mapped = rawIngredients.map((x: any) => {
     (!!name_zh && additiveNames.some((a) => a === name_zh));
 
   const status: "healthy" | "low" | "moderate" | "harmful" =
-    isAllergen ? "harmful" : isAdditive ? "moderate" : "low";
+     isAdditive ? "moderate" : "low";
 
   const badge = isAllergen ? "Allergen" : isAdditive ? "Additive" : "";
 
