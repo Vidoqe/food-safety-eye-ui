@@ -39,9 +39,9 @@ export default class GPTImageAnalysisService {
         },
       body: JSON.stringify({
   imageBase64:
-    typeof imageBase64 === "string"
-      ? imageBase64.replace(/^data:image\/\w+;base64,/, "")
-      : imageBase64?.image?.replace(/^data:image\/\w+;base64,/, "") ?? "",
+  typeof imageBase64 === "string"
+    ? imageBase64
+    : (imageBase64 as any)?.image ?? "",
   user_id: "96882bc1-7a4f-4123-9314-058368d989f4",
 }),
       }
@@ -55,6 +55,79 @@ export default class GPTImageAnalysisService {
     const data = await res.json();
 
     // API contract: { ok: true, result: {...} }
-    return data.result as GPTAnalysisResult;
+   // API contract: { ok: true, result: { ... } }
+const backend = data?.result ?? {};
+
+const rawIngredients = Array.isArray(backend.ingredients) ? backend.ingredients : [];
+const rawAllergens = Array.isArray(backend.potential_allergens) ? backend.potential_allergens : [];
+const rawAdditives = Array.isArray(backend.additives) ? backend.additives : [];
+
+const norm = (v: any) => String(v ?? "").trim();
+
+// turn: ["魚漿 (contains fish...)","麵粉 (wheat)"] -> ["魚漿","麵粉"]
+const allergenNames = rawAllergens
+  .map((s: any) => norm(s).replace(/\s*\(.*?\)\s*/g, ""))
+  .filter(Boolean);
+
+const additiveNames = rawAdditives
+  .map((a: any) => (typeof a === "string" ? norm(a) : norm(a?.name)))
+  .filter(Boolean);
+
+const mapped = rawIngredients.map((x: any) => {
+  const name_zh = norm(x?.name);
+  const name_en = norm(x?.notes || x?.chemical_name || x?.alternative_name);
+  const displayName = name_zh || name_en;
+
+  const isAllergen =
+    !!name_zh &&
+    allergenNames.some((a) => a === name_zh || name_zh.includes(a) || a.includes(name_zh));
+
+  const isAdditive =
+    !!norm(x?.function || x?.chemical_name) ||
+    (!!name_zh && additiveNames.some((a) => a === name_zh));
+
+  const status: "healthy" | "moderate" | "harmful" =
+    isAllergen ? "harmful" : isAdditive ? "moderate" : "healthy";
+
+  const badge =
+    isAllergen ? "Allergen" : isAdditive ? "Additive" : "";
+
+  const childSafe = !isAllergen; // conservative default
+
+  const reason = norm(x?.notes || x?.function || x?.chemical_name);
+
+  return {
+    name: displayName,
+    name_en,
+    name_zh,
+    status,
+    badge,
+    childSafe,
+    reason,
+    matchedKey: "",
+  };
+});
+
+const verdict: "healthy" | "moderate" | "harmful" =
+  mapped.some((i) => i.status === "harmful")
+    ? "harmful"
+    : mapped.some((i) => i.status === "moderate")
+    ? "moderate"
+    : "healthy";
+
+const tips: string[] = [];
+if (backend.notes) tips.push(String(backend.notes));
+if (allergenNames.length) tips.push(`Potential allergens: ${allergenNames.join(", ")}`);
+
+const result: GPTAnalysisResult = {
+  verdict,
+  ingredients: mapped,
+  tips,
+  summary: backend.notes ? String(backend.notes) : "",
+};
+
+return result;
+
+
   }
 }
