@@ -52,10 +52,9 @@ export default class GPTImageAnalysisService {
       throw new Error(`API error ${res.status}: ${txt}`);
     }
 
-    const data = await res.json();
+   const data = await res.json();
 
-    // API contract: { ok: true, result: {...} }
-   // API contract: { ok: true, result: { ... } }
+// API contract: { ok: true, result: { ... } }
 const backend = data?.result ?? {};
 
 const rawIngredients = Array.isArray(backend.ingredients) ? backend.ingredients : [];
@@ -64,7 +63,7 @@ const rawAdditives = Array.isArray(backend.additives) ? backend.additives : [];
 
 const norm = (v: any) => String(v ?? "").trim();
 
-// turn: ["魚漿 (contains fish...)","麵粉 (wheat)"] -> ["魚漿","麵粉"]
+// "魚漿 (contains fish...)" -> "魚漿"
 const allergenNames = rawAllergens
   .map((s: any) => norm(s).replace(/\s*\(.*?\)\s*/g, ""))
   .filter(Boolean);
@@ -75,39 +74,42 @@ const additiveNames = rawAdditives
 
 const mapped = rawIngredients.map((x: any) => {
   const name_zh = norm(x?.name);
-  const name_en = norm(x?.notes || x?.chemical_name || x?.alternative_name);
-  const displayName = name_zh || name_en;
+  const notes = norm(x?.notes);
+  const chem = norm(x?.chemical_name);
+  const func = norm(x?.function);
 
   const isAllergen =
     !!name_zh &&
     allergenNames.some((a) => a === name_zh || name_zh.includes(a) || a.includes(name_zh));
 
   const isAdditive =
-    !!norm(x?.function || x?.chemical_name) ||
+    !!chem ||
+    !!func ||
     (!!name_zh && additiveNames.some((a) => a === name_zh));
 
-  const status: "healthy" | "moderate" | "harmful" =
-    isAllergen ? "harmful" : isAdditive ? "moderate" : "healthy";
+  // IMPORTANT: UI expects "low" not "healthy"
+  const status: "low" | "moderate" | "harmful" =
+    isAllergen ? "harmful" : isAdditive ? "moderate" : "low";
 
   const badge =
     isAllergen ? "Allergen" : isAdditive ? "Additive" : "";
 
-  const childSafe = !isAllergen; // conservative default
-
-  const reason = norm(x?.notes || x?.function || x?.chemical_name);
+  // Make Child Risk not "Unknown"
+  const childSafe = !isAllergen;
 
   return {
-    name: displayName,
-    name_en,
-    name_zh,
+    name: name_zh || notes || chem || func || "",
+    name_en: notes || chem || func || "",
+    name_zh: name_zh || "",
     status,
     badge,
     childSafe,
-    reason,
+    reason: notes || func || chem || "",
     matchedKey: "",
   };
 });
 
+// Verdict used for the big “Overall Result”
 const verdict: "healthy" | "moderate" | "harmful" =
   mapped.some((i) => i.status === "harmful")
     ? "harmful"
@@ -127,6 +129,7 @@ const result: GPTAnalysisResult = {
 };
 
 return result;
+
 
 
   }
