@@ -98,9 +98,8 @@ const mapped = rawIngredients.map((x: any) => {
   const badge = isAllergen ? "Allergen" : isAdditive ? "Additive" : "";
 
   // Provide multiple child fields (because your UI might use any of them)
-  const childSafe = !isAllergen;
-  const childRisk = childSafe ? "Safe" : "Avoid";
-
+  const childSafe = !isAllergen && !isAdditive;
+const childRisk = childSafe ? "Safe" : "Avoid";
   // Provide multiple Taiwan regulation fields (UI might use any of them)
   const taiwanText = "No specific restriction";
 
