@@ -52,9 +52,7 @@ export default class GPTImageAnalysisService {
       throw new Error(`API error ${res.status}: ${txt}`);
     }
 
-   const data = await res.json();
-
-// API contract: { ok: true, result: { ... } }
+  const data = await res.json();
 const backend = data?.result ?? {};
 
 const rawIngredients = Array.isArray(backend.ingredients) ? backend.ingredients : [];
@@ -63,9 +61,12 @@ const rawAdditives = Array.isArray(backend.additives) ? backend.additives : [];
 
 const norm = (v: any) => String(v ?? "").trim();
 
-// "魚漿 (contains fish...)" -> "魚漿"
+// Make one big allergen text blob for “includes” checks
+const allergenText = rawAllergens.map((a: any) => norm(a)).join(" ").toLowerCase();
+
+// Also keep cleaned allergen names list
 const allergenNames = rawAllergens
-  .map((s: any) => norm(s).replace(/\s*\(.*?\)\s*/g, ""))
+  .map((s: any) => norm(s).replace(/\s*\(.*?\)\s*/g, "")) // remove (wheat) etc
   .filter(Boolean);
 
 const additiveNames = rawAdditives
@@ -78,38 +79,45 @@ const mapped = rawIngredients.map((x: any) => {
   const chem = norm(x?.chemical_name);
   const func = norm(x?.function);
 
+  // ✅ Robust allergen detection (works even if formatting differs)
   const isAllergen =
-    !!name_zh &&
-    allergenNames.some((a) => a === name_zh || name_zh.includes(a) || a.includes(name_zh));
+    (!!name_zh && allergenText.includes(name_zh.toLowerCase())) ||
+    allergenNames.some((a) => a === name_zh || name_zh.includes(a) || a.includes(name_zh)) ||
+    // fallback keyword matches (wheat/fish) if backend only gave English
+    (/麵粉|小麥|wheat/i.test(name_zh) && /wheat|小麥|麵粉/i.test(allergenText)) ||
+    (/魚|fish/i.test(name_zh) && /fish|魚/i.test(allergenText));
 
   const isAdditive =
     !!chem ||
     !!func ||
     (!!name_zh && additiveNames.some((a) => a === name_zh));
 
-  // IMPORTANT: UI expects "low" not "healthy"
   const status: "low" | "moderate" | "harmful" =
     isAllergen ? "harmful" : isAdditive ? "moderate" : "low";
 
-  const badge =
-    isAllergen ? "Allergen" : isAdditive ? "Additive" : "";
+  const badge = isAllergen ? "Allergen" : isAdditive ? "Additive" : "";
 
-  // Make Child Risk not "Unknown"
+  // ✅ Give the UI multiple child fields so it doesn’t show Unknown
   const childSafe = !isAllergen;
+  const childRisk = childSafe ? "Safe" : "Avoid";
 
   return {
-    name: name_zh || notes || chem || func || "",
+    name: name_zh || "",
     name_en: notes || chem || func || "",
     name_zh: name_zh || "",
     status,
     badge,
+
+    // try all common field names the UI might be using:
     childSafe,
+    childRisk,
+    child_risk: childRisk,
+
     reason: notes || func || chem || "",
     matchedKey: "",
   };
 });
 
-// Verdict used for the big “Overall Result”
 const verdict: "healthy" | "moderate" | "harmful" =
   mapped.some((i) => i.status === "harmful")
     ? "harmful"
@@ -129,6 +137,7 @@ const result: GPTAnalysisResult = {
 };
 
 return result;
+
 
 
 
