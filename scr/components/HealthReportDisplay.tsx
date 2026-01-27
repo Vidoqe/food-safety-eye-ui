@@ -103,28 +103,28 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
                 const badge = ingredient.badge || getBadge(riskLevel);
                 
                 return (
-                  <tr key={index}>
-                    <td className="border border-gray-300 p-2">
-  {(() => {
-    const zh = ingredient.name_zh ?? ingredient.name ?? "";
-    const en = ingredient.name_en ?? ingredient.reason ?? "";
+                 <tr key={index}>
+  <td className="border border-gray-300 p-2">
+    {(() => {
+      const zh = ingredient.name_zh ?? ingredient.name ?? "";
+      const en = ingredient.name_en ?? ingredient.reason ?? "";
 
-    const displayName = zh || en || "—";
-    const secondary = en && zh ? ` / ${en}` : "";
+      const displayName = zh || en || "—";
+      const secondary = en && zh ? ` / ${en}` : "";
 
-    return (
-      <div className="font-medium">
-        {displayName}{secondary}
-      </div>
-    );
-  })()}
-<td className="border border-gray-300 p-2">
-  ...displayName...
-</td>
+      return (
+        <div className="font-medium">
+          {displayName}{secondary}
+        </div>
+      );
+    })()}
+  </td>
 
-<td className="border border-gray-300 p-2">
-  {childRisk}
-</td>                  </tr>
+  <td className="border border-gray-300 p-2">
+    {childRisk}
+  </td>
+</tr>
+
                 );
               })}
             </tbody>
