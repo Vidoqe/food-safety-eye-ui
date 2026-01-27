@@ -89,8 +89,11 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
             </thead>
             <tbody>
               {ingredients.map((ingredient, index) => {
-                const riskLevel = ingredient.risk_level || ingredient.riskLevel || 'moderate';
-                const childRisk = ingredient.child_risk || ingredient.childRisk || false;
+                const riskLevel = ingredient.riskLevel ?? ingredient.risk_level ?? "moderate";
+               const childRisk =
+  ingredient.childRisk ??
+  ingredient.child_risk ??
+  (ingredient.childSafe === true ? "Safe" : ingredient.childSafe === false ? "Avoid" : "Unknown");
                 const badge = ingredient.badge || getBadge(riskLevel);
                 
                 return (
