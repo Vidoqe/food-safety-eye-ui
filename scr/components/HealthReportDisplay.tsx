@@ -105,14 +105,26 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
                 return (
                   <tr key={index}>
                     <td className="border border-gray-300 p-2">
-                      <div className="font-medium">
-                        {ingredient.name} {ingredient.chinese ? `/ ${ingredient.chinese}` : ''}
-                      </div>
-                    </td>
-                   <td className="border border-gray-300 p-2">
-  {childRisk}
+  {(() => {
+    const zh = ingredient.name_zh ?? ingredient.name ?? "";
+    const en = ingredient.name_en ?? ingredient.reason ?? "";
+
+    const displayName = zh || en || "—";
+    const secondary = en && zh ? ` / ${en}` : "";
+
+    return (
+      <div className="font-medium">
+        {displayName}{secondary}
+      </div>
+    );
+  })()}
+<td className="border border-gray-300 p-2">
+  ...displayName...
 </td>
-                  </tr>
+
+<td className="border border-gray-300 p-2">
+  {childRisk}
+</td>                  </tr>
                 );
               })}
             </tbody>
