@@ -90,10 +90,16 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
             <tbody>
               {ingredients.map((ingredient, index) => {
                 const riskLevel = ingredient.riskLevel ?? ingredient.risk_level ?? "moderate";
-               const childRisk =
-  ingredient.childRisk ??
-  ingredient.child_risk ??
-  (ingredient.childSafe === true ? "Safe" : ingredient.childSafe === false ? "Avoid" : "Unknown");
+              const childRisk =
+  typeof ingredient.childRisk === "string"
+    ? ingredient.childRisk
+    : typeof ingredient.child_risk === "string"
+    ? ingredient.child_risk
+    : ingredient.childSafe === true
+    ? "Safe"
+    : ingredient.childSafe === false
+    ? "Avoid"
+    : "Unknown";
                 const badge = ingredient.badge || getBadge(riskLevel);
                 
                 return (
@@ -103,9 +109,9 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
                         {ingredient.name} {ingredient.chinese ? `/ ${ingredient.chinese}` : ''}
                       </div>
                     </td>
-                    <td className="border border-gray-300 p-2">{getRiskText(riskLevel)}</td>
-                    <td className="border border-gray-300 p-2">{childRisk ? 'Yes / 是' : 'No / 否'}</td>
-                    <td className="border border-gray-300 p-2 text-lg">{badge}</td>
+                   <td className="border border-gray-300 p-2">
+  {childRisk}
+</td>
                   </tr>
                 );
               })}
