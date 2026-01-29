@@ -87,83 +87,81 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
                 <th className="border border-gray-300 p-2 text-left">Badge</th>
               </tr>
             </thead>
-            <tbody>
-<div style={{ color: "red", fontWeight: 700 }}>
-  DEPLOY-FILE: HealthReportDisplay.tsx - 777
-</div>
+          <tbody>
+  {ingredients.map((ingredient, index) => {
+    const riskLevel =
+      ingredient.risklevel ??
+      ingredient.risk_level ??
+      ingredient.status ??
+      "moderate";
 
-{ingredients.map((ingredient, index) => {
-  const riskLevel =
-    ingredient.riskLevel ??
-    ingredient.risk_level ??
-    ingredient.status ??
-    "moderate";
+    // child risk as string for display
+    const childRaw =
+      ingredient.childRisk ??
+      ingredient.child_risk ??
+      (typeof ingredient.childSafe === "boolean"
+        ? ingredient.childSafe
+          ? "Safe"
+          : "Avoid"
+        : undefined);
 
-  const childRaw =
-    ingredient.childRisk ??
-    ingredient.child_risk ??
-    (typeof ingredient.childSafe === "boolean"
-      ? ingredient.childSafe
-        ? "Safe"
-        : "Avoid"
-      : undefined);
+    const childRisk = typeof childRaw === "string" ? childRaw : "Unknown";
 
-  const childRisk =
-    typeof childRaw === "string" ? childRaw : "Unknown";
-
+    // badge + FDA text (robust)
+    const badgeText = (ingredient.badge ?? "").trim();
     const fda =
-    ingredient.taiwanFdaRegulation ??
-    ingredient.taiwan_fda_regulation ??
-    ingredient.taiwanFDARegulation ??
-    "—";
+      ingredient.taiwanFdaRegulation ??
+      ingredient.taiwan_fda_regulation ??
+      ingredient.taiwanFDARegulation ??
+      ingredient.taiwanFDARegulationText ??
+      "—";
 
-  const zh = ingredient.name_zh ?? ingredient.name ?? "";
-  const en = ingredient.name_en ?? ingredient.reason ?? "";
-  const displayName = (zh || en || "—").trim();
+    // name display (ZH on top, EN smaller under it)
+    const zh = (ingredient.name_zh ?? ingredient.name ?? "").trim();
+    const en = (ingredient.name_en ?? ingredient.reason ?? "").trim();
 
-  return (
-    <tr key={index}>
-      {/* Ingredient */}
-      <td className="border border-gray-300 p-2">
-        <div className="font-medium">{displayName}</div>
-        {zh && en ? (
-          <div className="text-sm text-gray-500">{en}</div>
-        ) : null}
-      </td>
+    return (
+      <tr key={index}>
+        {/* Ingredient */}
+        <td className="border border-gray-300 p-2">
+          <div className="font-medium">{zh || en || "—"}</div>
+          {zh && en ? (
+            <div className="text-sm text-gray-500">{en}</div>
+          ) : null}
+        </td>
 
-      {/* Risk Level */}
-      <td className="border border-gray-300 p-2">
-        {getRiskText(riskLevel)}
-      </td>
+        {/* Risk Level */}
+        <td className="border border-gray-300 p-2">
+          {getRiskText(riskLevel)}
+        </td>
 
-      {/* Child Risk */}
-      <td className="border border-gray-300 p-2">
-        {childRisk === "Safe"
-          ? language === "zh"
-            ? "安全"
-            : "Safe"
-          : childRisk === "Avoid"
-          ? language === "zh"
-            ? "避免"
-            : "Avoid"
-          : language === "zh"
-          ? "未知"
-          : "Unknown"}
-      </td>
-{/* Badge */}
-<td className="border border-gray-300 p-2 text-center text-lg">
-  {getBadge(riskLevel)}
-</td>
-     
-      {/* Taiwan FDA */}
-      <td className="border border-gray-300 p-2">
-        {fda}
-      </td>
-    </tr>
-  );
-})}
+        {/* Child Risk */}
+        <td className="border border-gray-300 p-2">
+          {childRisk === "Safe"
+            ? language === "zh"
+              ? "安全"
+              : "Safe"
+            : childRisk === "Avoid"
+            ? language === "zh"
+              ? "避免"
+              : "Avoid"
+            : language === "zh"
+            ? "未知"
+            : "Unknown"}
+        </td>
 
-                         </tbody>
+        {/* Badge */}
+        <td className="border border-gray-300 p-2 text-center text-lg">
+          {badgeText || getBadge(riskLevel)}
+        </td>
+
+        {/* Taiwan FDA */}
+        <td className="border border-gray-300 p-2">{fda}</td>
+      </tr>
+    );
+  })}
+</tbody>
+
           </table>
         </div>
       </div>
