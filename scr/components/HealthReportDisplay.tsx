@@ -88,6 +88,10 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
               </tr>
             </thead>
             <tbody>
+<div style={{ color: "red", fontWeight: 700 }}>
+  DEPLOY-FILE: HealthReportDisplay.tsx - 777
+</div>
+
 {ingredients.map((ingredient, index) => {
   const riskLevel =
     ingredient.riskLevel ??
