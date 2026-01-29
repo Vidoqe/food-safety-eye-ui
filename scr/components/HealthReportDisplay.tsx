@@ -105,6 +105,7 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
                 return (
                  <tr key={index}>
   <td className="border border-gray-300 p-2">
+<div style={{ color: "red", fontWeight: 700 }}>DEPLOY-TEST-123</div>
     {(() => {
       const zh = ingredient.name_zh ?? ingredient.name ?? "";
       const en = ingredient.name_en ?? ingredient.reason ?? "";
