@@ -124,10 +124,15 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
       <tr key={index}>
         {/* Ingredient */}
         <td className="border border-gray-300 p-2">
-          <div className="font-medium">{zh || en || "—"}</div>
-          {zh && en ? (
-            <div className="text-sm text-gray-500">{en}</div>
-          ) : null}
+         <div className="font-medium">
+  {displayName}
+</div>
+
+{zh && en && (
+  <div className="text-sm text-gray-500">
+    {language === "zh" ? en : zh}
+  </div>
+)}
         </td>
 
         {/* Risk Level */}
@@ -136,24 +141,19 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
         </td>
 
         {/* Child Risk */}
-        <td className="border border-gray-300 p-2">
-          {childRisk === "Safe"
-            ? language === "zh"
-              ? "安全"
-              : "Safe"
-            : childRisk === "Avoid"
-            ? language === "zh"
-              ? "避免"
-              : "Avoid"
-            : language === "zh"
-            ? "未知"
-            : "Unknown"}
-        </td>
+       <td className="border border-gray-300 p-2">
+  {childRisk === "Safe"
+    ? (language === "zh" ? "安全" : "Safe")
+    : childRisk === "Avoid"
+    ? (language === "zh" ? "避免" : "Avoid")
+    : (language === "zh" ? "未知" : "Unknown")}
+</td>
 
         {/* Badge */}
-        <td className="border border-gray-300 p-2 text-center text-lg">
-          {badgeText || getBadge(riskLevel)}
-        </td>
+       <td className="border border-gray-300 p-2 text-center">
+  {ingredient.badge ?? getBadge(riskLevel)}
+</td>
+     
 
         {/* Taiwan FDA */}
         <td className="border border-gray-300 p-2">{fda}</td>
