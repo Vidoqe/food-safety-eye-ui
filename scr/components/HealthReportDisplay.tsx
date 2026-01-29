@@ -107,9 +107,7 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
   const childRisk =
     typeof childRaw === "string" ? childRaw : "Unknown";
 
-  const badgeText = (ingredient.badge ?? "").trim();
-
-  const fda =
+    const fda =
     ingredient.taiwanFdaRegulation ??
     ingredient.taiwan_fda_regulation ??
     ingredient.taiwanFDARegulation ??
@@ -148,12 +146,11 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
           ? "未知"
           : "Unknown"}
       </td>
-
-      {/* Badge */}
-      <td className="border border-gray-300 p-2">
-        {badgeText || "—"}
-      </td>
-
+{/* Badge */}
+<td className="border border-gray-300 p-2 text-center text-lg">
+  {getBadge(riskLevel)}
+</td>
+     
       {/* Taiwan FDA */}
       <td className="border border-gray-300 p-2">
         {fda}
