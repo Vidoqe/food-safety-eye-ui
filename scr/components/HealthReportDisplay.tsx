@@ -88,47 +88,81 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
               </tr>
             </thead>
             <tbody>
-              {ingredients.map((ingredient, index) => {
-                const riskLevel = ingredient.riskLevel ?? ingredient.risk_level ?? "moderate";
-              const childRisk =
-  typeof ingredient.childRisk === "string"
-    ? ingredient.childRisk
-    : typeof ingredient.child_risk === "string"
-    ? ingredient.child_risk
-    : ingredient.childSafe === true
-    ? "Safe"
-    : ingredient.childSafe === false
-    ? "Avoid"
-    : "Unknown";
-                const badge = ingredient.badge || getBadge(riskLevel);
-                
-                return (
-                 <tr key={index}>
-  <td className="border border-gray-300 p-2">
-<div style={{ color: "red", fontWeight: 700 }}>DEPLOY-TEST-123</div>
-    {(() => {
-      const zh = ingredient.name_zh ?? ingredient.name ?? "";
-      const en = ingredient.name_en ?? ingredient.reason ?? "";
+{ingredients.map((ingredient, index) => {
+  const riskLevel =
+    ingredient.riskLevel ??
+    ingredient.risk_level ??
+    ingredient.status ??
+    "moderate";
 
-      const displayName = zh || en || "—";
-      const secondary = en && zh ? ` / ${en}` : "";
+  const childRaw =
+    ingredient.childRisk ??
+    ingredient.child_risk ??
+    (typeof ingredient.childSafe === "boolean"
+      ? ingredient.childSafe
+        ? "Safe"
+        : "Avoid"
+      : undefined);
 
-      return (
-        <div className="font-medium">
-          {displayName}{secondary}
-        </div>
-      );
-    })()}
-  </td>
+  const childRisk =
+    typeof childRaw === "string" ? childRaw : "Unknown";
 
-  <td className="border border-gray-300 p-2">
-    {childRisk}
-  </td>
-</tr>
+  const badgeText = (ingredient.badge ?? "").trim();
 
-                );
-              })}
-            </tbody>
+  const fda =
+    ingredient.taiwanFdaRegulation ??
+    ingredient.taiwan_fda_regulation ??
+    ingredient.taiwanFDARegulation ??
+    "—";
+
+  const zh = ingredient.name_zh ?? ingredient.name ?? "";
+  const en = ingredient.name_en ?? ingredient.reason ?? "";
+  const displayName = (zh || en || "—").trim();
+
+  return (
+    <tr key={index}>
+      {/* Ingredient */}
+      <td className="border border-gray-300 p-2">
+        <div className="font-medium">{displayName}</div>
+        {zh && en ? (
+          <div className="text-sm text-gray-500">{en}</div>
+        ) : null}
+      </td>
+
+      {/* Risk Level */}
+      <td className="border border-gray-300 p-2">
+        {getRiskText(riskLevel)}
+      </td>
+
+      {/* Child Risk */}
+      <td className="border border-gray-300 p-2">
+        {childRisk === "Safe"
+          ? language === "zh"
+            ? "安全"
+            : "Safe"
+          : childRisk === "Avoid"
+          ? language === "zh"
+            ? "避免"
+            : "Avoid"
+          : language === "zh"
+          ? "未知"
+          : "Unknown"}
+      </td>
+
+      {/* Badge */}
+      <td className="border border-gray-300 p-2">
+        {badgeText || "—"}
+      </td>
+
+      {/* Taiwan FDA */}
+      <td className="border border-gray-300 p-2">
+        {fda}
+      </td>
+    </tr>
+  );
+})}
+
+                         </tbody>
           </table>
         </div>
       </div>
