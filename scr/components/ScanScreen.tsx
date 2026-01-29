@@ -96,7 +96,7 @@ export default function ScanScreen({ type, onBack, onResult }) {  const fileInpu
     } catch (err: any) {
       setError(err?.message ?? String(err));
     } finally {
-      setLoading(false);f
+      setLoading(false);
     }
   };
 
