@@ -162,10 +162,16 @@ const childRisk = normalizeChildRisk(ingredient);
         {/* Child Risk */}
        <td className="border border-gray-300 p-2">
   {childRisk === "Safe"
-    ? (language === "zh" ? "安全" : "Safe")
+    ? language === "zh"
+      ? "安全"
+      : "Safe"
     : childRisk === "Avoid"
-    ? (language === "zh" ? "避免" : "Avoid")
-    : (language === "zh" ? "未知" : "Unknown")}
+    ? language === "zh"
+      ? "避免"
+      : "Avoid"
+    : language === "zh"
+    ? "未知"
+    : "Unknown"}
 </td>
 
         {/* Badge */}
