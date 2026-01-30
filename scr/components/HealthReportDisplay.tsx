@@ -1,3 +1,4 @@
+// === DEBUG MARKER: normalizeChildRisk ACTIVE ===
 import React from 'react';
 
 interface Ingredient {
