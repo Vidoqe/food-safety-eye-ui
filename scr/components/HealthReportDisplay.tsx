@@ -160,18 +160,13 @@ const childRisk = normalizeChildRisk(ingredient);
         </td>
 
         {/* Child Risk */}
-       <td className="border border-gray-300 p-2">
-  {childRisk === "Safe"
-    ? language === "zh"
-      ? "安全"
-      : "Safe"
-    : childRisk === "Avoid"
-    ? language === "zh"
-      ? "避免"
-      : "Avoid"
-    : language === "zh"
-    ? "未知"
-    : "Unknown"}
+      <td className="border border-gray-300 p-2">
+  {(() => {
+    const raw = (childRisk ?? "").toString().trim().toLowerCase(); // <- normalize
+    if (raw === "safe") return language === "zh" ? "安全" : "Safe";
+    if (raw === "avoid") return language === "zh" ? "避免" : "Avoid";
+    return language === "zh" ? "未知" : "Unknown";
+  })()}
 </td>
 
         {/* Badge */}
