@@ -119,6 +119,13 @@ const normalizeChildRisk = (ingredient: any): "Safe" | "Avoid" | "Unknown" => {
 
 const childRisk = normalizeChildRisk(ingredient);
 
+console.log("CHILD_RISK_DEBUG:", ingredient.name, {
+  childRisk: ingredient.childRisk,
+  child_risk: ingredient.child_risk,
+  childSafe: ingredient.childSafe,
+  child_safe: ingredient.child_safe,
+  normalized: childRisk,
+});
 console.log(
   "CHILD RISK FINAL:",
   ingredient.name || ingredient.name_en || ingredient.name_zh,
@@ -166,16 +173,15 @@ console.log(
           {getRiskText(riskLevel)}
         </td>
 
-        {/* Child Risk */}
-      <td className="border border-gray-300 p-2">
-  {(() => {
-    const raw = (childRisk ?? "").toString().trim().toLowerCase(); // <- normalize
-    if (raw === "safe") return language === "zh" ? "安全" : "Safe";
-    if (raw === "avoid") return language === "zh" ? "避免" : "Avoid";
-    return language === "zh" ? "未知" : "Unknown";
-  })()}
+       <td className="border border-gray-300 p-2">
+  {language === "zh"
+    ? childRisk === "Safe"
+      ? "安全"
+      : childRisk === "Avoid"
+      ? "避免"
+      : "未知"
+    : childRisk}
 </td>
-
         {/* Badge */}
        <td className="border border-gray-300 p-2 text-center">
   {ingredient.badge ?? getBadge(riskLevel)}
