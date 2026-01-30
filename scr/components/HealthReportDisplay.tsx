@@ -95,24 +95,28 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
       ingredient.status ??
       "moderate";
 
-   // child risk as string for display (normalized)
-const childRaw =
-  typeof ingredient.childRisk === "string"
-    ? ingredient.childRisk
-    : typeof ingredient.child_risk === "string"
-      ? ingredient.child_risk
-      : typeof ingredient.childSafe === "boolean"
-        ? ingredient.childSafe ? "Safe" : "Avoid"
-        : typeof ingredient.childSafe === "string"
-          ? ingredient.childSafe
-          : "Unknown";
+  // child risk (normalized once)
+const normalizeChildRisk = (ingredient: any): "Safe" | "Avoid" | "Unknown" => {
+  const v =
+    ingredient.childRisk ??
+    ingredient.child_risk ??
+    ingredient.childSafe ??
+    ingredient.child_safe;
 
-const childRisk =
-  typeof childRaw === "string" && childRaw.trim().toLowerCase() === "safe"
-    ? "Safe"
-    : typeof childRaw === "string" && childRaw.trim().toLowerCase() === "avoid"
-      ? "Avoid"
-      : "Unknown";
+  if (typeof v === "string") {
+    const s = v.trim().toLowerCase();
+    if (s === "safe") return "Safe";
+    if (s === "avoid") return "Avoid";
+  }
+
+  if (typeof v === "boolean") {
+    return v ? "Safe" : "Avoid";
+  }
+
+  return "Unknown";
+};
+
+const childRisk = normalizeChildRisk(ingredient);
 
 
     // badge + FDA text (robust)
