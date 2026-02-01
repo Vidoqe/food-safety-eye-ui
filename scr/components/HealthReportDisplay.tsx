@@ -30,7 +30,25 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
   notes,
   taiwanWarnings
 }) => {
-  const getBadge = (riskLevel: string) => {
+const normalizeChildRisk = (ingredient: any): "Safe" | "Avoid" | "Unknown" => {
+  const v =
+    ingredient.childRisk ??
+    ingredient.child_risk ??
+    ingredient.childSafe ??
+    ingredient.child_safe;
+
+  if (typeof v === "string") {
+    const s = v.trim().toLowerCase();
+    if (s === "safe") return "Safe";
+    if (s === "avoid") return "Avoid";
+  }
+
+  if (typeof v === "boolean") {
+    return v ? "Safe" : "Avoid";
+  }
+
+  return "Unknown";
+};  const getBadge = (riskLevel: string) => {
     switch (riskLevel) {
       case 'safe': return '🟢';
       case 'moderate': return '🟡';
@@ -89,42 +107,9 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
               </tr>
             </thead>
           <tbody>
-  {ingredients.map((ingredient, index) => {
-    const riskLevel =
-      ingredient.risklevel ??
-      ingredient.risk_level ??
-      ingredient.status ??
-      "moderate";
 
   // child risk (normalized once)
-const normalizeChildRisk = (ingredient: any): "Safe" | "Avoid" | "Unknown" => {
-  const v =
-    ingredient.childRisk ??
-    ingredient.child_risk ??
-    ingredient.childSafe ??
-    ingredient.child_safe;
-
-  if (typeof v === "string") {
-    const s = v.trim().toLowerCase();
-    if (s === "safe") return "Safe";
-    if (s === "avoid") return "Avoid";
-  }
-
-  if (typeof v === "boolean") {
-    return v ? "Safe" : "Avoid";
-  }
-
-  return "Unknown";
-};
-
 const childRisk = normalizeChildRisk(ingredient);
-console.log("CHILD_RISK_PIPELINE", {
-  name: ingredient?.name,
-  childRisk: ingredient?.childRisk,
-  child_risk: ingredient?.child_risk,
-  childSafe: ingredient?.childSafe,
-  child_safe: ingredient?.child_safe,
-  normalized: childRisk,
 });
 
     // badge + FDA text (robust)
