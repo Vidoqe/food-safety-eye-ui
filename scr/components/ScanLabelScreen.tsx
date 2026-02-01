@@ -117,7 +117,9 @@ const onAnalyze = useCallback(async () => {
     addLog("Analyzing image...");
 
     const base64 = await fileToBase64(selectedFile);
-    const res = await GPTImageAnalysisService.analyzeProduct(base64);
+addLog(`[UI] picked image chars: ${base64.length}`);
+
+const res = await GPTImageAnalysisService.analyzeProduct(base64)
 
     setResult(res);
     addLog("Analysis done ✅");

@@ -21,6 +21,7 @@ const { language } = useAppContext();
 
   const handleScanLabel = () => {
     console.log("[HomeScreen] Scan Label clicked");
+console.log("VERSION_MARKER HOME_SCREEN 2026-02-01");
     onScanLabel();
   };
 
