@@ -40,12 +40,14 @@ const ApiTestScreen: React.FC<ApiTestScreenProps> = ({ onBack }) => {
     setResult(null);
     
     try {
-      console.log('Testing ingredients API call...');
-      const response = await GPTImageAnalysisService.analyzeProduct(
-        undefined, // no image
-        '水、糖、檸檬酸、苯甲酸鈉、人工香料、黃色5號', // sample ingredients in Chinese
-        undefined // no barcode
-      );
+      console.log("VERSION_MARKER INGREDIENTS_ONLY 2026-02-01");
+console.log("INGREDIENTS_STRING:", '水、糖、檸檬酸、苯甲酸鈉、人工香料、黃色5號');
+
+const response = await GPTImageAnalysisService.analyzeProduct(
+  undefined, // no image
+  '水、糖、檸檬酸、苯甲酸鈉、人工香料、黃色5號',
+  undefined // no barcode
+);
       setResult(response);
     } catch (err: any) {
       setError(err.message);
