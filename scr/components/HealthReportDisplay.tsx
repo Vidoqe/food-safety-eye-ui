@@ -119,20 +119,6 @@ const normalizeChildRisk = (ingredient: any): "Safe" | "Avoid" | "Unknown" => {
 
 const childRisk = normalizeChildRisk(ingredient);
 
-console.log("CHILD_RISK_DEBUG:", ingredient.name, {
-  childRisk: ingredient.childRisk,
-  child_risk: ingredient.child_risk,
-  childSafe: ingredient.childSafe,
-  child_safe: ingredient.child_safe,
-  normalized: childRisk,
-});
-console.log(
-  "CHILD RISK FINAL:",
-  ingredient.name || ingredient.name_en || ingredient.name_zh,
-  childRisk,
-  ingredient
-);
-
     // badge + FDA text (robust)
     const badgeText = (ingredient.badge ?? "").trim();
     const fda =
