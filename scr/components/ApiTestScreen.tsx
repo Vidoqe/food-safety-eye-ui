@@ -54,42 +54,7 @@ const ApiTestScreen: React.FC<ApiTestScreenProps> = ({ onBack }) => {
     }
   };
 
-  // Test with real POST request using exact user code
-  const testRealPost = async () => {
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    
-    try {
-      console.log('🚀 Making real POST request to Supabase edge function...');
-      
-      // Use exact user-provided fetch code
-      const response = await fetch("https://hqgzhlugkxytionyrnor.supabase.co/functions/v1/analyze-product-image", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhxZ3pobHVna3h5dGlvbnlybm9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIwMzQ5OTQsImV4cCI6MjA2NzYxMDk5NH0.LK8YHE_JDl0Mj0vl-SFhAbUvrpLu-rIbL3lakuBqddM"
-        },
-        body: JSON.stringify({
-          image: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA", // test image sample
-          barcode: "4710088412345",
-          user_id: "96882bc1-7a4f-4123-9314-058368d989f4"
-        })
-      });
-
-      const data = await response.json();
-      console.log("✅ Supabase Result:", data);
-      
-      setResult(data);
-    } catch (err: any) {
-      console.error("❌ Supabase Error:", err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
+    return (
     <div className="p-4 space-y-4">
       <div className="flex items-center mb-4">
         <Button onClick={onBack} variant="ghost" className="mr-2">
