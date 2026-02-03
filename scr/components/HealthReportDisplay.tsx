@@ -30,25 +30,8 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
   notes,
   taiwanWarnings
 }) => {
-const normalizeChildRisk = (ingredient: any): "Safe" | "Avoid" | "Unknown" => {
-  const v =
-    ingredient.childRisk ??
-    ingredient.child_risk ??
-    ingredient.childSafe ??
-    ingredient.child_safe;
 
-  if (typeof v === "string") {
-    const s = v.trim().toLowerCase();
-    if (s === "safe") return "Safe";
-    if (s === "avoid") return "Avoid";
-  }
-
-  if (typeof v === "boolean") {
-    return v ? "Safe" : "Avoid";
-  }
-
-  return "Unknown";
-};  const getBadge = (riskLevel: string) => {
+ const getBadge = (riskLevel: string) => {
     switch (riskLevel) {
       case 'safe': return '🟢';
       case 'moderate': return '🟡';
@@ -108,9 +91,7 @@ const normalizeChildRisk = (ingredient: any): "Safe" | "Avoid" | "Unknown" => {
             </thead>
           <tbody>
 
-  // child risk (normalized once)
-const childRisk = normalizeChildRisk(ingredient);
-});
+  });
 
     // badge + FDA text (robust)
     const badgeText = (ingredient.badge ?? "").trim();
@@ -152,16 +133,7 @@ const childRisk = normalizeChildRisk(ingredient);
           {getRiskText(riskLevel)}
         </td>
 
-       <td className="border border-gray-300 p-2">
-  {language === "zh"
-    ? childRisk === "Safe"
-      ? "安全"
-      : childRisk === "Avoid"
-      ? "避免"
-      : "未知"
-    : childRisk}
-</td>
-        {/* Badge */}
+              {/* Badge */}
        <td className="border border-gray-300 p-2 text-center">
   {ingredient.badge ?? getBadge(riskLevel)}
 </td>
