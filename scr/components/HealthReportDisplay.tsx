@@ -133,6 +133,11 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
           {getRiskText(riskLevel)}
         </td>
 
+{/* Child Safety */}
+<td className="border border-gray-300 p-2 text-center">
+  —
+</td>
+
               {/* Badge */}
        <td className="border border-gray-300 p-2 text-center">
   {ingredient.badge ?? getBadge(riskLevel)}
