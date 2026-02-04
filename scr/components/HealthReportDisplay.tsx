@@ -102,33 +102,28 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
       ingredient.taiwanFDARegulationText ??
       "—";
 
-    // name display (ZH on top, EN smaller under it)
-    const zh = (ingredient.name_zh ?? ingredient.name ?? "").trim();
-    const en = (ingredient.name_en ?? ingredient.reason ?? "").trim();
-
-    return (
+       return (
       <tr key={index}>
         {/* Ingredient */}
 <td className="border border-gray-300 p-2">
   {(() => {
-    const zh = (ingredient.name_zh ?? ingredient.chinese ?? ingredient.name ?? "").trim();
-    const en = (ingredient.name_en ?? ingredient.english ?? ingredient.reason ?? "").trim();
+    const en =
+      (ingredient.name_en ??
+        ingredient.english ??
+        ingredient.reason ??
+        ingredient.name ??
+        "").trim();
 
     return (
       <div>
         <div className="font-medium">
-          {zh || en || "—"}
+          {en || "-"}
         </div>
-
-        {zh && en && en !== zh && (
-          <div className="text-sm text-gray-500">
-            {en}
-          </div>
-        )}
       </div>
     );
   })()}
-</td>        {/* Risk Level */}
+</td>
+ {/* Risk Level */}
         <td className="border border-gray-300 p-2">
           {getRiskText(riskLevel)}
         </td>
