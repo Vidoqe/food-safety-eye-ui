@@ -105,31 +105,19 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
        return (
       <tr key={index}>
         {/* Ingredient */}
+{/* Ingredient */}
 <td className="border border-gray-300 p-2">
   {(() => {
-    // Get the best "English" candidate
-    const raw =
+    const en =
       (ingredient.name_en ??
         ingredient.english ??
         ingredient.reason ??
         ingredient.name ??
         "").trim();
 
-    // If it's like: "乳酸鈉液 (Sodium lactate solution)"
-    // keep only what's inside (...) if it exists
-    const paren = raw.match(/\(([^)]+)\)/);
-    let en = paren ? paren[1].trim() : raw;
-
-    // If still has Chinese mixed in, remove CJK chars
-    en = en.replace(/[\u4E00-\u9FFF\u3400-\u4DBF\u3040-\u30FF\uAC00-\uD7AF]/g, "").trim();
-
-    // Clean extra symbols/spaces left behind
-    en = en.replace(/\s{2,}/g, " ").replace(/^[-–—•,，/]+/, "").trim();
-
     return <div className="font-medium">{en || "-"}</div>;
   })()}
 </td>
-
  {/* Risk Level */}
         <td className="border border-gray-300 p-2">
           {getRiskText(riskLevel)}
