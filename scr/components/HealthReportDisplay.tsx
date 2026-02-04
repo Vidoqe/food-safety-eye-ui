@@ -106,16 +106,26 @@ const HealthReportDisplay: React.FC<HealthReportDisplayProps> = ({
       <tr key={index}>
         {/* Ingredient */}
 {/* Ingredient */}
+{/* Ingredient */}
 <td className="border border-gray-300 p-2">
   {(() => {
+    // English ONLY (no Chinese fallback)
     const en =
       (ingredient.name_en ??
         ingredient.english ??
-        ingredient.reason ??
-        ingredient.name ??
+        ingredient.nameEn ??
+        ingredient.en ??
         "").trim();
 
-    return <div className="font-medium">{en || "-"}</div>;
+    // If you sometimes get "中文 (English)" in ONE field, extract English in ()
+    const extracted =
+      !en && typeof ingredient.name === "string" && ingredient.name.includes("(")
+        ? ingredient.name.split("(").pop()?.replace(")", "").trim()
+        : "";
+
+    const finalName = en || extracted || "-";
+
+    return <div className="font-medium">{finalName}</div>;
   })()}
 </td>
  {/* Risk Level */}
