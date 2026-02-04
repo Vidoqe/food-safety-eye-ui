@@ -40,7 +40,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [creditSummary, setCreditSummary] = useState<CreditSummary | null>(null);
-  const [language, setLanguage] = useState<'en' | 'zh'>('zh');
+  const [language, setLanguage] = useState<'en' | 'zh'>('en');
   const [showUpgradeConfirmation, setShowUpgradeConfirmation] = useState(false);
   const [upgradedPlan, setUpgradedPlan] = useState<'premium' | 'gold' | null>(null);
 
