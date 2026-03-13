@@ -1,9 +1,6 @@
 import React, { useCallback, useRef, useState } from "react";
-import { useAppContext } from "../contexts/AppContext";
 import GPTImageAnalysisService, { type GPTAnalysisResult } from "../services/gptImageAnalysis";
 const ScanLabelScreen: React.FC<Props> = ({ onImageSelected }) => {
-const { language } = useAppContext();
-const isZh = language?.startsWith("zh");
 const [result, setResult] = useState<GPTAnalysisResult | null>(null);
 const [selectedFile, setSelectedFile] = useState<File | null>(null);
 const [loading, setLoading] = useState(false);
@@ -138,7 +135,7 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
 
   return (
     <div className="px-4 py-6">
-     <h1 className="text-2xl font-bold text-center mb-4">ZZZ TEST TITLE</h1>
+      <h1 className="text-2xl font-bold text-center mb-4">Scan Product Label</h1>
 
       <div className="mx-auto max-w-md">
         {/* Hidden file input the buttons will trigger */}
@@ -158,7 +155,7 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
           ) : (
             <div className="text-center text-gray-500">
               <div className="text-5xl mb-2">📷</div>
-              <div>ZZZ PLACEHOLDER</div>
+              <div>Capture ingredient list</div>
             </div>
           )}
         </div>
@@ -168,7 +165,7 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
           onClick={openCamera}
           className="block w-full text-center rounded-xl bg-green-600 py-3 text-white text-lg font-semibold hover:bg-green-700 active:scale-[0.98] transition"
         >
-          ZZZ PHOTO
+          Take Photo (label)
         </button>
 
         {/* Secondary button (gallery) */}
@@ -176,13 +173,13 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
           onClick={() => inputRef.current?.click()}
           className="mt-3 block w-full text-center rounded-xl bg-gray-100 py-3 text-gray-800 hover:bg-gray-200 active:scale-[0.98] transition"
         >
-          ZZZ GALLERY
+          Choose From Gallery
         <button
   onClick={onAnalyze}
   disabled={loading || !selectedFile}
   className="mt-3 block w-full text-center rounded-xl bg-blue-600 py-3 text-white text-lg font-semibold disabled:opacity-50"
 >
-  {loading ? "ZZZ LOADING" : "ZZZ ANALYZE"}
+  {loading ? "Analyzing..." : "Analyze"}
 </button>
 
 {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
