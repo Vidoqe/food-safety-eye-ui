@@ -3,7 +3,7 @@ import { useAppContext } from "../contexts/AppContext";
 import GPTImageAnalysisService, { type GPTAnalysisResult } from "../services/gptImageAnalysis";
 const ScanLabelScreen: React.FC<Props> = ({ onImageSelected }) => {
 const { language } = useAppContext();
-const isZh = language === "zh";
+const isZh = language === "zh" || language === "zh_TW";
 const [result, setResult] = useState<GPTAnalysisResult | null>(null);
 const [selectedFile, setSelectedFile] = useState<File | null>(null);
 const [loading, setLoading] = useState(false);
