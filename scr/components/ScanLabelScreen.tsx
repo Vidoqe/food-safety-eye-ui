@@ -138,9 +138,7 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
 
   return (
     <div className="px-4 py-6">
-      <h1 className="text-2xl font-bold text-center mb-4">
-  {isZh ? "掃描產品標籤" : "Scan Product Label"}
-</h1>
+     <h1 className="text-2xl font-bold text-center mb-4">ZZZ TEST TITLE</h1>
 
       <div className="mx-auto max-w-md">
         {/* Hidden file input the buttons will trigger */}
@@ -160,7 +158,7 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
           ) : (
             <div className="text-center text-gray-500">
               <div className="text-5xl mb-2">📷</div>
-              <div>{isZh ? "拍攝成分表" : "Capture ingredient list"}</div>
+              <div>ZZZ PLACEHOLDER</div>
             </div>
           )}
         </div>
@@ -170,7 +168,7 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
           onClick={openCamera}
           className="block w-full text-center rounded-xl bg-green-600 py-3 text-white text-lg font-semibold hover:bg-green-700 active:scale-[0.98] transition"
         >
-          Take Photo (label)
+          ZZZ PHOTO
         </button>
 
         {/* Secondary button (gallery) */}
@@ -178,13 +176,13 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
           onClick={() => inputRef.current?.click()}
           className="mt-3 block w-full text-center rounded-xl bg-gray-100 py-3 text-gray-800 hover:bg-gray-200 active:scale-[0.98] transition"
         >
-          Choose From Gallery
+          ZZZ GALLERY
         <button
   onClick={onAnalyze}
   disabled={loading || !selectedFile}
   className="mt-3 block w-full text-center rounded-xl bg-blue-600 py-3 text-white text-lg font-semibold disabled:opacity-50"
 >
-  {loading ? "Analyzing..." : "Analyze"}
+  {loading ? "ZZZ LOADING" : "ZZZ ANALYZE"}
 </button>
 
 {error && <div className="mt-3 text-sm text-red-600">{error}</div>}
