@@ -17,7 +17,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onSettings,
 }) => {
 const { language } = useAppContext();
-  const isZh = false;
+  const isZh = language === "zh";
 
   const handleScanLabel = () => {
     console.log("[HomeScreen] Scan Label clicked");
