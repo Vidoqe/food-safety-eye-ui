@@ -17,11 +17,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({
   onSettings,
 }) => {
 const { language } = useAppContext();
-  const isZh = language === "zh";
+  const isZh = false;
 
   const handleScanLabel = () => {
     console.log("[HomeScreen] Scan Label clicked");
-console.log("VERSION_MARKER HOME_SCREEN 2026-02-01");
+console.log("VERSION_MARKER HOME_SCREEN 2026-02-01");F
     onScanLabel();
   };
 
