@@ -52,20 +52,21 @@ const IngredientRiskTable: React.FC<IngredientRiskTableProps> = ({ ingredients }
   };
 
   const getChildRiskText = (childSafety: string | boolean | undefined): string => {
-const getBadgeText = (badge: string | undefined, status: string): string => {
-  const value = (badge || "").toLowerCase().trim();
+const getBadgeText = (badge: any, status: string): string => {
+  const safe = typeof badge === "string" ? badge : "";
+  const value = safe.toLowerCase().trim();
 
   if (language === "zh") {
     if (value === "additive") return "添加物";
     if (value === "badge") return "標誌";
-    return badge || BADGE_FALLBACK[status] || "🟡";
+    return safe || BADGE_FALLBACK[status] || "🟡";
   }
 
   if (value === "添加物") return "Additive";
   if (value === "標誌") return "Badge";
-  return badge || BADGE_FALLBACK[status] || "🟡";
+  return safe || BADGE_FALLBACK[status] || "🟡";
 };
-    const val = typeof childSafety === 'string' ? childSafety : (childSafety ? 'yes' : 'no');
+      const val = typeof childSafety === 'string' ? childSafety : (childSafety ? 'yes' : 'no');
     if (language === 'zh') {
       switch (val) {
         case 'yes': return '是';
