@@ -1,13 +1,13 @@
-// scr/components/ScanScreen.tsx
 import React, { useRef, useState } from "react";
-import  GPTImageAnalysisService  from "../services/gptImageAnalysis";
+import GPTImageAnalysisService from "../services/gptImageAnalysis";
 import { useAppContext } from "../contexts/AppContext";
 
 export default function ScanScreen({ type, onBack, onResult }) {
   const { language } = useAppContext();
   const isZh = language === "zh";
 
-const [preview, setPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
