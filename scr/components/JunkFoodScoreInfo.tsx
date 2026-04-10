@@ -1,5 +1,5 @@
 import React from 'react';
-import { useUser } from '@/contexts/UserContext';
+import { useAppContext } from '../contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft } from 'lucide-react';
@@ -9,7 +9,7 @@ interface JunkFoodScoreInfoProps {
 }
 
 const JunkFoodScoreInfo: React.FC<JunkFoodScoreInfoProps> = ({ onBack }) => {
-  const { language } = useUser();
+  const { language } = useAppContext();
 
   const content = {
     en: {

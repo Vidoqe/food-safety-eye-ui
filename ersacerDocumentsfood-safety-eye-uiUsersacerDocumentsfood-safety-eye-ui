@@ -1,0 +1,117 @@
+[35meslint.config.js[m[36m:[m[32m12[m[36m:[m    [1;31mlanguage[mOptions: {
+[35mscr/components/AppLogo.tsx[m[36m:[m[32m16[m[36m:[mconst { [1;31mlanguage[m } = useAppContext();
+[35mscr/components/AppLogo.tsx[m[36m:[m[32m17[m[36m:[mconst t = useTranslation([1;31mlanguage[m);
+[35mscr/components/ExtraCreditsSection.tsx[m[36m:[m[32m12[m[36m:[m  const { [1;31mlanguage[m } = useUser();
+[35mscr/components/ExtraCreditsSection.tsx[m[36m:[m[32m13[m[36m:[m  const isZh = [1;31mlanguage[m === 'zh';
+[35mscr/components/HomeScreen.tsx[m[36m:[m[32m19[m[36m:[mconst { [1;31mlanguage[m } = useAppContext();
+[35mscr/components/HomeScreen.tsx[m[36m:[m[32m20[m[36m:[m  const isZh = [1;31mlanguage[m === "zh";
+[35mscr/components/HomeScreen.tsx[m[36m:[m[32m60[m[36m:[m          <TrustIcons [1;31mlanguage[m={[1;31mlanguage[m} />
+[35mscr/components/IngredientRiskAnalysis.tsx[m[36m:[m[32m7[m[36m:[m  [1;31mlanguage[m: 'zh' | 'en';
+[35mscr/components/IngredientRiskAnalysis.tsx[m[36m:[m[32m12[m[36m:[m  [1;31mlanguage[m 
+[35mscr/components/IngredientRiskAnalysis.tsx[m[36m:[m[32m34[m[36m:[m            {[1;31mlanguage[m === 'zh' ? 'Ingredient Risk Analysis (台灣食品風險分析)' : 'Ingredient Risk Analysis (Taiwan Food Risk Analysis)'}
+[35mscr/components/IngredientRiskAnalysis.tsx[m[36m:[m[32m44[m[36m:[m                    {[1;31mlanguage[m === 'zh' ? 'Ingredient' : 'Ingredient'}
+[35mscr/components/IngredientRiskAnalysis.tsx[m[36m:[m[32m47[m[36m:[m                    {[1;31mlanguage[m === 'zh' ? 'Risk Level' : 'Risk Level'}
+[35mscr/components/IngredientRiskAnalysis.tsx[m[36m:[m[32m50[m[36m:[m                    {[1;31mlanguage[m === 'zh' ? 'Child Risk' : 'Child Risk'}
+[35mscr/components/IngredientRiskAnalysis.tsx[m[36m:[m[32m53[m[36m:[m                    {[1;31mlanguage[m === 'zh' ? 'Badge' : 'Badge'}
+[35mscr/components/IngredientRiskAnalysis.tsx[m[36m:[m[32m84[m[36m:[m            {[1;31mlanguage[m === 'zh' ? 'No ingredients detected for analysis.' : 'No ingredients detected for analysis.'}
+[35mscr/components/IngredientRiskTable.tsx[m[36m:[m[32m27[m[36m:[m  const { [1;31mlanguage[m } = useAppContext();
+[35mscr/components/IngredientRiskTable.tsx[m[36m:[m[32m36[m[36m:[m    if ([1;31mlanguage[m === 'zh') {
+[35mscr/components/IngredientRiskTable.tsx[m[36m:[m[32m56[m[36m:[m    if ([1;31mlanguage[m === 'zh') {
+[35mscr/components/IngredientRiskTable.tsx[m[36m:[m[32m73[m[36m:[m        {[1;31mlanguage[m === 'zh' ? '成分風險分析表' : 'Ingredient Risk Analysis'}
+[35mscr/components/IngredientRiskTable.tsx[m[36m:[m[32m81[m[36m:[m                {[1;31mlanguage[m === 'zh' ? '成分' : 'Ingredient'}
+[35mscr/components/IngredientRiskTable.tsx[m[36m:[m[32m84[m[36m:[m                {[1;31mlanguage[m === 'zh' ? '風險等級' : 'Risk Level'}
+[35mscr/components/IngredientRiskTable.tsx[m[36m:[m[32m87[m[36m:[m                {[1;31mlanguage[m === 'zh' ? '兒童風險？' : 'Child Risk?'}
+[35mscr/components/IngredientRiskTable.tsx[m[36m:[m[32m90[m[36m:[m                {[1;31mlanguage[m === 'zh' ? '標誌' : 'Badge'}
+[35mscr/components/IngredientRiskTable.tsx[m[36m:[m[32m93[m[36m:[m                {[1;31mlanguage[m === 'zh' ? '台灣食藥署法規' : 'Taiwan FDA Regulation'}
+[35mscr/components/IngredientRiskTable.tsx[m[36m:[m[32m102[m[36m:[m                  {[1;31mlanguage[m === 'zh' ? ingredient.chinese : ingredient.name}
+[35mscr/components/IngredientRiskTable.tsx[m[36m:[m[32m120[m[36m:[m                    ([1;31mlanguage[m === 'zh' ? '無特定限制' : 'No specific restriction')}
+[35mscr/components/IngredientTable.tsx[m[36m:[m[32m12[m[36m:[m  const { [1;31mlanguage[m } = useAppContext();
+[35mscr/components/IngredientTable.tsx[m[36m:[m[32m28[m[36m:[m    if ([1;31mlanguage[m === 'zh') {
+[35mscr/components/IngredientTable.tsx[m[36m:[m[32m46[m[36m:[m    if ([1;31mlanguage[m === 'zh') {
+[35mscr/components/IngredientTable.tsx[m[36m:[m[32m57[m[36m:[m          {[1;31mlanguage[m === 'zh' ? '未發現台灣管制物質' : 'No Taiwan-regulated substances found'}
+[35mscr/components/IngredientTable.tsx[m[36m:[m[32m66[m[36m:[m        {[1;31mlanguage[m === 'zh' ? '台灣管制物質分析表' : 'Taiwan-Regulated Substances Analysis'}
+[35mscr/components/IngredientTable.tsx[m[36m:[m[32m73[m[36m:[m                {[1;31mlanguage[m === 'zh' ? '成分' : 'Ingredient'}
+[35mscr/components/IngredientTable.tsx[m[36m:[m[32m76[m[36m:[m                {[1;31mlanguage[m === 'zh' ? '風險等級' : 'Risk Level'}
+[35mscr/components/IngredientTable.tsx[m[36m:[m[32m79[m[36m:[m                {[1;31mlanguage[m === 'zh' ? '兒童安全' : 'Child Safety'}
+[35mscr/components/IngredientTable.tsx[m[36m:[m[32m82[m[36m:[m                {[1;31mlanguage[m === 'zh' ? '標記' : 'Badge'}
+[35mscr/components/IngredientTable.tsx[m[36m:[m[32m120[m[36m:[m          {[1;31mlanguage[m === 'zh' ? '詳細資訊：' : 'Detailed Information:'}
+[35mscr/components/JunkFoodScoreInfo.tsx[m[36m:[m[32m12[m[36m:[m  const { [1;31mlanguage[m } = useUser();
+[35mscr/components/JunkFoodScoreInfo.tsx[m[36m:[m[32m35[m[36m:[m  const t = content[[1;31mlanguage[m];
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m23[m[36m:[m  const { [1;31mlanguage[m } = useAppContext();
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m30[m[36m:[m  // Map internal verdict to the UI "overallSafety" label (respect [1;31mlanguage[m)
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m34[m[36m:[m        return [1;31mlanguage[m === 'zh' ? '安全' : 'Safe';
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m36[m[36m:[m        return [1;31mlanguage[m === 'zh' ? '中等' : 'Moderate';
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m38[m[36m:[m        return [1;31mlanguage[m === 'zh' ? '避免' : 'Avoid';
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m40[m[36m:[m        return [1;31mlanguage[m === 'zh' ? '未知' : 'Unknown';
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m46[m[36m:[m      setError([1;31mlanguage[m === 'zh' ? '請輸入成分' : 'Please enter ingredients.');
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m65[m[36m:[m          [1;31mlanguage[m === 'zh' ? 'zh' : 'en'
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m135[m[36m:[m      setError([1;31mlanguage[m === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m142[m[36m:[m        ← {[1;31mlanguage[m === 'zh' ? '返回' : 'Back'}
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m147[m[36m:[m          {[1;31mlanguage[m === 'zh' ? '手動輸入成分' : 'Manual Input'}
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m154[m[36m:[m            [1;31mlanguage[m === 'zh'
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m166[m[36m:[m              ? [1;31mlanguage[m === 'zh'
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m169[m[36m:[m              : [1;31mlanguage[m === 'zh'
+[35mscr/components/ManualInputScreen.tsx[m[36m:[m[32m174[m[36m:[m            {[1;31mlanguage[m === 'zh' ? '清除' : 'Clear'}
+[35mscr/components/PaymentModal.tsx[m[36m:[m[32m17[m[36m:[m  const { [1;31mlanguage[m, user, upgradeUser, addBonusScans } = useUser();
+[35mscr/components/PaymentModal.tsx[m[36m:[m[32m19[m[36m:[m  const isZh = [1;31mlanguage[m === 'zh';
+[35mscr/components/PlanComparisonTable.tsx[m[36m:[m[32m12[m[36m:[m  const { [1;31mlanguage[m, plan } = useUser();
+[35mscr/components/PlanComparisonTable.tsx[m[36m:[m[32m13[m[36m:[m  const isZh = [1;31mlanguage[m === 'zh';
+[35mscr/components/ProductSummary.tsx[m[36m:[m[32m8[m[36m:[m  [1;31mlanguage[m: 'zh' | 'en';
+[35mscr/components/ProductSummary.tsx[m[36m:[m[32m15[m[36m:[m  [1;31mlanguage[m 
+[35mscr/components/ProductSummary.tsx[m[36m:[m[32m23[m[36m:[m            {[1;31mlanguage[m === 'zh' ? 'Product Summary' : 'Product Summary'}
+[35mscr/components/ProductSummary.tsx[m[36m:[m[32m30[m[36m:[m              {[1;31mlanguage[m === 'zh' ? 'Product Name:' : 'Product Name:'}
+[35mscr/components/ProductSummary.tsx[m[36m:[m[32m37[m[36m:[m              {[1;31mlanguage[m === 'zh' ? 'Scanned Ingredients:' : 'Scanned Ingredients:'}
+[35mscr/components/ProductSummary.tsx[m[36m:[m[32m47[m[36m:[m                {[1;31mlanguage[m === 'zh' ? 'Barcode:' : 'Barcode:'}
+[35mscr/components/ResultScreen.tsx[m[36m:[m[32m80[m[36m:[m  const { [1;31mlanguage[m } = useAppContext(); // 'en' | 'zh'
+[35mscr/components/ResultScreen.tsx[m[36m:[m[32m86[m[36m:[m          {[1;31mlanguage[m === 'zh' ? '尚未產生結果。' : 'No result yet.'}
+[35mscr/components/ResultScreen.tsx[m[36m:[m[32m93[m[36m:[m            {[1;31mlanguage[m === 'zh' ? '返回' : 'Back'}
+[35mscr/components/ResultScreen.tsx[m[36m:[m[32m114[m[36m:[m        <h2 className="text-2xl font-semibold">{sectionTitle('overview', [1;31mlanguage[m)}</h2>
+[35mscr/components/ResultScreen.tsx[m[36m:[m[32m120[m[36m:[m            {[1;31mlanguage[m === 'zh' ? '返回' : 'Back'}
+[35mscr/components/ResultScreen.tsx[m[36m:[m[32m131[m[36m:[m              {verdictText(verdict, [1;31mlanguage[m)}
+[35mscr/components/ResultScreen.tsx[m[36m:[m[32m145[m[36m:[m          <h3 className="text-lg font-semibold mb-2">{sectionTitle('tips', [1;31mlanguage[m)}</h3>
+[35mscr/components/ResultScreen.tsx[m[36m:[m[32m156[m[36m:[m        <h3 className="text-lg font-semibold mb-3">{sectionTitle('details', [1;31mlanguage[m)}</h3>
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m17[m[36m:[m  const { user, [1;31mlanguage[m } = useUser();
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m36[m[36m:[m      healthy: [1;31mlanguage[m === 'zh' ? '安全' : 'Safe',
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m37[m[36m:[m      moderate: [1;31mlanguage[m === 'zh' ? '中等' : 'Moderate',
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m38[m[36m:[m      harmful: [1;31mlanguage[m === 'zh' ? '有害' : 'Harmful'
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m49[m[36m:[m    return date.toLocaleDateString([1;31mlanguage[m === 'zh' ? 'zh-CN' : 'en-US', {
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m61[m[36m:[m      case 'gold': return [1;31mlanguage[m === 'zh' ? '黃金' : 'Gold';
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m62[m[36m:[m      case 'premium': return [1;31mlanguage[m === 'zh' ? '高級' : 'Premium';
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m63[m[36m:[m      default: return [1;31mlanguage[m === 'zh' ? '免費' : 'Free';
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m73[m[36m:[m            {[1;31mlanguage[m === 'zh' ? '返回' : 'Back'}
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m81[m[36m:[m                  {[1;31mlanguage[m === 'zh' ? '清除全部' : 'Clear All'}
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m87[m[36m:[m                    {[1;31mlanguage[m === 'zh' ? '清除掃描記錄' : 'Clear Scan History'}
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m90[m[36m:[m                    {[1;31mlanguage[m === 'zh' 
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m96[m[36m:[m                  <AlertDialogCancel>{[1;31mlanguage[m === 'zh' ? '取消' : 'Cancel'}</AlertDialogCancel>
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m98[m[36m:[m                    {[1;31mlanguage[m === 'zh' ? '清除' : 'Clear'}
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m110[m[36m:[m              {[1;31mlanguage[m === 'zh' ? '掃描記錄' : 'Scan History'}
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m113[m[36m:[m              {[1;31mlanguage[m === 'zh' 
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m125[m[36m:[m                {[1;31mlanguage[m === 'zh' ? '暫無掃描記錄' : 'No Scan History'}
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m128[m[36m:[m                {[1;31mlanguage[m === 'zh' 
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m162[m[36m:[m                            {[1;31mlanguage[m === 'zh' ? '刪除掃描記錄' : 'Delete Scan'}
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m165[m[36m:[m                            {[1;31mlanguage[m === 'zh' 
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m171[m[36m:[m                          <AlertDialogCancel>{[1;31mlanguage[m === 'zh' ? '取消' : 'Cancel'}</AlertDialogCancel>
+[35mscr/components/ScanHistoryScreen.tsx[m[36m:[m[32m173[m[36m:[m                            {[1;31mlanguage[m === 'zh' ? '刪除' : 'Delete'}
+[35mscr/components/ScanInfoDisplay.tsx[m[36m:[m[32m9[m[36m:[m  [1;31mlanguage[m: 'zh' | 'en';
+[35mscr/components/ScanInfoDisplay.tsx[m[36m:[m[32m16[m[36m:[m  [1;31mlanguage[m 
+[35mscr/components/ScanInfoDisplay.tsx[m[36m:[m[32m38[m[36m:[m            {[1;31mlanguage[m === 'zh' ? 'Scan Info' : 'Scan Info'}
+[35mscr/components/ScanInfoDisplay.tsx[m[36m:[m[32m46[m[36m:[m              {[1;31mlanguage[m === 'zh' ? 'Overall Risk:' : 'Overall Risk:'}
+[35mscr/components/ScanInfoDisplay.tsx[m[36m:[m[32m55[m[36m:[m            {[1;31mlanguage[m === 'zh' ? 'Scans Left This Month:' : 'Scans Left This Month:'}
+[35mscr/components/ScanInfoDisplay.tsx[m[36m:[m[32m66[m[36m:[m              {[1;31mlanguage[m === 'zh' ? 'Credits Expiry:' : 'Credits Expiry:'}
+[35mscr/components/ScanLabelScreen.tsx[m[36m:[m[32m5[m[36m:[mconst { [1;31mlanguage[m } = useAppContext();
+[35mscr/components/ScanLabelScreen.tsx[m[36m:[m[32m6[m[36m:[mconst isZh = [1;31mlanguage[m === "zh";
+[35mscr/components/ScanLabelScreen.tsx[m[36m:[m[32m176[m[36m:[m{[1;31mlanguage[m === "zh" ? "拍照" : "Take Photo"}
+[35mscr/components/ScanLabelScreen.tsx[m[36m:[m[32m185[m[36m:[m  {[1;31mlanguage[m === "zh" ? "從相簿選擇" : "Choose From Gallery"}
+[35mscr/components/ScanLabelScreen.tsx[m[36m:[m[32m195[m[36m:[m  ? ([1;31mlanguage[m === "zh" ? "分析中..." : "Analyzing...")
+[35mscr/components/ScanLabelScreen.tsx[m[36m:[m[32m196[m[36m:[m  : ([1;31mlanguage[m === "zh" ? "分析" : "Analyze")}
+[35mscr/components/ScanLimitDialog.tsx[m[36m:[m[32m18[m[36m:[m  const { user, [1;31mlanguage[m, upgradeUser, getScanStatusMessage } = useUser();
+[35mscr/components/ScanLimitDialog.tsx[m[36m:[m[32m22[m[36m:[m  const isZh = [1;31mlanguage[m === 'zh';
+[35mscr/components/SettingsScreen.tsx[m[36m:[m[32m22[m[36m:[m  const { [1;31mlanguage[m, setLanguage, } = useAppContext();
+[35mscr/components/SettingsScreen.tsx[m[36m:[m[32m23[m[36m:[m  const { user, [1;31mlanguage[m: userLanguage, setLanguage: setUserLanguage } = useUser();
+[35mscr/components/SettingsScreen.tsx[m[36m:[m[32m24[m[36m:[m  const t = useTranslation([1;31mlanguage[m);
+[35mscr/components/SettingsScreen.tsx[m[36m:[m[32m41[m[36m:[m    if (!user) return [1;31mlanguage[m === 'zh' ? '免費版' : 'Free';
+[35mscr/components/SettingsScreen.tsx[m[36m:[m[32m45[m[36m:[m        return [1;31mlanguage[m === 'zh' ? '高級版' : 'Premium';
+[35mscr/components/SettingsScreen.tsx[m[36m:[m[32m47[m[36m:[m        return [1;31mlanguage[m === 'zh' ? '黃金版' : 'Gold';
+[35mscr/components/SettingsScreen.tsx[m[36m:[m[32m49[m[36m:[m        return [1;31mlanguage[m === 'zh' ? '免費版' : 'Free';
+[35mscr/components/SettingsScreen.tsx[m[36m:[m[32m88[m[36m:[m                {[1;31mlanguage[m === 'zh' ? '當前方案' : 'Current Plan'}: {getPlanDisplayName()}
+[35mscr/components/SettingsScreen.tsx[m[36m:[m[32
