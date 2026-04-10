@@ -119,7 +119,9 @@ const getBadgeText = (badge: any, status: string): string => {
             {sorted.map((ingredient, idx) => (
               <TableRow key={idx}>
                 <TableCell className="font-medium">
-                  {language === 'zh' ? ingredient.chinese : ingredient.name}
+                  {language === 'zh'
+  ? (ingredient.name_zh || ingredient.chinese || ingredient.name)
+  : (ingredient.name_en || ingredient.name)}
                 </TableCell>
 
                 <TableCell className="text-center">
