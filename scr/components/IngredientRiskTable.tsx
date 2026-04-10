@@ -51,7 +51,26 @@ const IngredientRiskTable: React.FC<IngredientRiskTableProps> = ({ ingredients }
     }
   };
 
-  const getChildRiskText = (childSafety: string | boolean | undefined): string => {
+ const getChildRiskText = (childSafety: string | boolean | undefined): string => {
+  const val = typeof childSafety === 'string'
+    ? childSafety
+    : (childSafety ? 'yes' : 'no');
+
+  if (language === 'zh') {
+    switch (val) {
+      case 'yes': return '是';
+      case 'no': return '否';
+      default: return '未知';
+    }
+  }
+
+  switch (val) {
+    case 'yes': return 'Yes';
+    case 'no': return 'No';
+    default: return 'Unknown';
+  }
+};
+
 const getBadgeText = (badge: any, status: string): string => {
   const safe = typeof badge === "string" ? badge : "";
   const value = safe.toLowerCase().trim();
@@ -66,20 +85,7 @@ const getBadgeText = (badge: any, status: string): string => {
   if (value === "標誌") return "Badge";
   return safe || BADGE_FALLBACK[status] || "🟡";
 };
-      const val = typeof childSafety === 'string' ? childSafety : (childSafety ? 'yes' : 'no');
-    if (language === 'zh') {
-      switch (val) {
-        case 'yes': return '是';
-        case 'no': return '否';
-        default: return '未知';
-      }
-    }
-    switch (val) {
-      case 'yes': return 'Yes';
-      case 'no': return 'No';
-      default: return 'Unknown';
-    }
-  };
+
 
   return (
     <div className="space-y-4">
