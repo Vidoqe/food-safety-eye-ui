@@ -104,7 +104,7 @@ const isZh = true;
   return (
     <div className="mx-auto max-w-md p-4">
       <h1 className="text-2xl font-bold mb-4">
-  Scan Product Label"
+  {isZh ? "掃描產品標籤" : "Scan Product Label"}
 </h1>
 
       {/* Hidden input – this is what mobile browsers need */}
@@ -127,7 +127,7 @@ const isZh = true;
         ) : (
           <div className="text-gray-400 text-center">
             <div className="text-5xl mb-2">📷</div>
-            <div>Capture ingredient list</div>
+            <div>{isZh ? "拍攝成分列表" : "Capture ingredient list"}</div>
 
           </div>
         )}
@@ -138,14 +138,16 @@ const isZh = true;
           onClick={onClickTakePhoto}
           className="flex-1 rounded-lg bg-emerald-600 px-4 py-3 text-white font-medium hover:bg-emerald-700"
         >
-          Take Photo
+          {isZh ? "拍照" : "Take Photo"}
         </button>
         <button
           onClick={onAnalyze}
           disabled={!preview || loading}
           className="flex-1 rounded-lg bg-blue-600 px-4 py-3 text-white font-medium hover:bg-blue-700 disabled:opacity-50"
         >
-          {loading ?  "Analyzing..." : "Analyze"}
+         {loading
+  ? (isZh ? "分析中..." : "Analyzing...")
+  : (isZh ? "分析" : "Analyze")}
         </button>
       </div>
 
