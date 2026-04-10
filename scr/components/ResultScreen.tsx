@@ -130,11 +130,11 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
             <div className="text-lg font-medium">
               {verdictText(verdict, language)}
             </div>
-            {!!result.summary && (
-              <div className="text-gray-600 mt-1">
-                {result.summary}
-              </div>
-            )}
+         {typeof result.summary === 'string' && !result.summary.startsWith('{') && (
+  <div className="text-gray-600 mt-1">
+    {result.summary}
+  </div>
+)}
           </div>
         </div>
       </div>
