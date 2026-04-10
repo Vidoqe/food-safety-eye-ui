@@ -139,7 +139,7 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
   return (
     <div className="px-4 py-6">
      <h1 className="text-2xl font-bold text-center mb-4">
-  {isZh ? "掃描產品標籤" : "Scan Product Label"}
+   : "Scan Product Label"}
 </h1>
 
       <div className="mx-auto max-w-md">
@@ -161,7 +161,7 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
             <div className="text-center text-gray-500">
               <div className="text-5xl mb-2">📷</div>
              <div>
-  {isZh ? "拍攝成分列表" : "Capture ingredient list"}
+   : "Capture ingredient list"}
 </div>
             </div>
           )}
@@ -172,27 +172,27 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
           onClick={openCamera}
           className="block w-full text-center rounded-xl bg-green-600 py-3 text-white text-lg font-semibold hover:bg-green-700 active:scale-[0.98] transition"
         >
-          {isZh ? "拍照" : "Take Photo"}
-        </button>
+          
+Take Photo 
+       </button>
 
         {/* Secondary button (gallery) */}
-        <button
-          onClick={() => inputRef.current?.click()}
-          className="mt-3 block w-full text-center rounded-xl bg-gray-100 py-3 text-gray-800 hover:bg-gray-200 active:scale-[0.98] transition"
-        >
-          Choose From Gallery
-        <button
-  onClick={onAnalyze}
-  disabled={loading || !selectedFile}
-  className="mt-3 block w-full text-center rounded-xl bg-blue-600 py-3 text-white text-lg font-semibold disabled:opacity-50"
+{/* Gallery button */}
+<button
+  onClick={() => inputRef.current?.click()}
+  className="mt-3 block w-full text-center rounded-xl bg-gray-200 py-3"
 >
-  {loading 
-  ? (isZh ? "分析中..." : "Analyzing...") 
-  : (isZh ? "分析" : "Analyze")
-}
+  Choose From Gallery
 </button>
 
-{error && <div className="mt-3 text-sm text-red-600">{error}</div>}
+{/* Analyze button */}
+<button
+  onClick={onAnalyze}
+  disabled={loading || !selectedFile}
+  className="mt-3 block w-full text-center rounded-xl bg-blue-500 text-white py-3"
+>
+  {loading ? "Analyzing..." : "Analyze"}
+</button>{error && <div className="mt-3 text-sm text-red-600">{error}</div>}
 {/* TEMP DEBUG OUTPUT */}
 {result && (
   <pre className="mt-4 text-xs bg-gray-100 p-2 rounded overflow-x-auto">
