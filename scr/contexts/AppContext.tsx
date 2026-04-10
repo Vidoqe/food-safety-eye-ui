@@ -61,7 +61,7 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [language, setLanguage] = useState<'zh' | 'en'>('zh');
+  const [language, setLanguage] = useState<'zh' | 'en'>('en');
   const [scanResults, setScanResults] = useState<AnalysisResult[]>([]);
 
   const addScanResult = (result: AnalysisResult) => {
