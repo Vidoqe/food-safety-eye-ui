@@ -173,7 +173,7 @@ const res = await GPTImageAnalysisService.analyzeProduct(base64)
           className="block w-full text-center rounded-xl bg-green-600 py-3 text-white text-lg font-semibold hover:bg-green-700 active:scale-[0.98] transition"
         >
           
-Take Photo 
+{language === "zh" ? "拍照" : "Take Photo"}
        </button>
 
         {/* Secondary button (gallery) */}
@@ -182,7 +182,7 @@ Take Photo
   onClick={() => inputRef.current?.click()}
   className="mt-3 block w-full text-center rounded-xl bg-gray-200 py-3"
 >
-  Choose From Gallery
+  {language === "zh" ? "從相簿選擇" : "Choose From Gallery"}
 </button>
 
 {/* Analyze button */}
@@ -191,7 +191,9 @@ Take Photo
   disabled={loading || !selectedFile}
   className="mt-3 block w-full text-center rounded-xl bg-blue-500 text-white py-3"
 >
-  {loading ? "Analyzing..." : "Analyze"}
+  {loading
+  ? (language === "zh" ? "分析中..." : "Analyzing...")
+  : (language === "zh" ? "分析" : "Analyze")}
 </button>{error && <div className="mt-3 text-sm text-red-600">{error}</div>}
 {/* TEMP DEBUG OUTPUT */}
 {result && (
