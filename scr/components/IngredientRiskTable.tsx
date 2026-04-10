@@ -51,24 +51,26 @@ const IngredientRiskTable: React.FC<IngredientRiskTableProps> = ({ ingredients }
     }
   };
 
- const getChildRiskText = (childSafety: string | boolean | undefined): string => {
-  const val = typeof childSafety === 'string'
-    ? childSafety
-    : (childSafety ? 'yes' : 'no');
+const getChildRiskText = (childSafety: string | boolean | undefined): string => {
+  let val: string;
+
+  if (typeof childSafety === 'string') {
+    val = childSafety.toLowerCase().trim();
+  } else if (typeof childSafety === 'boolean') {
+    val = childSafety ? 'yes' : 'no';
+  } else {
+    val = 'unknown';
+  }
 
   if (language === 'zh') {
-    switch (val) {
-      case 'yes': return '是';
-      case 'no': return '否';
-      default: return '未知';
-    }
+    if (val === 'yes') return '是';
+    if (val === 'no') return '否';
+    return '未知';
   }
 
-  switch (val) {
-    case 'yes': return 'Yes';
-    case 'no': return 'No';
-    default: return 'Unknown';
-  }
+  if (val === 'yes') return 'Yes';
+  if (val === 'no') return 'No';
+  return 'Unknown';
 };
 
 const getBadgeText = (badge: any, status: string): string => {
