@@ -51,26 +51,43 @@ const IngredientRiskTable: React.FC<IngredientRiskTableProps> = ({ ingredients }
     }
   };
 
-const getChildRiskText = (childSafety: string | boolean | undefined): string => {
-  let val: string;
-
-  if (typeof childSafety === 'string') {
-    val = childSafety.toLowerCase().trim();
-  } else if (typeof childSafety === 'boolean') {
-    val = childSafety ? 'yes' : 'no';
-  } else {
-    val = 'unknown';
-  }
+const getChildRiskText = (childRisk: string | boolean | undefined): string => {
+  const val =
+    typeof childRisk === 'string'
+      ? childRisk.toLowerCase().trim()
+      : childRisk === true
+      ? 'yes'
+      : childRisk === false
+      ? 'no'
+      : 'unknown';
 
   if (language === 'zh') {
-    if (val === 'yes') return '是';
-    if (val === 'no') return '否';
-    return '未知';
+    switch (val) {
+      case 'yes':
+      case 'safe':
+        return '適合';
+      case 'no':
+      case 'avoid':
+        return '不適合';
+      case 'limit':
+        return '限制攝取';
+      default:
+        return '未知';
+    }
   }
 
-  if (val === 'yes') return 'Yes';
-  if (val === 'no') return 'No';
-  return 'Unknown';
+  switch (val) {
+    case 'yes':
+    case 'safe':
+      return 'Safe';
+    case 'no':
+    case 'avoid':
+      return 'Not safe';
+    case 'limit':
+      return 'Limit intake';
+    default:
+      return 'Unknown';
+  }
 };
 
 const getBadgeText = (badge: any, status: string): string => {
@@ -131,7 +148,7 @@ const getBadgeText = (badge: any, status: string): string => {
                 </TableCell>
 
                 <TableCell className="text-center">
-                  {getChildRiskText(ingredient.childSafety || ingredient.childRisk || 'unknown')}
+                  {getChildRiskText(ingredient.childRisk || ingredient.childSafety)}
                 </TableCell>
 
                 <TableCell className="text-center text-lg">
