@@ -175,30 +175,27 @@ export class IngredientAnalysisService {
             ? item.childSafe
             : status === 'healthy' || status === 'low';
 
-        return {
-          name: item.name_en,
-          name_en: item.name_en,
-          name_zh: item.name_zh,
-          status,
-          badge,
-          childSafe,
-          reason: item.reason,
-          matchedKey: key,
-        };
-      }
-
+      return {
+  name: item.name_en,
+  name_en: item.name_en,
+  name_zh: item.name_zh,
+  status,
+  badge,
+  childSafe,
+  reason: item.reason,
+  matchedKey: key,
+};
       // Unknown ingredient: neutral/moderate with safe defaults
       const status: Risk = 'moderate';
-      return {
-        name: raw,
-        name_en: raw,
-        name_zh: '',
-        status,
-        badge: RISK_BADGE[status] ?? '⚪',
-        childSafe: false,
-        reason: 'Unrecognized ingredient. Consider checking manually.',
-      };
-    });
+     return {
+  name: raw,
+  name_en: '',
+  name_zh: raw,
+  status,
+  badge: RISK_BADGE[status] ?? '🟡',
+  childSafe: false,
+  reason: 'Unrecognized ingredient. Consider checking manually.',
+};
 
     const verdict = overallVerdict(rows);
     const tips: string[] = [];
