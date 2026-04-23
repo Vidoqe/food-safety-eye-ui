@@ -167,28 +167,29 @@ export class IngredientAnalysisService {
       const match = findDictionaryMatch(norm);
 
       if (match) {
-        const { key, item } = match;
-        const status = item.status;
-        const badge = item.badge ?? (RISK_BADGE[status] ?? '⚪');
-        const childSafe =
-          typeof item.childSafe === 'boolean'
-            ? item.childSafe
-            : status === 'healthy' || status === 'low';
+  const { key, item } = match;
+  const status = item.status;
+  const badge = item.badge ?? (RISK_BADGE[status] ?? '🟡');
+  const childSafe =
+    typeof item.childSafe === 'boolean'
+      ? item.childSafe
+      : status === 'healthy' || status === 'low';
 
-      return {
-  name: item.name_en,
-  name_en: item.name_en,
-  name_zh: item.name_zh,
-  status,
-  badge,
-  childSafe,
-  reason: item.reason,
-  matchedKey: key,
- };
+  return {
+    name: item.name_en,
+    name_en: item.name_en,
+    name_zh: item.name_zh,
+    status,
+    badge,
+    childSafe,
+    reason: item.reason,
+    matchedKey: key,
+  };
 }
-      // Unknown ingredient: neutral/moderate with safe defaults
-      const status: Risk = 'moderate';
-     return {
+
+// Unknown ingredient: neutral/moderate with safe defaults
+const status: Risk = 'moderate';
+return {
   name: raw,
   name_en: '',
   name_zh: raw,
@@ -197,6 +198,7 @@ export class IngredientAnalysisService {
   childSafe: false,
   reason: 'Unrecognized ingredient. Consider checking manually.',
 };
+});
 
     const verdict = overallVerdict(rows);
     const tips: string[] = [];
