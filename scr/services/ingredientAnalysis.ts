@@ -184,7 +184,8 @@ export class IngredientAnalysisService {
   childSafe,
   reason: item.reason,
   matchedKey: key,
-};
+ };
+}
       // Unknown ingredient: neutral/moderate with safe defaults
       const status: Risk = 'moderate';
      return {
