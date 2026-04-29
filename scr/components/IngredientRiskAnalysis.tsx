@@ -56,10 +56,8 @@ const IngredientRiskAnalysis: React.FC<IngredientRiskAnalysisProps> = ({
               </thead>
               <tbody>
                 {ingredients.map((item: any, index: number) => {
-               const ingredient =
-  language === 'zh'
-    ? (item.name_zh || item.chinese || item.name || '')
-    : (item.name_en || item.name || item.ingredient || '');
+               const ingredient = item.name_en || '';
+ 
                   const riskLevel = item.riskLevel || item.status || 'moderate';
                   const childSafety = item.childSafety || 'Yes';
                   
