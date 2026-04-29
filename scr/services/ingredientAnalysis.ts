@@ -177,9 +177,9 @@ export class IngredientAnalysisService {
       : status === 'healthy' || status === 'low';
 
   return {
-    name: item.name_en,
-    name_en: item.name_en,
-    name_zh: item.name_zh,
+  name: item.name_en || item.name || '',
+  name_en: item.name_en || item.name || '',
+  name_zh: item.name_zh || '',
     status,
     badge,
     childSafe,
@@ -193,7 +193,8 @@ const status: Risk = 'moderate';
 return {
   name: raw,
   name_en: raw,
-  name_zh: raw.replace(/[A-Z0-9]+$/g, ''), // 👈 FIX  status,
+  name_zh: raw,
+  status,
   badge: RISK_BADGE[status] ?? '🟡',
   childSafe: false,
   reason: 'Unrecognized ingredient. Consider checking manually.',
