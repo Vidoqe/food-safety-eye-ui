@@ -57,7 +57,9 @@ const IngredientRiskAnalysis: React.FC<IngredientRiskAnalysisProps> = ({
               <tbody>
                 {ingredients.map((item: any, index: number) => {
                 console.log("INGREDIENT ITEM:", item);
-               const ingredient = item.name_en || '-';
+               const ingredient = /[\u3400-\u9FFF]/.test(item.name_en || "")
+  ? "-"
+  : (item.name_en || "-");
  
                   const riskLevel = item.riskLevel || item.status || 'moderate';
                   const childSafety = item.childSafety || 'Yes';
