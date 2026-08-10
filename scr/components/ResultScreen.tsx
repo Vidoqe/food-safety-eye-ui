@@ -24,6 +24,8 @@ interface AnalysisResult {
   ingredients: IngredientRow[];
   tips?: string[];
   summary?: string;
+  summaryEn?: string;
+summaryZh?: string;
 }
 
 /** Fallback badge map (used if a row or verdict has no badge) */
@@ -123,22 +125,20 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
       </div>
 
       {/* Verdict card */}
-      <div className="rounded-2xl border p-4 md:p-5 bg-white shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="text-2xl">{verdictBadge}</div>
-          <div>
-            <div className="text-lg font-medium">
-              {verdictText(verdict, language)}
-            </div>
-         {typeof result.summary === 'string' && !result.summary.startsWith('{') && (
-  <div className="text-gray-600 mt-1">
-    {result.summary}
-  </div>
-)}
-          </div>
-        </div>
+<div className="rounded-2xl border p-4 md:p-5 bg-white shadow-sm">
+  <div className="flex items-center gap-3">
+    <div className="text-2xl">{verdictBadge}</div>
+    <div>
+      <div className="text-lg font-medium">
+        {verdictText(verdict, language)}
       </div>
 
+      <div className="text-gray-600 mt-1">
+        {language === 'zh' ? result.summaryZh : result.summaryEn}
+      </div>
+    </div>
+  </div>
+</div>
       {/* Tips */}
       {!!result.tips?.length && (
         <div className="rounded-2xl border p-4 md:p-5 bg-white shadow-sm">
