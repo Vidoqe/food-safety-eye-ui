@@ -38,6 +38,7 @@ export default class GPTImageAnalysisService {
           apikey: anonKey,
         },
       body: JSON.stringify({
+        ingrdients: ingredients ?? "",
   imageBase64:
   typeof imageBase64 === "string"
     ? imageBase64
