@@ -19,6 +19,7 @@ export interface AnalysisResult {
   verdict: 'healthy' | 'moderate' | 'harmful';
   tips: string[];
   timestamp: Date;
+resultLanguage?: 'zh' | 'en';
   productType?: string;
   isEdible?: boolean;
   extractedIngredients?: string[];

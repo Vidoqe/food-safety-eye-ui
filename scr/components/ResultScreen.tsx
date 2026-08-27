@@ -80,6 +80,7 @@ interface Props {
 
 const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
   const { language } = useAppContext(); // 'en' | 'zh'
+const resultLanguage = result?.resultLanguage ?? language;
 
   if (!result) {
     return (
@@ -130,11 +131,11 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
     <div className="text-2xl">{verdictBadge}</div>
     <div>
       <div className="text-lg font-medium">
-        {verdictText(verdict, language)}
+        {verdictText(verdict, resultLanguage)}
       </div>
 
       <div className="text-gray-600 mt-1">
-        {language === 'zh' ? result.summaryZh : result.summaryEn}
+        {resultLanguage === 'zh' ? result.summaryZh : result.summaryEn}
       </div>
     </div>
   </div>
@@ -142,7 +143,7 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
       {/* Tips */}
       {!!result.tips?.length && (
         <div className="rounded-2xl border p-4 md:p-5 bg-white shadow-sm">
-          <h3 className="text-lg font-semibold mb-2">{sectionTitle('tips', language)}</h3>
+          <h3 className="text-lg font-semibold mb-2">{sectionTitle('tips', resultLanguage)}</h3>
           <ul className="list-disc ml-5 space-y-1">
             {result.tips.map((t, i) => (
               <li key={i} className="text-gray-700">{t}</li>
@@ -153,7 +154,7 @@ const ResultScreen: React.FC<Props> = ({ result, onBack }) => {
 
       {/* Ingredient Table */}
       <div className="rounded-2xl border p-2 md:p-4 bg-white shadow-sm">
-        <h3 className="text-lg font-semibold mb-3">{sectionTitle('details', language)}</h3>
+        <h3 className="text-lg font-semibold mb-3">{sectionTitle('details', resultLanguage)}</h3>
         <IngredientRiskTable ingredients={result.ingredients || []} />
       </div>
     </div>

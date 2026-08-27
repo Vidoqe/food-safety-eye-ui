@@ -100,6 +100,7 @@ const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult 
         verdict: gpt.verdict ?? 'moderate',
         tips: gpt.tips ?? [],
         timestamp: new Date(),
+       resultLanguage: language === 'zh' ? 'zh' : 'en',
 
         productType: 'Manual Input Analysis',
         isEdible: true,
