@@ -58,12 +58,11 @@ const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult 
       let gpt: GPTAnalysisResult;
 
       try {
-        gpt = await GPTImageAnalysisService.analyzeProduct(
-          undefined,                // no image (manual input)
-          ingredients,              // typed ingredients
-          undefined,                // no barcode
-          language === 'zh' ? 'zh' : 'en'
-        );
+       gpt = await GPTImageAnalysisService.analyzeProduct(
+  undefined, // no image (manual input)
+  ingredients, // typed ingredients
+  language === 'zh' ? 'zh' : 'en'
+);
       } catch (err) {
         console.error('GPT analysis failed, using local rules instead:', err);
         const local = await IngredientAnalysisService.analyzeIngredients(ingredients, plan);
