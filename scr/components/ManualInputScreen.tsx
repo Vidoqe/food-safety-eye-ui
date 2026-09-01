@@ -65,7 +65,11 @@ const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult 
 );
       } catch (err) {
         console.error('GPT analysis failed, using local rules instead:', err);
-        const local = await IngredientAnalysisService.analyzeIngredients(ingredients, plan);
+       const local = await IngredientAnalysisService.analyzeIngredients(
+  ingredients,
+  plan,
+  language === 'zh' ? 'zh' : 'en'
+);
         // Adapt local result into GPT-like shape for the UI builder below
         gpt = {
           extractedIngredients: local.extractedIngredients ?? [],

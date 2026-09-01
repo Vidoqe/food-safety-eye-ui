@@ -155,9 +155,10 @@ export class IngredientAnalysisService {
    * Keeps bilingual names and provides `name` = `name_en` for back-compat.
    */
   static async analyzeIngredients(
-    ingredients: string,
-    _subscriptionPlan: 'free' | 'premium' | 'gold' = 'free'
-  ): Promise<AnalysisResult> {
+  ingredients: string,
+  _subscriptionPlan: 'free' | 'premium' | 'gold' = 'free',
+  language: 'zh' | 'en' = 'en'
+): Promise<AnalysisResult> {
     const tokens = (ingredients || '')
       .split(/,|\n|;/)
       .map((t) => t.trim())
@@ -201,18 +202,26 @@ return {
 };
 });
 
-    const verdict = overallVerdict(rows);
-    const tips: string[] = [];
+   const verdict = overallVerdict(rows);
+const tips: string[] = [];
 
-    if (rows.some((r) => r.status === 'harmful')) {
-      tips.push('Contains high-risk additives. Consider avoiding, especially for children.');
-    } else if (rows.some((r) => r.status === 'moderate')) {
-      tips.push('Contains moderate-risk additives. Limit intake.');
-    } else {
-      tips.push('No notable risky additives found.');
-    }
-
-    return {
+if (rows.some((r) => r.status === 'harmful')) {
+tips.push(
+  language === 'zh'
+    ? '含有高風險添加物，建議避免食用，尤其是兒童。': 'Contains high-risk additives. Consider avoiding, especially for children.'
+);
+} else if (rows.some((r) => r.status === 'moderate')) {
+tips.push(
+  language === 'zh'
+    ? '含有中等風險添加物，建議限制攝取量。'
+: 'Contains moderate-risk additives. Limit intake.'
+);
+} else {
+tips.push(
+  language === 'zh'
+    ? '未發現明顯的高風險添加物。': 'No notable risky additives found.'
+);
+}   return {
       verdict,
       ingredients: rows,
       tips,
