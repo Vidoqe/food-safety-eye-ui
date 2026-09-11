@@ -148,7 +148,7 @@ const getBadgeText = (badge: any, status: string): string => {
                 </TableCell>
 
                 <TableCell className="text-center">
-                  {getChildRiskText(ingredient.childRisk || ingredient.childSafety)}
+                  {getChildRiskText(ingredient.childSafe ?? ingredient.childRisk ?? ingredient.childSafety)}
                 </TableCell>
 
                 <TableCell className="text-center text-lg">
