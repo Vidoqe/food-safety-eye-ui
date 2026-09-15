@@ -62,6 +62,7 @@ taiwanRegulation?: string;
     reason: 'Cured meats additive; associated with nitrosamines. Avoid frequent intake.',
     badge: '🔴',
     aliases: ['e250', 'nitrite'],
+taiwanRegulation: 'TFDA: Permitted in meat and fish products with NO2 residual ≤0.07 g/kg; salmon/cod roe products ≤0.0050 g/kg. Not permitted in fresh meat, fresh fish or fresh fish roe.',
   },
   'sodium benzoate': {
     status: 'moderate',
@@ -71,6 +72,7 @@ taiwanRegulation?: string;
     reason: 'Preservative; generally safe within limits but best to limit for children.',
     badge: '🟡',
     aliases: ['e211', 'benzoate'],
+taiwanRegulation: 'TFDA: Permitted only in specified food categories. Maximum levels vary by food; commonly ≤1.0 g/kg or ≤0.6 g/kg, calculated as benzoic acid.',
   },
   tartrazine: {
     status: 'harmful',
