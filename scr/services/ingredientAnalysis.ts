@@ -111,8 +111,17 @@ const ADDITIVES: Record<
     reason: 'High intake is not recommended; moderate use acceptable.',
     badge: '🟢',
   },
-};
 
+'sodium nitrate': {
+  status: 'moderate',
+  name_en: 'Sodium Nitrate',
+  name_zh: '硝酸鈉',
+  childSafe: false,
+  reason: 'Curing preservative; intake should be limited, particularly in processed meats.',
+  badge: '🟡',
+  aliases: ['e251', 'nitrate'],
+},
+};
 /** Normalize a raw ingredient token for matching */
 function normalizeToken(token: string): string {
   return token
