@@ -20,6 +20,7 @@ export interface IngredientRow {
   badge: string; // 🔴🟡🟢
   childSafe: boolean;
   reason?: string;
+taiwanRegulation?: string;
   matchedKey?: string; // which dictionary key matched (for debug)
 }
 
@@ -41,6 +42,7 @@ const ADDITIVES: Record<
     reason?: string;
     badge?: string;
     aliases?: string[];
+taiwanRegulation?: string;
   }
 > = {
   aspartame: {
@@ -239,6 +241,7 @@ export class IngredientAnalysisService {
     badge,
     childSafe,
     reason: item.reason,
+  taiwanRegulation: item.taiwanRegulation,
     matchedKey: key,
   };
 }
