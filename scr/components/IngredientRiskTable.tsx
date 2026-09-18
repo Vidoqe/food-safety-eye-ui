@@ -157,8 +157,10 @@ const getBadgeText = (badge: any, status: string): string => {
                 </TableCell>
 
                 <TableCell className="text-sm">
-                  {ingredient.taiwanRegulation ||
-                    (language === 'zh' ? '無特定限制' : 'No specific restriction')}
+                  
+                  {language === 'zh'
+  ? (ingredient.taiwanRegulationZh || '無特定限制')
+  : (ingredient.taiwanRegulation || 'No specific restriction')}
                 </TableCell>
               </TableRow>
             ))}

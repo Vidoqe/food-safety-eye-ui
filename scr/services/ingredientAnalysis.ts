@@ -21,6 +21,7 @@ export interface IngredientRow {
   childSafe: boolean;
   reason?: string;
 taiwanRegulation?: string;
+taiwanRegulationZh?: string;
   matchedKey?: string; // which dictionary key matched (for debug)
 }
 
@@ -43,6 +44,7 @@ const ADDITIVES: Record<
     badge?: string;
     aliases?: string[];
 taiwanRegulation?: string;
+taiwanRegulationZh?: string;
   }
 > = {
   aspartame: {
@@ -63,6 +65,7 @@ taiwanRegulation?: string;
     badge: '🔴',
     aliases: ['e250', 'nitrite'],
 taiwanRegulation: 'TFDA: Permitted in meat and fish products with NO2 residual ≤0.07 g/kg; salmon/cod roe products ≤0.0050 g/kg. Not permitted in fresh meat, fresh fish or fresh fish roe.',
+taiwanRegulationZh: 'TFDA：亞硝酸鈉可用於規定的肉類及水產加工品；亞硝酸根殘留量依食品類別受限。肉製品及魚製品一般不得超過 0.07 g/kg；鮭魚卵、鱈魚卵製品不得超過 0.0050 g/kg。新鮮肉類、新鮮魚類及新鮮魚卵不得使用。',
   },
   'sodium benzoate': {
     status: 'moderate',
@@ -73,6 +76,7 @@ taiwanRegulation: 'TFDA: Permitted in meat and fish products with NO2 residual �
     badge: '🟡',
     aliases: ['e211', 'benzoate'],
 taiwanRegulation: 'TFDA: Permitted only in specified food categories. Maximum levels vary by food; commonly ≤1.0 g/kg or ≤0.6 g/kg, calculated as benzoic acid.',
+taiwanRegulationZh: 'TFDA：苯甲酸鈉僅可用於規定的食品類別，各類食品的最高使用量不同；一般以苯甲酸計，不得超過 1.0 g/kg 或 0.6 g/kg，依食品類別而定。',
   },
   tartrazine: {
     status: 'harmful',
@@ -244,6 +248,7 @@ export class IngredientAnalysisService {
     childSafe,
     reason: item.reason,
   taiwanRegulation: item.taiwanRegulation,
+  taiwanRegulationZh: item.taiwanRegulationZh,
     matchedKey: key,
   };
 }
