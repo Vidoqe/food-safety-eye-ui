@@ -55,6 +55,9 @@ taiwanRegulationZh?: string;
     reason: 'Artificial sweetener; limit intake especially for children.',
     badge: '🟡',
     aliases: ['e951'],
+taiwanRegulation: 'TFDA: Permitted in foods as practically needed when necessary for manufacturing or processing. Foods containing aspartame must carry a warning for people with phenylketonuria (PKU) because it contains phenylalanine.',
+taiwanRegulationZh: 'TFDA：阿斯巴甜可於食品製造或加工有需要時，依實際需要適量使用。含阿斯巴甜之食品應以中文顯著標示「苯酮尿症患者不宜使用」或同等意義字樣，並提醒含有苯丙胺酸。',
+
   },
   'sodium nitrite': {
     status: 'harmful',
