@@ -80,12 +80,15 @@ taiwanRegulationZh: 'TFDA：苯甲酸鈉僅可用於規定的食品類別，各�
   },
   tartrazine: {
     status: 'harmful',
-    name_en: 'Tartrazine (Yellow 5)',
-    name_zh: '塔特拉嗪 (黃色5號)',
+    name_en: 'Tartrazine (Food Yellow No. 4)',
+name_zh: '食用黃色四號',
     childSafe: false,
     reason: 'Artificial color; may cause sensitivity in some children.',
     badge: '🔴',
-    aliases: ['e102', 'yellow 5'],
+    aliases: ['e102', 'yellow 5', 'yellow 4', 'food yellow no. 4', '食用黃色四號'],
+taiwanRegulation: 'TFDA: Permitted in foods as practically needed, but not allowed in fresh raw meat, fish, shellfish, beans, vegetables, fruits, miso, soy sauce, seaweed or tea.',
+taiwanRegulationZh: 'TFDA：可於各類食品中視實際需要適量使用，但生鮮肉類、生鮮魚貝類、生鮮豆類、生鮮蔬菜、生鮮水果、味噌、醬油、海帶、海苔、茶等不得使用。',
+
   },
   caffeine: {
     status: 'moderate',
@@ -94,6 +97,8 @@ taiwanRegulationZh: 'TFDA：苯甲酸鈉僅可用於規定的食品類別，各�
     childSafe: false,
     reason: 'Stimulant; not recommended for children.',
     badge: '🟡',
+taiwanRegulation: 'TFDA: Caffeine may be used in beverages as a flavouring agent; total caffeine must not exceed 320 mg/kg. Not permitted in infant foods.',
+taiwanRegulationZh: 'TFDA：咖啡因可作為調味劑使用於飲料，飲料中咖啡因總含量不得超過 320 mg/kg。嬰兒食品不得使用。',
   },
   preservatives: {
     status: 'moderate',
@@ -102,6 +107,8 @@ taiwanRegulationZh: 'TFDA：苯甲酸鈉僅可用於規定的食品類別，各�
     childSafe: false,
     reason: 'Generic preservative category; check specific additive.',
     badge: '🟡',
+taiwanRegulation: 'TFDA: Preservative limits depend on the specific preservative and food category. The individual additive must be identified to determine the permitted use and maximum level.',
+taiwanRegulationZh: 'TFDA：防腐劑的使用範圍及限量依個別防腐劑及食品類別而定，須確認具體添加物後才能判定其准用範圍及最高使用量。',
   },
   water: {
     status: 'healthy',
@@ -128,6 +135,9 @@ taiwanRegulationZh: 'TFDA：苯甲酸鈉僅可用於規定的食品類別，各�
   reason: 'Curing preservative; intake should be limited, particularly in processed meats.',
   badge: '🟡',
   aliases: ['e251', 'nitrate'],
+taiwanRegulation: 'TFDA: Permitted in meat and fish products with residual NO2 ≤0.07 g/kg; salmon and cod roe products ≤0.0050 g/kg. Not permitted in fresh raw meat, fresh raw fish or fresh raw roe.',
+taiwanRegulationZh: 'TFDA：硝酸鈉可用於肉製品及魚肉製品，以 NO2 殘留量計不得超過 0.07 g/kg；鮭魚卵及鱈魚卵製品不得超過 0.0050 g/kg。生鮮肉類、生鮮魚肉類及生鮮魚卵不得使用。',
+
 },
 'potassium nitrate': {
   status: 'moderate',
@@ -137,6 +147,9 @@ taiwanRegulationZh: 'TFDA：苯甲酸鈉僅可用於規定的食品類別，各�
   reason: 'Curing preservative; intake should be limited, particularly in processed meats.',
   badge: '🟡',
   aliases: ['e252', 'potassium nitrate'],
+taiwanRegulation: 'TFDA: Permitted in meat and fish products with residual NO2 ≤0.07 g/kg; salmon and cod roe products ≤0.0050 g/kg. Not permitted in fresh raw meat, fresh raw fish or fresh raw roe.',
+taiwanRegulationZh: 'TFDA：硝酸鉀可用於肉製品及魚肉製品，以 NO2 殘留量計不得超過 0.07 g/kg；鮭魚卵及鱈魚卵製品不得超過 0.0050 g/kg。生鮮肉類、生鮮魚肉類及生鮮魚卵不得使用。',
+
 },
 'bha': {
   status: 'moderate',
@@ -146,6 +159,9 @@ taiwanRegulationZh: 'TFDA：苯甲酸鈉僅可用於規定的食品類別，各�
   reason: 'Synthetic antioxidant used to prevent fats and oils from becoming rancid.',
   badge: '🟡',
   aliases: ['e320', 'butylated hydroxyanisole'],
+taiwanRegulation: 'TFDA: Permitted only in specified foods. Maximum BHA levels range from 0.010 to 1.0 g/kg depending on food category, including fats/oils ≤0.20 g/kg and chewing/bubble gum ≤0.75 g/kg.',
+taiwanRegulationZh: 'TFDA：BHA（丁基羥基甲氧苯）僅可使用於規定食品；依食品類別最高使用量為 0.010–1.0 g/kg，其中油脂類不得超過 0.20 g/kg，口香糖及泡泡糖不得超過 0.75 g/kg。',
+
 },
 'bht': {
   status: 'moderate',
@@ -155,6 +171,9 @@ taiwanRegulationZh: 'TFDA：苯甲酸鈉僅可用於規定的食品類別，各�
   reason: 'Synthetic antioxidant used to preserve fats and oils.',
   badge: '🟡',
   aliases: ['e321', 'butylated hydroxytoluene'],
+taiwanRegulation: 'TFDA: Permitted only in specified foods. Maximum BHT levels range from 0.010 to 1.0 g/kg depending on food category, including fats/oils ≤0.20 g/kg and chewing/bubble gum ≤0.75 g/kg.',
+taiwanRegulationZh: 'TFDA：BHT（二丁基羥基甲苯）僅可使用於規定食品；依食品類別最高使用量為 0.010–1.0 g/kg，其中油脂類不得超過 0.20 g/kg，口香糖及泡泡糖不得超過 0.75 g/kg。',
+
 },
 'tbhq': {
   status: 'moderate',
@@ -164,6 +183,9 @@ taiwanRegulationZh: 'TFDA：苯甲酸鈉僅可用於規定的食品類別，各�
   reason: 'Antioxidant preservative; intake should remain within permitted limits.',
   badge: '🟡',
   aliases: ['e319', 'tert-butylhydroquinone', 'tertiary butylhydroquinone'],
+taiwanRegulation: 'TFDA: TBHQ is permitted as an antioxidant in fats, oils, cheese and butter, with a maximum level of 0.20 g/kg.',
+taiwanRegulationZh: 'TFDA：第三丁基氫醌（TBHQ）可作為抗氧化劑使用於油脂、乳酪及奶油，最高使用量為 0.20 g/kg。',
+
 },
 'sodium metabisulfite': {
   status: 'moderate',
@@ -173,6 +195,9 @@ taiwanRegulationZh: 'TFDA：苯甲酸鈉僅可用於規定的食品類別，各�
   reason: 'Sulfite preservative; may cause reactions in sulfite-sensitive individuals.',
   badge: '🟡',
   aliases: ['e223', 'sodium metabisulphite'],
+taiwanRegulation: 'TFDA: Permitted only in specified food categories. Maximum levels vary by food and are calculated as residual SO2; the applicable food category must be checked.',
+taiwanRegulationZh: 'TFDA：偏亞硫酸氫鈉僅可使用於規定的食品類別，各類食品限量不同，並以二氧化硫（SO2）殘留量計算，須依食品類別確認適用限量。',
+
 },
 };
 /** Normalize a raw ingredient token for matching */
