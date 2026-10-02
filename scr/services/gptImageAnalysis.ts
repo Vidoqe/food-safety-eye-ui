@@ -20,7 +20,7 @@ export default class GPTImageAnalysisService {
   static async analyzeProduct(
   imageBase64?: string,
   ingredients?: string,
-  language: 'zh' | 'en' = 'en'
+  language: "zh" | "en" = "en"
 ): Promise<GPTAnalysisResult> {
     const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -39,8 +39,8 @@ export default class GPTImageAnalysisService {
           apikey: anonKey,
         },
       body: JSON.stringify({
-        ingrdients: ingredients ?? "",
-language: language ?? "en",
+  ingredients: ingredients ?? "",
+  language,
   imageBase64:
   typeof imageBase64 === "string"
     ? imageBase64
