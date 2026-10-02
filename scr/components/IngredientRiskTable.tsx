@@ -159,8 +159,15 @@ const getBadgeText = (badge: any, status: string): string => {
                 <TableCell className="text-sm">
                   
                   {language === 'zh'
-  ? (ingredient.taiwanRegulationZh || '無特定限制')
-  : (ingredient.taiwanRegulation || 'No specific restriction')}
+  ? (ingredient.taiwanRegulationZh
+      || (ingredient as Ingredient & { taiwanFdaRegulation?: string; taiwan_fda_regulation?: string }).taiwanFdaRegulation
+      || (ingredient as Ingredient & { taiwan_fda_regulation?: string }).taiwan_fda_regulation
+      || '查無法規資料')
+  : ((ingredient as Ingredient & { taiwanFdaRegulationEn?: string }).taiwanFdaRegulationEn
+      || ingredient.taiwanRegulation
+      || (ingredient as Ingredient & { taiwanFdaRegulation?: string; taiwan_fda_regulation?: string }).taiwanFdaRegulation
+      || (ingredient as Ingredient & { taiwan_fda_regulation?: string }).taiwan_fda_regulation
+      || 'Regulation data unavailable')}
                 </TableCell>
               </TableRow>
             ))}
