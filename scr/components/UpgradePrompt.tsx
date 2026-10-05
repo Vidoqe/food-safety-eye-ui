@@ -12,9 +12,27 @@ interface UpgradePromptProps {
 export const UpgradePrompt: React.FC<UpgradePromptProps> = ({ onUpgrade, onClose }) => {
   const { user, language, upgradeUser } = useUser();
 
-  if (!user) return null;
-
   const isZh = language === 'zh';
+
+  if (!user) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardHeader>
+          <CardTitle>{isZh ? '請先登入' : 'Sign in first'}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-gray-600">
+            {isZh
+              ? '升級方案需要登入帳號。目前尚未開放線上付款。'
+              : 'You need to sign in to upgrade your plan. Online payments are not available yet.'}
+          </p>
+          <Button type="button" onClick={onClose} className="w-full">
+            {isZh ? '關閉' : 'Close'}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const handleUpgrade = async (plan: 'premium' | 'gold') => {
     await upgradeUser(plan);
