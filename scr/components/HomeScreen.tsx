@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import AppLogo from "./AppLogo";
 import TrustIcons from "./TrustIcons";
-import { Camera, Settings } from "lucide-react";
+import { Camera } from "lucide-react";
 import { useAppContext } from "../contexts/AppContext";
 
 type HomeScreenProps = {
@@ -43,10 +43,10 @@ console.log("VERSION_MARKER HOME_SCREEN 2026-02-01");
           <button
             type="button"
             onClick={handleSettings}
-            className="rounded-full bg-white/80 backdrop-blur p-2 shadow hover:bg-white"
-            aria-label="Settings"
+            className="rounded-full bg-white/80 backdrop-blur px-4 py-2 text-sm font-semibold text-green-800 shadow hover:bg-white"
+            aria-label={isZh ? "方案與設定" : "Plans & Settings"}
           >
-            <Settings className="w-5 h-5 text-green-700" />
+            {isZh ? "方案與設定" : "Plans & Settings"}
           </button>
         </div>
 
