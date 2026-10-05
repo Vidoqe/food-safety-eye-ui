@@ -106,6 +106,14 @@ export default function ScanScreen({ type, onBack, onResult }) {
 
   return (
     <div className="mx-auto max-w-md p-4">
+      <button
+        type="button"
+        onClick={onBack}
+        className="mb-4 inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-green-800 hover:bg-green-50"
+      >
+        <span aria-hidden="true">←</span>
+        {isZh ? "返回首頁" : "Back to Home"}
+      </button>
       <h1 className="text-2xl font-bold mb-4">
   {isZh ? "掃描產品標籤" : "Scan Product Label"}
 </h1>
