@@ -73,10 +73,12 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onPrivacyPolicy
         <div className="mb-6">
           <AppLogo size="medium" showText={true} className="mt-6 mb-6" />
           <div className="flex items-center justify-center">
-            <Button variant="ghost" onClick={onBack} className="absolute left-4 top-8">
-              <ArrowLeft className="w-5 h-5" />
+            <Button type="button" variant="ghost" onClick={onBack} className="absolute left-4 top-4 gap-2 text-green-800"
+              aria-label={language === 'zh' ? '返回首頁' : 'Back to Home'}>
+              <ArrowLeft className="w-5 h-5" aria-hidden="true" />
+              <span>{language === 'zh' ? '返回首頁' : 'Back to Home'}</span>
             </Button>
-            <h1 className="text-xl font-bold text-green-800">{t.settings}</h1>
+            <h1 className="text-xl font-bold text-green-800">{language === 'zh' ? '方案與設定' : 'Plans & Settings'}</h1>
           </div>
         </div>
 
