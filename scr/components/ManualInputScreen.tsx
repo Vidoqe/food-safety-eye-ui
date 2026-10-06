@@ -8,8 +8,6 @@ import { Textarea } from '../components/ui/textarea';
 import { useAppContext, type AnalysisResult } from '../contexts/AppContext';
 import { useUser } from '../contexts/UserContext';
 
-// Local, rule-based analyzer (no API/JWT)
-import IngredientAnalysisService from '../services/ingredientAnalysis.ts';
 
 // GPT analyzer (image + text). We’ll use it for manual text too.
 import GPTImageAnalysisService, { type GPTAnalysisResult } from '../services/gptImageAnalysis';
@@ -50,52 +48,10 @@ const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult 
     setIsAnalyzing(true);
     setError('');
 
-    // which plan? (kept for display/back-compat with local analyzer)
-    const plan = (user?.plan ?? 'free') as 'free' | 'premium' | 'gold';
-
     try {
-      // Prefer GPT analyzer (text mode), fall back to local if it throws
-      let gpt: GPTAnalysisResult;
-
-      try {
-       gpt = await GPTImageAnalysisService.analyzeProduct(
-  undefined, // no image (manual input)
-  ingredients, // typed ingredients
-  language === 'zh' ? 'zh' : 'en'
-);
-      } catch (err) {
-        console.error('GPT analysis failed, using local rules instead:', err);
-       const local = await IngredientAnalysisService.analyzeIngredients(
-  ingredients,
-  plan,
-  language === 'zh' ? 'zh' : 'en'
-);
-        // Adapt local result into GPT-like shape for the UI builder below
-        gpt = {
-          extractedIngredients: local.extractedIngredients ?? [],
-          ingredients: local.ingredients ?? [],
-          verdict: local.verdict ?? 'moderate',
-          isNaturalProduct: local.isNaturalProduct ?? false,
-          regulatedAdditives: local.regulatedAdditives ?? [],
-          tips: local.tips ?? [],
-          junkFoodScore: local.junkFoodScore ?? 5,
-          quickSummary: local.quickSummary ?? local.summary ?? '',
-          overallSafety: mapVerdictToSafety(local.verdict ?? 'moderate') as
-            | 'safe'
-            | 'moderate'
-            | 'harmful',
-          summary: local.summary ?? local.quickSummary ?? '',
-          error: local.errorMessage,
-          productName: local.productName ?? '',
-          barcode: local.barcode ?? '',
-          taiwanWarnings: local.taiwanWarnings ?? [],
-          scansLeft: local.scansLeft ?? undefined,
-          creditsExpiry: local.creditsExpiry ?? undefined,
-          overall_risk: local.overall_risk ?? undefined,
-          child_safe: local.child_safe ?? undefined,
-          notes: local.notes ?? [],
-        };
-      }
+      const gpt = await GPTImageAnalysisService.analyzeProduct(
+        undefined, ingredients, language === 'zh' ? 'zh' : 'en'
+      );
 
       // Build the UI result
       const result: AnalysisResult = {
@@ -136,7 +92,7 @@ const ManualInputScreen: React.FC<ManualInputScreenProps> = ({ onBack, onResult 
     } catch (err) {
       console.error('Analysis error:', err);
       setIsAnalyzing(false);
-      setError(language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.');
+      setError(err instanceof Error ? err.message : (language === 'zh' ? '分析失敗，請再試一次。' : 'Analysis failed. Please try again.'));
     }
   };
 
