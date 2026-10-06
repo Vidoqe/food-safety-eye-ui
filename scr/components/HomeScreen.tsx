@@ -70,7 +70,7 @@ console.log("VERSION_MARKER HOME_SCREEN 2026-02-01");
 >
 <div className="flex justify-center mt-2">
   <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full">
-    {isZh ? "🎁 3 次免費掃描" : "🎁 3 Free Scans"}
+    {isZh ? "🎁 5 次免費掃描" : "🎁 5 Free Scans"}
   </span>
 </div>  <Camera className="w-6 h-6" />
   <span>{isZh ? "掃描成分" : "Scan Ingredients"}</span>
@@ -92,7 +92,9 @@ text-sky-900"
 
           {/* helper line (optional, harmless) */}
           <div className="text-center text-xs text-green-700/80">
-            先做介紹 ✓ 下一步再連接掃描結果與 API
+            <button type="button" onClick={onSettings} className="underline font-medium">
+              {isZh ? "登入 / 我的帳號" : "Sign in / My Account"}
+            </button>
           </div>
         </div>
       </div>
