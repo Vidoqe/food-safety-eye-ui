@@ -86,7 +86,12 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [session]);
 
-  useEffect(() => { void refreshCredits(); }, [refreshCredits]);
+  useEffect(() => {
+    void refreshCredits();
+    const refresh = () => { void refreshCredits(); };
+    window.addEventListener('food-eye-credits-changed', refresh);
+    return () => window.removeEventListener('food-eye-credits-changed', refresh);
+  }, [refreshCredits]);
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
