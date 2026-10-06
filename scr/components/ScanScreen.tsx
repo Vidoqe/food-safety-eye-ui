@@ -91,7 +91,7 @@ export default function ScanScreen({ type, onBack, onResult }) {
         image: preview,
         ingredients: "",
         
-        lang: "zh", // or "en" if you prefer
+        lang: isZh ? "zh" : "en",
       });
 
       console.log("[UI] AnalyzeProduct result:", res);
