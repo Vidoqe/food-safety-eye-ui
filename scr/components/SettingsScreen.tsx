@@ -11,6 +11,7 @@ import ExtraCreditsSection from './ExtraCreditsSection';
 import PaymentModal from './PaymentModal';
 import { UpgradePrompt } from './UpgradePrompt';
 import AppLogo from './AppLogo';
+import AuthPanel from './AuthPanel';
 
 interface SettingsScreenProps {
   onBack: () => void;
@@ -50,21 +51,10 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onPrivacyPolicy
     }
   };
 
-  const handleUpgradeClick = () => {
-    setShowUpgradeModal(true);
-  };
-
-  const handleBuyCreditsClick = () => {
-    setPaymentType('credits');
-    setShowPaymentModal(true);
-  };
-
-  const handleUpgradeFromModal = (plan: 'premium' | 'gold') => {
-    setSelectedPlan(plan);
-    setPaymentType('upgrade');
-    setShowUpgradeModal(false);
-    setShowPaymentModal(true);
-  };
+  const [paymentNotice, setPaymentNotice] = useState(false);
+  const handleUpgradeClick = () => setPaymentNotice(true);
+  const handleBuyCreditsClick = () => setPaymentNotice(true);
+  const handleUpgradeFromModal = () => setPaymentNotice(true);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4">
@@ -83,26 +73,11 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({ onBack, onPrivacyPolicy
         </div>
 
         <div className="space-y-4 mt-8">
-          {/* Current Plan */}
-          <Card className="p-6 shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-            <div className="text-center">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">
-                {language === 'zh' ? '當前方案' : 'Current Plan'}: {getPlanDisplayName()}
-              </h2>
-              {user && (
-                <>
-                  <p className="text-sm text-gray-600">
-                    {user.scansUsed}/{user.maxScans + user.bonusScans} scans used this month
-                  </p>
-                  {user.bonusScans > 0 && (
-                    <p className="text-xs text-green-600 mt-1">
-                      (+{user.bonusScans} bonus scans)
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-          </Card>
+          <AuthPanel />
+          {paymentNotice && <Card className="p-4" role="status">
+            <p>{language === 'zh' ? '線上付款尚未開放，方案及點數購買即將推出。' : 'Online payments are not available yet. Plan upgrades and credit purchases are coming soon.'}</p>
+            <Button variant="outline" onClick={() => setPaymentNotice(false)} className="mt-2">{language === 'zh' ? '關閉' : 'Close'}</Button>
+          </Card>}
 
           {/* Plan Comparison */}
           <PlanComparisonTable onUpgrade={handleUpgradeClick} />
