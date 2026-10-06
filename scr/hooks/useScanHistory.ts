@@ -15,7 +15,8 @@ export interface ScanHistoryEntry {
 const STORAGE_KEY = 'scan_history';
 
 export const useScanHistory = () => {
-  const { user } = useUser();
+  const { user, session } = useUser();
+  const storageKey = session && !session.user.is_anonymous ? `${STORAGE_KEY}:${session.user.id}` : null;
   const [scanHistory, setScanHistory] = useState<ScanHistoryEntry[]>([]);
 
   const getMaxHistoryCount = () => {
@@ -29,11 +30,13 @@ export const useScanHistory = () => {
 
   useEffect(() => {
     loadHistory();
-  }, []);
+  }, [storageKey]);
 
   const loadHistory = () => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      setScanHistory([]);
+      if (!storageKey) return;
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsed = JSON.parse(stored).map((entry: any) => ({
           ...entry,
@@ -48,7 +51,8 @@ export const useScanHistory = () => {
 
   const saveHistory = (history: ScanHistoryEntry[]) => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+      if (!storageKey) return;
+      localStorage.setItem(storageKey, JSON.stringify(history));
       setScanHistory(history);
     } catch (error) {
       console.error('Error saving scan history:', error);
